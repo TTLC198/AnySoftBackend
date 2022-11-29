@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Remove="Resources\icon.jpg" />
+      <Content Include="Resources\icon.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="RPM_PR_LIB">
+        <HintPath>..\..\RPM_Project_Library\RPM_PR_LIB\bin\Debug\net6.0\RPM_PR_LIB.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

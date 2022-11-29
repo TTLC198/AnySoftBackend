@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "RPM_PR_LIB/1.0.0": {
+        "runtime": {
+          "RPM_PR_LIB.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "RPM_PR_LIB/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

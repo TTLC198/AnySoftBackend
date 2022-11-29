@@ -1,0 +1,204 @@
+﻿<Window x:Class="RPM_Project.RegistrationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:RPM_Project"
+        mc:Ignorable="d"
+        Title="AuthorizationWindow"
+        Height="330" Width="280"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True">
+    <Grid Background="{StaticResource DefaultBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition
+                Height="Auto" />
+            <RowDefinition
+                Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="{StaticResource CanvasBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <!--Menu-->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Polygon
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Fill="{StaticResource DimGrayBrush}"
+                    HorizontalAlignment="Left"
+                    Margin="40,0,100,0"
+                    Stretch="Uniform"
+                    Height="10"
+                    VerticalAlignment="Top"
+                    MouseDown="DragPanel_OnClick">
+                    <Polygon.Points>
+                        <Point X="0" Y="0" />
+                        <Point X="4" Y="4" />
+                        <Point X="4" Y="0" />
+                    </Polygon.Points>
+                </Polygon>
+
+                <Rectangle
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Fill="{StaticResource DimGrayBrush}"
+                    HorizontalAlignment="Stretch"
+                    Margin="50,0,50,0"
+                    MouseDown="DragPanel_OnClick" />
+
+                <Polygon
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Fill="{StaticResource DimGrayBrush}"
+                    HorizontalAlignment="Right"
+                    Margin="40,0,40,0"
+                    Stretch="Uniform"
+                    Height="10"
+                    VerticalAlignment="Top"
+                    MouseDown="DragPanel_OnClick">
+                    <Polygon.Points>
+                        <Point X="0" Y="0" />
+                        <Point X="-4" Y="4" />
+                        <Point X="-4" Y="0" />
+                    </Polygon.Points>
+                </Polygon>
+                <!--Top header-->
+                <DockPanel 
+                    Grid.Row="1"
+                    LastChildFill="False">
+                    <Path
+                        Fill="{StaticResource PrimaryBrush}"
+                        Height="33"
+                        Width="33"
+                        Stretch="Uniform"
+                        Margin="10, 0, 15, 0"
+                        Data="{StaticResource store_icon}">
+                    </Path>
+                    <TextBlock
+                        Text="Регистрация"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Center"/>
+                    <!--Close buttons-->
+                    <StackPanel
+                        DockPanel.Dock="Right"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Left">
+                        <Button
+                            x:Name="CloseButton"
+                            Content="{StaticResource close_icon}"
+                            Style="{StaticResource CloseButtonStyle}"
+                            Click="CloseButton_OnClick" />
+                        <Button
+                            x:Name="MinimizeButton"
+                            Content="{StaticResource minimize_icon}"
+                            Style="{StaticResource WindowButtonsStyle}"
+                            Click="MinimizeButton_OnClick" />
+                    </StackPanel>
+                </DockPanel>
+            </Grid>
+        </Grid>
+        <StackPanel
+            Grid.Row="1"
+            Orientation="Vertical"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Center"
+            Margin="0, 20, 0,0">
+            <DockPanel
+                LastChildFill="False"
+                Margin="20, 0, 20,20">
+                <Grid>
+                    <Ellipse
+                        x:Name="Photo"
+                        Width="80"
+                        Height="80"
+                        DockPanel.Dock="Left">
+                        <Ellipse.Fill>
+                            <ImageBrush ImageSource="Resources/unknown.png" Stretch="Fill" />
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <Path
+                        Fill="{StaticResource PrimaryBrush}"
+                        Height="30"
+                        Width="30"
+                        Stretch="Uniform"
+                        Data="{StaticResource photo_icon}">
+                    </Path>
+                </Grid>
+                <TextBlock
+                    Text="Создание новой учетной записи"
+                    Margin="10"
+                    TextWrapping="Wrap"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Stretch"/>
+            </DockPanel>
+            <TextBox
+                x:Name="LoginTextBox"
+                Style="{StaticResource InputMinimalisticTextBoxStyle}"
+                MinWidth="215"
+                MinHeight="25"
+                Height="25"
+                Tag="Логин" 
+                Margin="20, 0 , 20 , 15"
+                TabIndex="1"/>
+            <TextBox
+                x:Name="PasswordTextBox"
+                Style="{StaticResource InputMinimalisticTextBoxWithCheckboxStyle}"
+                MinWidth="215"
+                MinHeight="25"
+                Height="25"
+                Tag="Пароль"
+                Margin="20, 0 , 20 , 15"
+                TabIndex="2"/>
+            <Grid
+                HorizontalAlignment="Center"
+                Margin="20, 15, 20, 0"
+                MinWidth="215">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition
+                        Width="*"/>
+                    <ColumnDefinition
+                        Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button
+                    x:Name="RestoreButton"
+                    Style="{StaticResource SquareButton}"
+                    Background="{StaticResource DimGrayBrush}"
+                    Foreground="{StaticResource SecondaryBrush}"
+                    BorderBrush="{StaticResource PrimaryBrush}"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    MinHeight="35"
+                    MinWidth="100"
+                    Width="140"
+                    Margin="0, 0, 5, 0"
+                    Content="Забыл пароль"
+                    Click="RestoreButton_OnClick"/>
+                <Button
+                    Grid.Column="1"
+                    x:Name="RegistrationButton"
+                    Style="{StaticResource SquareButton}"
+                    Background="{StaticResource PrimaryBrush}"
+                    Foreground="{StaticResource SecondaryBrush}"
+                    BorderBrush="{StaticResource SecondaryBrush}"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    MinHeight="35"
+                    MinWidth="100"
+                    Width="140"
+                    Margin="5, 0, 0, 0"
+                    Content="Регистрация"
+                    Click="RegistrationButton_OnClick"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Window>
