@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using RPM_PR_LIB;
 using RPM_Project_Backend.Repositories;
 
@@ -6,6 +7,7 @@ namespace RPM_Project_Backend.Controllers.UsersController;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableCors("MyPolicy")]
 public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;

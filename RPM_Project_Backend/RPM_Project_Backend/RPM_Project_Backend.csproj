@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNet.WebApi.Cors" Version="5.2.9" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0-rc.2.22472.11" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0-rc.2.22472.11" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
@@ -22,6 +23,10 @@
       <Reference Include="RPM_PR_LIB">
         <HintPath>..\..\RPM_PR_LIB\RPM_PR_LIB\bin\Debug\net6.0\RPM_PR_LIB.dll</HintPath>
       </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\RPM_Project_Library\RPM_PR_LIB\RPM_PR_LIB.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,33 +1,35 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\yoreh\\RiderProjects\\RPM_PR\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj": {}
+    "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\yoreh\\RiderProjects\\RPM_PR\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj": {
+    "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yoreh\\RiderProjects\\RPM_PR\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj",
+        "projectUniqueName": "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj",
         "projectName": "RPM_Project_Backend",
-        "projectPath": "C:\\Users\\yoreh\\RiderProjects\\RPM_PR\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj",
-        "packagesPath": "C:\\Users\\yoreh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yoreh\\RiderProjects\\RPM_PR\\RPM_Project_Backend\\RPM_Project_Backend\\obj\\",
+        "projectPath": "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Backend\\RPM_Project_Backend\\RPM_Project_Backend.csproj",
+        "packagesPath": "C:\\Users\\24122\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Backend\\RPM_Project_Backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\yoreh\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\24122\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net6.0": {
             "targetAlias": "net6.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Library\\RPM_PR_LIB\\RPM_PR_LIB.csproj": {
+                "projectPath": "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Library\\RPM_PR_LIB\\RPM_PR_LIB.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -40,6 +42,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Microsoft.AspNet.WebApi.Cors": {
+              "target": "Package",
+              "version": "[5.2.9, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[7.0.0-rc.2.22472.11, )"
@@ -59,7 +65,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -71,7 +78,60 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.401\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Library\\RPM_PR_LIB\\RPM_PR_LIB.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Library\\RPM_PR_LIB\\RPM_PR_LIB.csproj",
+        "projectName": "RPM_PR_LIB",
+        "projectPath": "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Library\\RPM_PR_LIB\\RPM_PR_LIB.csproj",
+        "packagesPath": "C:\\Users\\24122\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\24122\\RiderProjects\\RPM_Project\\RPM_Project_Library\\RPM_PR_LIB\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\24122\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.401\\RuntimeIdentifierGraph.json"
         }
       }
     }

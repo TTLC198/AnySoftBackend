@@ -12,10 +12,16 @@ public class Startup
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
+        
     }
     
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddCors(options =>
+        {
+            options.AddPolicy(name: "MyPolicy", policy => policy.WithOrigins("http://localhost:3000").AllowCredentials());
+        });
+        
         var connection = Configuration.GetConnectionString("DefaultConnection")!;
         services.AddMvc();
         services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
@@ -32,6 +38,9 @@ public class Startup
         
         app.UseHttpsRedirection();
         app.UseRouting();
+
+        app.UseCors();
+        
         app.UseAuthorization();
         
         app.UseEndpoints(endpoints =>

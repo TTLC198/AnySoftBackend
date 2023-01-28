@@ -10,14 +10,11 @@ namespace RPM_PR_LIB;
 public class User : BaseModel
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Column("u_id")]
     public override long Id { get; set; }
-    [Required (ErrorMessage = "Необходим никнейм пользователя")]
-    [Column("u_nickname")]
-    public string Nickname { get; set; }
-    [Required (ErrorMessage = "Необходим пароль пользователя")]
-    [Column("u_password")]
-    public string Password { get; set; }
-    [Column("u_balance")]
-    public double Balance { get; set; }
+    public string login { get; set; }
+    public string password { get; set; }
+    public string email { get; set; }
+    public long RoleId { get; set; }
+    public Role Role { get; set; }
 }
+
