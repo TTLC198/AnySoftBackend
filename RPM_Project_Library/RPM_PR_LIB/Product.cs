@@ -1,26 +1,37 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
-/// <summary>
-/// Программные продукты
-/// </summary>
-[Table("products")]
-public class Product : BaseModel
+public partial class Product : BaseModel
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Column("pp_id")]
-    public override long Id { get; set; }
-    [Column("pp_publish_date")]
-    public DateTime PublishDate { get; set; }
-    [Column("pp_price")]
-    public double Price { get; set; }
-    [Column("pp_download_count")]
-    public int DownloadCount { get; set; }
-    [Column("pp_rating")] 
-    public double Rating { get; set; }
-    [Column("pp_publisher_id")]
-    [ForeignKey("pp_publisher_id")]
-    public long? PublisherId { get; set; }
-    public Publisher? Publisher { get; set; }
+    [Column("pro_id")]
+    public override int Id { get; set; }
+
+    public string ProName { get; set; } = null!;
+
+    public int ProQuantity { get; set; }
+
+    public int ProCost { get; set; }
+
+    public int? ProDiscount { get; set; }
+
+    public int ProCatId { get; set; }
+
+    public string ProManufacturer { get; set; } = null!;
+
+    public string ProPhotosPath { get; set; } = null!;
+
+    public double ProRating { get; set; }
+
+    public virtual ICollection<ListsHaveProduct> ListsHaveProducts { get; } = new List<ListsHaveProduct>();
+
+    public virtual ICollection<OrdersHaveProduct> OrdersHaveProducts { get; } = new List<OrdersHaveProduct>();
+
+    public virtual Category ProCat { get; set; } = null!;
+
+    public virtual ICollection<ProductsHaveAttribute> ProductsHaveAttributes { get; } = new List<ProductsHaveAttribute>();
+
+    public virtual ICollection<Review> Reviews { get; } = new List<Review>();
 }

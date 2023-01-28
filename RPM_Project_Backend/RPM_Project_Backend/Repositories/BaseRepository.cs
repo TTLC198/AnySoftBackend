@@ -7,10 +7,10 @@ namespace RPM_Project_Backend.Repositories;
 
 public class BaseRepository<TModel> : IBaseRepository<TModel> where TModel : BaseModel
 {
-    private readonly ApplicationContext _context;
+    private readonly RmpProjectNewContext _context;
     private readonly DbSet<TModel> _dbSet;
 
-    public BaseRepository(ApplicationContext context)
+    public BaseRepository(RmpProjectNewContext context)
     {
         _context = context;
         _dbSet = context.Set<TModel>();

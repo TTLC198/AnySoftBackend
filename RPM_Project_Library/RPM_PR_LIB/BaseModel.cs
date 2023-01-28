@@ -5,5 +5,5 @@ namespace RPM_PR_LIB;
 
 public abstract class BaseModel
 {
-    public abstract long Id { get; set; }
+    public abstract int Id { get; set; }
 }

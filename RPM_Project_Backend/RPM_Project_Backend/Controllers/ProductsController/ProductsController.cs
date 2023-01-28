@@ -77,7 +77,7 @@ public class ProductsController : ControllerBase
         return product switch
         {
             null => BadRequest(),
-            _ when _productsRepository.GetAllAsync().Result.All(u => u.Id != product.Id) => NotFound(),
+            _ when _productsRepository.GetAllAsync().Result.All(pro => pro.Id != product.Id) => NotFound(),
             _ => Ok(await _productsRepository.UpdateAsync(product))
         };
     }

@@ -1,20 +1,31 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
-/// <summary>
-/// Пользователи
-/// </summary>
-[Table("users")]
-public class User : BaseModel
+public partial class User : BaseModel
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public override long Id { get; set; }
-    public string login { get; set; }
-    public string password { get; set; }
-    public string email { get; set; }
-    public long RoleId { get; set; }
-    public Role Role { get; set; }
-}
+    public string ULogin { get; set; } = null!;
 
+    public string UPassword { get; set; } = null!;
+
+    public string UEmail { get; set; } = null!;
+
+    public int URoleId { get; set; }
+
+    [Column("u_id")]
+    public override int Id { get; set; }
+
+    public virtual ICollection<Order> Orders { get; } = new List<Order>();
+
+    public virtual ICollection<Payment> Payments { get; } = new List<Payment>();
+
+    public virtual ICollection<ProductList> ProductLists { get; } = new List<ProductList>();
+
+    public virtual ICollection<Review> Reviews { get; } = new List<Review>();
+
+    public virtual Seller? Seller { get; set; }
+
+    public virtual Role URole { get; set; } = null!;
+}

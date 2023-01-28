@@ -34,3 +34,5 @@ C:\Users\24122\RiderProjects\RPM_Project\RPM_Project_Library\RPM_PR_LIB\obj\Debu
 C:\Users\24122\RiderProjects\RPM_Project\RPM_Project_Library\RPM_PR_LIB\obj\Debug\net6.0\refint\RPM_PR_LIB.dll
 C:\Users\24122\RiderProjects\RPM_Project\RPM_Project_Library\RPM_PR_LIB\obj\Debug\net6.0\RPM_PR_LIB.pdb
 C:\Users\24122\RiderProjects\RPM_Project\RPM_Project_Library\RPM_PR_LIB\obj\Debug\net6.0\ref\RPM_PR_LIB.dll
+C:\Users\24122\RiderProjects\RPM_Project\RPM_Project_Library\RPM_PR_LIB\bin\Debug\net6.0\RPM_PR_LIB.runtimeconfig.json
+C:\Users\24122\RiderProjects\RPM_Project\RPM_Project_Library\RPM_PR_LIB\obj\Debug\net6.0\RPM_PR_LIB.genruntimeconfig.cache

@@ -1,9 +1,16 @@
-﻿namespace RPM_PR_LIB;
+﻿using System;
+using System.Collections.Generic;
 
-public class Role : BaseModel
+namespace RPM_PR_LIB;
+
+
+public partial class Role
 {
-    public override long Id { get; set; }
-    public string name { get; set; }
-    public List<User> Users { get; set; } = new();
-    public List<Permission> Permissions { get; set; }
+    public int RId { get; set; }
+
+    public string RName { get; set; } = null!;
+
+    public virtual ICollection<RoleHasPermission> RoleHasPermissions { get; } = new List<RoleHasPermission>();
+
+    public virtual ICollection<User> Users { get; } = new List<User>();
 }
