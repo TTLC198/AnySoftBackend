@@ -204,6 +204,7 @@ create table Reviews
     rew_u_id   int          not null
         constraint Reviews_Users_u_id_fk
             references Users,
+    rew_grade float         not null,
     rew_text   varchar(max) not null,
     rew_pro_id int          not null
         constraint Reviews_Products_pro_id_fk

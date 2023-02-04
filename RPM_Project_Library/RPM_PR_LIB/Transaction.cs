@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
 public partial class Transaction
 {
-    public int TrId { get; set; }
+    [Column("tr_id")]
+    public int Id { get; set; }
 
-    public int TrPayId { get; set; }
+    [Column("tr_pay_id")]
+    public int PaymentId { get; set; }
+    public virtual Payment Payment { get; set; } = null!;
 
-    public int TrOrId { get; set; }
+    [Column("tr_order_id")]
+    public int OrderId { get; set; }
+    public virtual Order Order { get; set; } = null!;
 
-    public DateTime TrTime { get; set; }
-
-    public virtual Order TrOr { get; set; } = null!;
-
-    public virtual Payment TrPay { get; set; } = null!;
+    [Column("tr_time")]
+    public DateTime Time { get; set; }
 }

@@ -24,7 +24,7 @@ public class Startup
         
         var connection = Configuration.GetConnectionString("DefaultConnection")!;
         services.AddMvc();
-        services.AddDbContext<RmpProjectNewContext>(options => options.UseSqlServer(connection));
+        services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
         services.AddScoped<IBaseRepository<User>, BaseRepository<User>>();
         services.AddScoped<IBaseRepository<Product>, BaseRepository<Product>>();
         services.AddControllers();
