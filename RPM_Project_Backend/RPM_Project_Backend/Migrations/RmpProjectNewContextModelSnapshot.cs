@@ -10,7 +10,7 @@ using RPM_Project_Backend.Services.Database;
 
 namespace RPMProjectBackend.Migrations
 {
-    [DbContext(typeof(RmpProjectNewContext))]
+    [DbContext(typeof(ApplicationContext))]
     partial class RmpProjectNewContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -32,7 +32,7 @@ namespace RPM_Project
             this.currentUser = currentUser;
             InitializeComponent();
             HomeScrollViewerButton.IsSelected = true;
-            ClientNameText.Text = currentUser.Nickname;
+            ClientNameText.Text = currentUser.Login;
             BalanceText.Text = $"{currentUser.Balance}$";
         }
 

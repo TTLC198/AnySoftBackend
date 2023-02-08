@@ -45,7 +45,7 @@ public partial class RegistrationWindow : Window
         using var httpClient = new HttpClient();
         var user = new User()
         {
-            Nickname = LoginTextBox.Text,
+            Login = LoginTextBox.Text,
             Password = PasswordTextBox.Text,
             Balance = 0
         };

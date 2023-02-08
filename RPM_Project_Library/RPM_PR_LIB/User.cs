@@ -6,26 +6,17 @@ namespace RPM_PR_LIB;
 
 public partial class User : BaseModel
 {
-    public string ULogin { get; set; } = null!;
-
-    public string UPassword { get; set; } = null!;
-
-    public string UEmail { get; set; } = null!;
-
-    public int URoleId { get; set; }
-
     [Column("u_id")]
     public override int Id { get; set; }
-
-    public virtual ICollection<Order> Orders { get; } = new List<Order>();
-
-    public virtual ICollection<Payment> Payments { get; } = new List<Payment>();
-
-    public virtual ICollection<ProductList> ProductLists { get; } = new List<ProductList>();
-
-    public virtual ICollection<Review> Reviews { get; } = new List<Review>();
-
-    public virtual Seller? Seller { get; set; }
-
-    public virtual Role URole { get; set; } = null!;
+    [Column("u_login")]
+    public string Login { get; set; } = null!;
+    [Column("u_balance")]
+    public double Balance { get; set; }
+    [Column("u_password")]
+    public string Password { get; set; } = null!;
+    [Column("u_email")]
+    public string Email { get; set; } = null!;
+    [Column("u_role_id")]
+    public int RoleId { get; set; }
+    public virtual Role Role { get; set; } = null!;
 }

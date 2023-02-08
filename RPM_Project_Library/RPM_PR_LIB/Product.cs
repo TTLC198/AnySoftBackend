@@ -8,30 +8,34 @@ public partial class Product : BaseModel
 {
     [Column("pro_id")]
     public override int Id { get; set; }
+    [Column("pro_id")]
+    public string Name { get; set; } = null!;
+    
+    [Column("pro_quantity")]
+    public int Quantity { get; set; }
+    
+    [Column("pro_cost")]
+    public int Cost { get; set; }
 
-    public string ProName { get; set; } = null!;
+    [Column("pro_discount")]
+    public int? Discount { get; set; }
 
-    public int ProQuantity { get; set; }
+    [Column("pro_cat_id")]
+    public int CatId { get; set; }
 
-    public int ProCost { get; set; }
+    public virtual Category Category { get; set; } = null!;
 
-    public int? ProDiscount { get; set; }
+    [Column("pro_manufacturer")]
+    public string Manufacturer { get; set; } = null!;
 
-    public int ProCatId { get; set; }
+    [Column("pro_photos_path")]
+    public string PhotosPath { get; set; } = null!;
 
-    public string ProManufacturer { get; set; } = null!;
-
-    public string ProPhotosPath { get; set; } = null!;
-
-    public double ProRating { get; set; }
-
-    public virtual ICollection<ListsHaveProduct> ListsHaveProducts { get; } = new List<ListsHaveProduct>();
-
-    public virtual ICollection<OrdersHaveProduct> OrdersHaveProducts { get; } = new List<OrdersHaveProduct>();
-
-    public virtual Category ProCat { get; set; } = null!;
-
+    [Column("pro_rating")]
+    public double Rating { get; set; }
+    
+    [Column("pro_id")]
     public virtual ICollection<ProductsHaveAttribute> ProductsHaveAttributes { get; } = new List<ProductsHaveAttribute>();
-
+    [Column("pro_id")]
     public virtual ICollection<Review> Reviews { get; } = new List<Review>();
 }

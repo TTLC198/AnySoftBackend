@@ -11,7 +11,7 @@ using RPM_Project_Backend.Services.Database;
 
 namespace RPMProjectBackend.Migrations
 {
-    [DbContext(typeof(RmpProjectNewContext))]
+    [DbContext(typeof(ApplicationContext))]
     [Migration("20230128070533_TechStore")]
     partial class TechStore
     {

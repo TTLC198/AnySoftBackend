@@ -1,22 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
 
-public partial class Review
+public partial class Review : BaseModel
 {
-    public int RewId { get; set; }
+    [Column("rew_id")]
+    public override int Id { get; set; }
 
-    public int RewUId { get; set; }
+    [Column("rew_u_id")]
+    public int UserId { get; set; }
+    public virtual User User { get; set; } = null!;
 
-    public string RewText { get; set; } = null!;
-    
-    public float RewGrade { get; set; }
+    [Column("rew_text")]
+    public string Text { get; set; } = null!;
 
-    public int RewProId { get; set; }
+    [Column("rew_grade")]
+    public double Grade { get; set; }
 
-    public virtual Product RewPro { get; set; } = null!;
-
-    public virtual User RewU { get; set; } = null!;
+    [Column("rew_pro_id")]
+    public int ProductId { get; set; }
+    public virtual Product Product { get; set; } = null!;
 }

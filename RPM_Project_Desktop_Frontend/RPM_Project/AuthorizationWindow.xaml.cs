@@ -37,7 +37,7 @@ public partial class AuthorizationWindow : Window
         using var httpClient = new HttpClient();
         var response = httpClient.GetAsync("http://localhost:5000/api/users/").Result;
         var users = response.Content.ReadFromJsonAsync<List<User>>().Result;
-        var user = users!.Find(u => u.Nickname == LoginTextBox.Text && u.Password == PasswordTextBox.Text)!;
+        var user = users!.Find(u => u.Login == LoginTextBox.Text && u.Password == PasswordTextBox.Text)!;
         if (user != null!)
         {
             var mainWindow = new MainWindow(user);

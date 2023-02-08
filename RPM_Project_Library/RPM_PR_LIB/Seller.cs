@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
 
 public partial class Seller
 {
-    public int SuId { get; set; }
-
-    public string SName { get; set; } = null!;
-
-    public virtual ICollection<Order> Orders { get; } = new List<Order>();
-
-    public virtual User Su { get; set; } = null!;
+    [Column("su_id")]
+    public int Id { get; set; }
+    [Column("su_name")]
+    public string Name { get; set; } = null!;
 }
