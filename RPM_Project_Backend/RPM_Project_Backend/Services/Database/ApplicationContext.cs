@@ -21,17 +21,17 @@ public partial class ApplicationContext : DbContext
 
     public virtual DbSet<Attribute> Attributes { get; set; }
 
-    //public virtual DbSet<BankCard> BankCards { get; set; }
+    public virtual DbSet<BankCard> BankCards { get; set; }
 
-    //public virtual DbSet<CategoriesHaveAttribute> CategoriesHaveAttributes { get; set; }
+    public virtual DbSet<CategoriesHaveAttribute> CategoriesHaveAttributes { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
 
-    //public virtual DbSet<ListsHaveProduct> ListsHaveProducts { get; set; }
+    public virtual DbSet<ListsHaveProduct> ListsHaveProducts { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
 
-    //public virtual DbSet<OrdersHaveProduct> OrdersHaveProducts { get; set; }
+    public virtual DbSet<OrdersHaveProduct> OrdersHaveProducts { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
 
@@ -50,8 +50,6 @@ public partial class ApplicationContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<RoleHasPermission> RoleHasPermissions { get; set; }
-
-    public virtual DbSet<Seller> Sellers { get; set; }
 
     public virtual DbSet<Transaction> Transactions { get; set; }
 

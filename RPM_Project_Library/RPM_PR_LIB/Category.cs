@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
 
 public partial class Category
 {
-    public int CatId { get; set; }
-
-    public int? CatParentId { get; set; }
-
-    public string CatName { get; set; } = null!;
+    [Column("cat_id")]
+    public int Id { get; set; }
+    [Column("cat_parent_id")]
+    public int? ParentId { get; set; }
+    [Column("cat_name")]
+    public string Name { get; set; } = null!;
 
     public virtual Category? CatParent { get; set; }
 

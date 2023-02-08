@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
 
 public partial class ListsHaveProduct
 {
-    public int LhpId { get; set; }
-
-    public int LhpPlId { get; set; }
-
-    public int LhpProId { get; set; }
+    [Column("lhp_id")]
+    public int Id { get; set; }
+    [Column("lhp_pl_id")]
+    public int ProductListId { get; set; }
+    [Column("lhp_pro_id")]
+    public int ProductId { get; set; }
 
     public virtual ProductList LhpPl { get; set; } = null!;
 

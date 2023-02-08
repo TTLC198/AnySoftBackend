@@ -1,13 +1,14 @@
 create table Addresses
 (
-    ad_id     int identity
+    ad_id      int identity
         constraint Addresses_pk
             primary key,
-    ad_street char(256) not null,
-    city      char(256) not null,
-    state     char(256) not null,
-    country   char(256) not null,
-    ad_u_id   int       not null
+    ad_street  char(256) not null,
+    ad_city    char(256) not null,
+    ad_state   char(256) not null,
+    ad_country char(256) not null,
+    ad_u_id    int       not null,
+    ad_zip     int       not null
 )
 go
 
@@ -204,11 +205,11 @@ create table Reviews
     rew_u_id   int          not null
         constraint Reviews_Users_u_id_fk
             references Users,
-    rew_grade float         not null,
     rew_text   varchar(max) not null,
     rew_pro_id int          not null
         constraint Reviews_Products_pro_id_fk
-            references Products
+            references Products,
+    rew_grade  float        not null
 )
 go
 
@@ -273,5 +274,3 @@ create table Transactions
     tr_time   datetime not null
 )
 go
-
-

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPM_PR_LIB;
 
 
 public partial class Payment
 {
-    public int PayId { get; set; }
-
-    public int PayUserId { get; set; }
-
-    public string PayMethod { get; set; } = null!;
+    [Column("pay_id")]
+    public int Id { get; set; }
+    [Column("pay_user_id")]
+    public int UserId { get; set; }
+    [Column("pay_method")]
+    public string Method { get; set; } = null!;
 
     public virtual ICollection<BankCard> BankCards { get; } = new List<BankCard>();
 
