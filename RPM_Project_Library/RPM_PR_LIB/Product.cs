@@ -25,8 +25,10 @@ public partial class Product : BaseModel
 
     public virtual Category Category { get; set; } = null!;
 
-    [Column("pro_manufacturer")]
-    public string Manufacturer { get; set; } = null!;
+    [Column("pro_s_id")]
+    public string SellerId { get; set; }
+    
+    public virtual User Seller { get; set; } = null!; //Does it need "=null!"? What is its purpose?
 
     [Column("pro_photos_path")]
     public string PhotosPath { get; set; } = null!;

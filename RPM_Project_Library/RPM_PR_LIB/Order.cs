@@ -17,16 +17,12 @@ public partial class Order
     public int AddressId { get; set; }
     [Column("or_u_id")]
     public int UserId { get; set; }
-    [Column("or_s_id")]
-    public int SellerId { get; set; }
     [Column("or_f_cost")]
-    public double FloatCost { get; set; }
+    public double FinalCost { get; set; }
     [Column("or_time")]
     public DateTime Time { get; set; }
 
     public virtual Address OrAd { get; set; } = null!;
-
-    public virtual User OrS { get; set; } = null!;
 
     public virtual User OrU { get; set; } = null!;
 

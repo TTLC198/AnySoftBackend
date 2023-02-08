@@ -58,39 +58,6 @@ create table Permissions
 )
 go
 
-create table Products
-(
-    pro_id           int identity
-        constraint Products_pk
-            primary key,
-    pro_name         char(128) not null,
-    pro_quantity     int       not null,
-    pro_cost         int       not null,
-    pro_discount     int,
-    pro_cat_id       int       not null
-        constraint Products_Categories_cat_id_fk
-            references Categories,
-    pro_manufacturer char(128) not null,
-    pro_photos_path  char(256) not null,
-    pro_rating       float     not null
-)
-go
-
-create table Products_have_attributes
-(
-    pha_id     int identity
-        constraint Products_have_attributes_pk
-            primary key,
-    pha_pro_id int          not null
-        constraint Products_have_attributes_Products_pro_id_fk
-            references Products,
-    pha_atr_id int          not null
-        constraint Products_have_attributes_Attributes_atr_id_fk
-            references Attributes,
-    pha_value  varchar(256) not null
-)
-go
-
 create table Roles
 (
     r_id   int identity
@@ -129,6 +96,24 @@ create table Users
     u_id       int identity
         constraint Users_pk
             primary key
+)
+go
+
+create table Orders
+(
+    or_id     int identity
+        constraint Orders_pk
+            primary key,
+    or_number int          not null,
+    or_status varchar(128) not null,
+    or_ad_id  int          not null
+        constraint Orders_Addresses_ad_id_fk
+            references Addresses,
+    or_u_id   int          not null
+        constraint Orders_Users_u_id_fk
+            references Users,
+    or_fcost  float        not null,
+    or_time   datetime     not null
 )
 go
 
@@ -171,17 +156,68 @@ create table Product_lists
 )
 go
 
+create table Products
+(
+    pro_id          int identity
+        constraint Products_pk
+            primary key,
+    pro_name        char(128) not null,
+    pro_quantity    int       not null,
+    pro_cost        int       not null,
+    pro_discount    int,
+    pro_cat_id      int       not null
+        constraint Products_Categories_cat_id_fk
+            references Categories,
+    pro_photos_path char(256) not null,
+    pro_rating      float     not null,
+    pro_s_id        int       not null
+        constraint Products_Users_u_id_fk
+            references Users
+)
+go
+
 create table Lists_have_products
 (
-    Lhp_id     int identity
+    Lhp_id       int identity
         constraint Lists_have_products_pk
             primary key,
-    lhp_pl_id  int not null
+    lhp_pl_id    int not null
         constraint Lists_have_products_Product_lists_pl_id_fk
             references Product_lists,
-    lhp_pro_id int not null
+    lhp_pro_id   int not null
         constraint Lists_have_products_Products_pro_id_fk
-            references Products
+            references Products,
+    lhp_quantity int not null
+)
+go
+
+create table Orders_have_products
+(
+    ohp_id       int identity
+        constraint Orders_have_products_pk
+            primary key,
+    ohp_pro_id   int not null
+        constraint Orders_have_products_Products_pro_id_fk
+            references Products,
+    ohp_or_id    int
+        constraint Orders_have_products_Orders_or_id_fk
+            references Orders,
+    ohp_quantity int not null
+)
+go
+
+create table Products_have_attributes
+(
+    pha_id     int identity
+        constraint Products_have_attributes_pk
+            primary key,
+    pha_pro_id int          not null
+        constraint Products_have_attributes_Products_pro_id_fk
+            references Products,
+    pha_atr_id int          not null
+        constraint Products_have_attributes_Attributes_atr_id_fk
+            references Attributes,
+    pha_value  varchar(256) not null
 )
 go
 
@@ -213,52 +249,6 @@ create table Reviews
 )
 go
 
-create table Sellers
-(
-    su_id  int          not null
-        constraint Sellers_pk
-            primary key
-        constraint Sellers_Users_u_id_fk
-            references Users,
-    s_name varchar(128) not null
-)
-go
-
-create table Orders
-(
-    or_id     int identity
-        constraint Orders_pk
-            primary key,
-    or_number int          not null,
-    or_status varchar(128) not null,
-    or_ad_id  int          not null
-        constraint Orders_Addresses_ad_id_fk
-            references Addresses,
-    or_u_id   int          not null
-        constraint Orders_Users_u_id_fk
-            references Users,
-    or_s_id   int          not null
-        constraint Orders_Sellers_su_id_fk
-            references Sellers,
-    or_fcost  float        not null,
-    or_time   datetime     not null
-)
-go
-
-create table Orders_have_products
-(
-    ohp_id       int identity
-        constraint Orders_have_products_pk
-            primary key,
-    ohp_pro_id   int not null
-        constraint Orders_have_products_Products_pro_id_fk
-            references Products,
-    ohp_or_id    int
-        constraint Orders_have_products_Orders_or_id_fk
-            references Orders,
-    ohp_quantity int not null
-)
-go
 
 create table Transactions
 (

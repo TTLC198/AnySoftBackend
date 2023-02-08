@@ -13,6 +13,8 @@ public partial class ListsHaveProduct
     public int ProductListId { get; set; }
     [Column("lhp_pro_id")]
     public int ProductId { get; set; }
+    [Column("lhp_quantity")]
+    public int Quantity { get; set; }
 
     public virtual ProductList LhpPl { get; set; } = null!;
 
