@@ -1,49 +1,9 @@
-create table Addresses
-(
-    ad_id      int identity
-        constraint Addresses_pk
-            primary key,
-    ad_street  char(256) not null,
-    ad_city    char(256) not null,
-    ad_state   char(256) not null,
-    ad_country char(256) not null,
-    ad_u_id    int       not null,
-    ad_zip     int       not null
-)
-go
-
 create table Attributes
 (
     atr_id   int identity
         constraint Attributes_pk
             primary key,
     atr_name char(50) not null
-)
-go
-
-create table Categories
-(
-    cat_id        int identity
-        constraint Categories_pk
-            primary key,
-    cat_parent_id int
-        constraint Categories_Categories_cat_id_fk
-            references Categories,
-    cat_name      char(50) not null
-)
-go
-
-create table Categories_have_attributes
-(
-    cha_id     int identity
-        constraint Categories_have_attributes_pk
-            primary key,
-    cha_cat_id int not null
-        constraint Categories_have_attributes_Categories_cat_id_fk
-            references Categories,
-    cha_atr_id int not null
-        constraint Categories_have_attributes_Attributes_atr_id_fk
-            references Attributes
 )
 go
 
@@ -99,6 +59,71 @@ create table Users
 )
 go
 
+create table Payments
+(
+    pay_id      int identity
+        constraint Payments_pk
+            primary key,
+    pay_user_id int      not null
+        constraint Payments_Users_u_id_fk
+            references Users,
+    pay_method  char(50) not null
+)
+go
+
+create table Bank_cards
+(
+    bc_number          nvarchar(16) not null,
+    bc_name            char(256)    not null,
+    bc_expiration_date date         not null,
+    bc_cvc             int          not null,
+    bc_payment_id      int          not null
+        constraint Bank_cards_Payments_pay_id_fk
+            references Payments,
+    bc_id              int identity
+        constraint Bank_cards_pk
+            primary key
+)
+go
+
+create table Product_lists
+(
+    pl_id   int identity
+        constraint Product_lists_pk
+            primary key,
+    pl_u_id int          not null
+        constraint Product_lists_Users_u_id_fk
+            references Users,
+    pl_name varchar(128) not null
+)
+go
+
+create table Qiwi
+(
+    qiwi_id     int identity
+        constraint Qiwi_pk
+            primary key,
+    qiwi_number int,
+    qiwi_pay_id int
+        constraint Qiwi_Payments_pay_id_fk
+            references Payments
+)
+go
+
+create table Addresses
+(
+    ad_id      int identity
+        constraint Addresses_pk
+            primary key,
+    ad_street  char(256) not null,
+    ad_city    char(256) not null,
+    ad_state   char(256) not null,
+    ad_country char(256) not null,
+    ad_u_id    int       not null,
+    ad_zip     int       not null
+)
+go
+
 create table Orders
 (
     or_id     int identity
@@ -117,42 +142,44 @@ create table Orders
 )
 go
 
-create table Payments
+create table Transactions
 (
-    pay_id      int      not null
-        constraint Payments_pk
+    tr_id     int identity
+        constraint transactions_pk
             primary key,
-    pay_user_id int      not null
-        constraint Payments_Users_u_id_fk
-            references Users,
-    pay_method  char(50) not null
-)
-go
-
-create table Bank_cards
-(
-    bc_number          int       not null,
-    bc_name            char(256) not null,
-    bc_expiration_date date      not null,
-    bc_cvc             int       not null,
-    bc_payment_id      int       not null
-        constraint Bank_cards_Payments_pay_id_fk
+    tr_pay_id int      not null
+        constraint transactions_Payments_pay_id_fk
             references Payments,
-    bc_id              int identity
-        constraint Bank_cards_pk
-            primary key
+    tr_or_id  int      not null
+        constraint Transactions_Orders_or_id_fk
+            references Orders,
+    tr_time   datetime not null
 )
 go
 
-create table Product_lists
+create table Categories
 (
-    pl_id   int identity
-        constraint Product_lists_pk
+    cat_id        int identity
+        constraint Categories_pk
             primary key,
-    pl_u_id int          not null
-        constraint Product_lists_Users_u_id_fk
-            references Users,
-    pl_name varchar(128) not null
+    cat_parent_id int
+        constraint Categories_Categories_cat_id_fk
+            references Categories,
+    cat_name      char(50) not null
+)
+go
+
+create table Categories_have_attributes
+(
+    cha_id     int identity
+        constraint Categories_have_attributes_pk
+            primary key,
+    cha_cat_id int not null
+        constraint Categories_have_attributes_Categories_cat_id_fk
+            references Categories,
+    cha_atr_id int not null
+        constraint Categories_have_attributes_Attributes_atr_id_fk
+            references Attributes
 )
 go
 
@@ -221,18 +248,6 @@ create table Products_have_attributes
 )
 go
 
-create table Qiwi
-(
-    qiwi_id     int not null
-        constraint Qiwi_pk
-            primary key,
-    qiwi_number int,
-    qiwi_pay_id int
-        constraint Qiwi_Payments_pay_id_fk
-            references Payments
-)
-go
-
 create table Reviews
 (
     rew_id     int identity
@@ -246,21 +261,5 @@ create table Reviews
         constraint Reviews_Products_pro_id_fk
             references Products,
     rew_grade  float        not null
-)
-go
-
-
-create table Transactions
-(
-    tr_id     int identity
-        constraint transactions_pk
-            primary key,
-    tr_pay_id int      not null
-        constraint transactions_Payments_pay_id_fk
-            references Payments,
-    tr_or_id  int      not null
-        constraint Transactions_Orders_or_id_fk
-            references Orders,
-    tr_time   datetime not null
 )
 go
