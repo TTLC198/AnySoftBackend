@@ -1,53 +1,45 @@
-create table Addresses
-(
-    ad_id      int identity
-        constraint Addresses_pk
-            primary key,
-    ad_street  char(256) not null,
-    ad_city    char(256) not null,
-    ad_state   char(256) not null,
-    ad_country char(256) not null,
-    ad_u_id    int       not null,
-    ad_zip     int       not null
-)
+use rpm_project_3
 go
 
-create table Attributes
+create table dbo.Attributes
 (
     atr_id   int identity
         constraint Attributes_pk
             primary key,
-    atr_name char(50) not null
+    atr_name nvarchar(50) not null
+        constraint Attributes_pk2
+            unique,
+    atr_type nvarchar(6)  not null
 )
 go
 
-create table Categories
+create table dbo.Categories
 (
     cat_id        int identity
         constraint Categories_pk
             primary key,
     cat_parent_id int
         constraint Categories_Categories_cat_id_fk
-            references Categories,
+            references dbo.Categories,
     cat_name      char(50) not null
 )
 go
 
-create table Categories_have_attributes
+create table dbo.Categories_have_attributes
 (
     cha_id     int identity
         constraint Categories_have_attributes_pk
             primary key,
     cha_cat_id int not null
         constraint Categories_have_attributes_Categories_cat_id_fk
-            references Categories,
+            references dbo.Categories,
     cha_atr_id int not null
         constraint Categories_have_attributes_Attributes_atr_id_fk
-            references Attributes
+            references dbo.Attributes
 )
 go
 
-create table Permissions
+create table dbo.Permissions
 (
     p_id       int identity
         constraint permissions_pk
@@ -58,30 +50,30 @@ create table Permissions
 )
 go
 
-create table Roles
+create table dbo.Roles
 (
     r_id   int identity
         constraint Roles_pk
             primary key,
-    r_name char not null
+    r_name nvarchar(15) not null
 )
 go
 
-create table Role_has_permissions
+create table dbo.Role_has_permissions
 (
     rhp_role_id       int not null
         constraint Role_has_permissions_Roles_r_id_fk
-            references Roles,
+            references dbo.Roles,
     rhp_permission_id int not null
         constraint Role_has_permissions_Permissions_p_id_fk
-            references Permissions,
+            references dbo.Permissions,
     rhp_id            int identity
         constraint Role_has_permissions_pk
             primary key
 )
 go
 
-create table Users
+create table dbo.Users
 (
     u_login    char(256) not null
         constraint Users_login_unique
@@ -92,71 +84,89 @@ create table Users
             unique,
     u_role_id  int       not null
         constraint Users_Roles_r_id_fk
-            references Roles,
+            references dbo.Roles,
     u_id       int identity
         constraint Users_pk
             primary key
 )
 go
 
-create table Orders
+create table dbo.Addresses
+(
+    ad_id        int identity
+        constraint Addresses_pk
+            primary key,
+    ad_street    char(256)    not null,
+    ad_city      char(256)    not null,
+    ad_state     char(256)    not null,
+    ad_country   char(256)    not null,
+    ad_u_id      int          not null
+        constraint Addresses_Users_u_id_fk
+            references dbo.Users,
+    ad_zip       nvarchar(13) not null,
+    ad_is_active bit          not null
+)
+go
+
+create table dbo.Orders
 (
     or_id     int identity
         constraint Orders_pk
             primary key,
-    or_number int          not null,
+    or_number nvarchar(9)  not null,
     or_status varchar(128) not null,
     or_ad_id  int          not null
         constraint Orders_Addresses_ad_id_fk
-            references Addresses,
+            references dbo.Addresses,
     or_u_id   int          not null
         constraint Orders_Users_u_id_fk
-            references Users,
+            references dbo.Users,
     or_fcost  float        not null,
     or_time   datetime     not null
 )
 go
 
-create table Payments
+create table dbo.Payments
 (
-    pay_id      int      not null
+    pay_id        int identity
         constraint Payments_pk
             primary key,
-    pay_user_id int      not null
+    pay_user_id   int      not null
         constraint Payments_Users_u_id_fk
-            references Users,
-    pay_method  char(50) not null
+            references dbo.Users,
+    pay_method    char(50) not null,
+    pay_is_active bit      not null
 )
 go
 
-create table Bank_cards
+create table dbo.Bank_cards
 (
-    bc_number          int       not null,
-    bc_name            char(256) not null,
-    bc_expiration_date date      not null,
-    bc_cvc             int       not null,
-    bc_payment_id      int       not null
+    bc_number          nvarchar(24) not null,
+    bc_name            char(256)    not null,
+    bc_expiration_date date         not null,
+    bc_cvc             nvarchar(4)  not null,
+    bc_payment_id      int          not null
         constraint Bank_cards_Payments_pay_id_fk
-            references Payments,
+            references dbo.Payments,
     bc_id              int identity
         constraint Bank_cards_pk
             primary key
 )
 go
 
-create table Product_lists
+create table dbo.Product_lists
 (
     pl_id   int identity
         constraint Product_lists_pk
             primary key,
     pl_u_id int          not null
         constraint Product_lists_Users_u_id_fk
-            references Users,
+            references dbo.Users,
     pl_name varchar(128) not null
 )
 go
 
-create table Products
+create table dbo.Products
 (
     pro_id          int identity
         constraint Products_pk
@@ -167,100 +177,100 @@ create table Products
     pro_discount    int,
     pro_cat_id      int       not null
         constraint Products_Categories_cat_id_fk
-            references Categories,
+            references dbo.Categories,
     pro_photos_path char(256) not null,
     pro_rating      float     not null,
     pro_s_id        int       not null
         constraint Products_Users_u_id_fk
-            references Users
+            references dbo.Users
 )
 go
 
-create table Lists_have_products
+create table dbo.Lists_have_products
 (
     Lhp_id       int identity
         constraint Lists_have_products_pk
             primary key,
     lhp_pl_id    int not null
         constraint Lists_have_products_Product_lists_pl_id_fk
-            references Product_lists,
+            references dbo.Product_lists,
     lhp_pro_id   int not null
         constraint Lists_have_products_Products_pro_id_fk
-            references Products,
+            references dbo.Products,
     lhp_quantity int not null
 )
 go
 
-create table Orders_have_products
+create table dbo.Orders_have_products
 (
     ohp_id       int identity
         constraint Orders_have_products_pk
             primary key,
     ohp_pro_id   int not null
         constraint Orders_have_products_Products_pro_id_fk
-            references Products,
+            references dbo.Products,
     ohp_or_id    int
         constraint Orders_have_products_Orders_or_id_fk
-            references Orders,
+            references dbo.Orders,
     ohp_quantity int not null
 )
 go
 
-create table Products_have_attributes
+create table dbo.Products_have_attributes
 (
     pha_id     int identity
         constraint Products_have_attributes_pk
             primary key,
     pha_pro_id int          not null
         constraint Products_have_attributes_Products_pro_id_fk
-            references Products,
+            references dbo.Products,
     pha_atr_id int          not null
         constraint Products_have_attributes_Attributes_atr_id_fk
-            references Attributes,
+            references dbo.Attributes,
     pha_value  varchar(256) not null
 )
 go
 
-create table Qiwi
+create table dbo.Qiwi
 (
-    qiwi_id     int not null
+    qiwi_id     int identity
         constraint Qiwi_pk
             primary key,
-    qiwi_number int,
+    qiwi_number nvarchar(16),
     qiwi_pay_id int
         constraint Qiwi_Payments_pay_id_fk
-            references Payments
+            references dbo.Payments
 )
 go
 
-create table Reviews
+create table dbo.Reviews
 (
     rew_id     int identity
         constraint Reviews_pk
             primary key,
     rew_u_id   int          not null
         constraint Reviews_Users_u_id_fk
-            references Users,
+            references dbo.Users,
     rew_text   varchar(max) not null,
     rew_pro_id int          not null
         constraint Reviews_Products_pro_id_fk
-            references Products,
+            references dbo.Products,
     rew_grade  float        not null
 )
 go
 
-
-create table Transactions
+create table dbo.Transactions
 (
     tr_id     int identity
         constraint transactions_pk
             primary key,
     tr_pay_id int      not null
         constraint transactions_Payments_pay_id_fk
-            references Payments,
+            references dbo.Payments,
     tr_or_id  int      not null
         constraint Transactions_Orders_or_id_fk
-            references Orders,
+            references dbo.Orders,
     tr_time   datetime not null
 )
 go
+
