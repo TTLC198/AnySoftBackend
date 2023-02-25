@@ -17,8 +17,7 @@ public partial class ProductsHaveAttribute : BaseModel
     [Column("pha_atr_id")]
     public int AttributeId { get; set; }
     public virtual Attribute Attribute { get; set; } = null!;
-
-
+    
     [Column("pha_value")]
     public string Value { get; set; } = null!;
 }

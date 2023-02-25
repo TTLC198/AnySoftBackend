@@ -7,7 +7,7 @@ namespace RPM_PR_LIB;
 
 public partial class ListsHaveProduct
 {
-    [Column("lhp_id")]
+    [Column("lhp_id")] //регистр важен? в бд L
     public int Id { get; set; }
     [Column("lhp_pl_id")]
     public int ProductListId { get; set; }

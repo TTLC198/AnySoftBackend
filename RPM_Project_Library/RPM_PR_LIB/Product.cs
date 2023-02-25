@@ -8,7 +8,7 @@ public partial class Product : BaseModel
 {
     [Column("pro_id")]
     public override int Id { get; set; }
-    [Column("pro_id")]
+    [Column("pro_name")]
     public string Name { get; set; } = null!;
     
     [Column("pro_quantity")]
@@ -36,8 +36,7 @@ public partial class Product : BaseModel
     [Column("pro_rating")]
     public double Rating { get; set; }
     
-    [Column("pro_id")]
     public virtual ICollection<ProductsHaveAttribute> ProductsHaveAttributes { get; } = new List<ProductsHaveAttribute>();
-    [Column("pro_id")]
+    
     public virtual ICollection<Review> Reviews { get; } = new List<Review>();
 }

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace RPM_PR_LIB;
 
-
+[Index(nameof(Resource), IsUnique = true)]
 public partial class Permission : BaseModel
 {
     [Column("p_id")]

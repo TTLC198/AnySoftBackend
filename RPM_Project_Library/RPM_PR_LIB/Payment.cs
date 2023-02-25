@@ -13,6 +13,8 @@ public partial class Payment
     public int UserId { get; set; }
     [Column("pay_method")]
     public string Method { get; set; } = null!;
+    [Column("pay_is_active")]
+    public bool IsActive { get; set; }
 
     public virtual ICollection<BankCard> BankCards { get; } = new List<BankCard>();
 
