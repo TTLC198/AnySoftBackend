@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_PR_LIB;
 
@@ -14,8 +15,8 @@ public partial class OrdersHaveProduct
     public int OrderId { get; set; } // почему необязательное значение?
     [Column("ohp_quantity")]
     public int Quantity { get; set; }
-
+    [ValidateNever]
     public virtual Order OhpOr { get; set; }
-
+    [ValidateNever]
     public virtual Product OhpPro { get; set; } = null!;
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 
 namespace RPM_PR_LIB;
@@ -21,11 +23,13 @@ public partial class Address
     [Column("ad_u_id"), Required]
     public int UserId { get; set; }
     [Column("ad_zip"), Required]
-    public int Zip { get; set; }
+    public string Zip { get; set; }
     [Column("ad_is_active"), Required]
     public bool IsActive { get; set; }
     
+    [JsonIgnore]
     public virtual ICollection<Order> Orders { get; } = new List<Order>();
-
+    [ValidateNever]
+    [JsonIgnore]
     public virtual User User { get; set; } = null!;
 }

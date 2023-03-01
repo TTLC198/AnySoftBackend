@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_PR_LIB;
 
@@ -15,8 +16,9 @@ public partial class ListsHaveProduct
     public int ProductId { get; set; }
     [Column("lhp_quantity")]
     public int Quantity { get; set; }
-
+    
+    [ValidateNever]
     public virtual ProductList LhpPl { get; set; } = null!;
-
+    [ValidateNever]
     public virtual Product LhpPro { get; set; } = null!;
 }

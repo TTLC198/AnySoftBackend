@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RPM_PR_LIB;
-using RPM_Project_Backend.Repositories;
 using RPM_Project_Backend.Services.Database;
-
-//using System.Text.Json;
+using System.Text.Json;
 
 namespace RPM_Project_Backend.Controllers.ProductsController;
 
@@ -15,12 +11,14 @@ namespace RPM_Project_Backend.Controllers.ProductsController;
 public class ProductsController : ControllerBase
 {
     private readonly ILogger<ProductsController> _logger;
-    private readonly IBaseRepository<Product> _productsRepository;
+    private readonly ApplicationContext _context;
+    private readonly DbSet<Product> _dbSet;
 
-    public ProductsController(ILogger<ProductsController> logger, IBaseRepository<Product> productsRepository)
+    public ProductsController(ILogger<ProductsController> logger, ApplicationContext context)
     {
         _logger = logger;
-        _productsRepository = productsRepository;
+        _context = context;
+        _dbSet = _context.Set<Product>();
     }
 
     /// <summary>
@@ -28,30 +26,33 @@ public class ProductsController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> Get()
+    public async Task<ActionResult<IEnumerable<Product>>> Get([FromQuery]ProductRequest requestBody)
     {
         _logger.LogDebug("Get list of products");
-        var json = JsonConvert.DeserializeObject<ProductJson>(Request.Query["ProductsParam"]);
-        await using var dbContext = new ApplicationContext();
-        var products = dbContext.Products.Where(product =>
-            product.Name.Contains(json.Name) &&
-            (json.Rating.Min <= product.Rating && product.Rating <= json.Rating.Max) &&
-            (json.Cost.Min <= product.Cost && product.Cost <= json.Cost.Max) &&
-            product.Discount >= json.Discount &&
-            product.CatId == json.Category &&
-            product.Quantity >= json.Quantity);
 
-        products = json.Attributes.Aggregate(products,
+        var products = _dbSet.Where(product =>
+            (requestBody.Name == null ||
+             product.Name.Contains(requestBody.Name)) &&
+            (requestBody.Rating == null ||
+             (requestBody.Rating.Min <= product.Rating && product.Rating <= requestBody.Rating.Max)) &&
+            (requestBody.Name == null ||
+             (requestBody.Cost.Min <= product.Cost && product.Cost <= requestBody.Cost.Max)) &&
+            (requestBody.Discount == null ||
+             product.Discount >= requestBody.Discount) &&
+            (requestBody.Category == null ||
+             product.CatId == requestBody.Category) &&
+            (requestBody.Quantity == null ||
+             product.Quantity >= requestBody.Quantity));
+        
+        /*products = requestBody.Attributes.Aggregate(products,
             (current, attribute) => current.Include(product =>
-                product.ProductsHaveAttributes.Where(productsHaveAttribute => attribute.Value.Contains(productsHaveAttribute.Value))));
-        return products.Count() switch
+                product.ProductsHaveAttributes.Where(productsHaveAttribute => attribute.Value.Contains(productsHaveAttribute.Value))));*/
+        
+        return await products.CountAsync() switch
         {
             0 => NotFound(),
             _ => Ok(products)
         };
-
-        //var products = await _productsRepository.GetAllAsync();
-        
     }
 
     /// <summary>
@@ -63,7 +64,7 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<Product>> Get(long id)
     {
         _logger.LogDebug("Get product with id = {id}", id);
-        var product = await _productsRepository.GetAsync(id);
+        var product = await _dbSet.FindAsync(id);
         return product switch
         {
             null => NotFound(),
@@ -76,33 +77,40 @@ public class ProductsController : ControllerBase
     /// <summary>
     /// Post api/products
     /// </summary>
-    /// <param name="user"></param>
+    /// <param name="product"></param>
     /// <returns></returns>
-    [HttpPost]
+    //[HttpPost]
     public async Task<ActionResult<Product>> Post(Product product)
     {
         _logger.LogDebug("Create new product with id = {id}", product.Id);
-        return product switch
+        
+        await _dbSet.AddAsync(product);
+
+        return await _context.SaveChangesAsync() switch
         {
-            null => BadRequest(),
-            _ => Ok(await _productsRepository.CreateAsync(product))
+            0 => BadRequest(),
+            _ => Ok(product)
         };
     }
 
     /// <summary>
     /// Put api/products/
     /// </summary>
-    /// <param name="user"></param>
+    /// <param name="product"></param>
     /// <returns></returns>
     [HttpPut]
     public async Task<ActionResult<Product>> Put(Product product)
     {
+        if (!_dbSet.Any(p => p.Id == product.Id)) return NotFound(product);
+        
         _logger.LogDebug("Update existing product with id = {id}", product.Id);
-        return product switch
+        
+        _context.Entry(product).State = EntityState.Modified;
+
+        return await _context.SaveChangesAsync() switch
         {
-            null => BadRequest(),
-            _ when _productsRepository.GetAllAsync().Result.All(pro => pro.Id != product.Id) => NotFound(),
-            _ => Ok(await _productsRepository.UpdateAsync(product))
+            0 => BadRequest(),
+            _ => Ok(product)
         };
     }
 
@@ -114,11 +122,17 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult<Product>> Delete(long id)
     {
+        var toDelete = await _dbSet.FindAsync(id);
+        if (toDelete is null) return NotFound(id);
+        
         _logger.LogDebug("Delete existing product with id = {id}", id);
-        return await _productsRepository.GetAsync(id) switch
+        
+        var entityEntry = _dbSet.Remove(toDelete);
+
+        return await _context.SaveChangesAsync() switch
         {
-            null => NotFound(),
-            _ => Ok(await _productsRepository.DeleteAsync(id))
+            0 => NotFound(),
+            _ => Ok(entityEntry)
         };
     }
 }
