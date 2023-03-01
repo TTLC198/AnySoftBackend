@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
-using RPM_Project_Backend.Repositories;
 using RPM_Project_Backend.Services.Database;
 
 namespace RPM_Project_Backend;
@@ -25,9 +24,7 @@ public class Startup
         var connection = Configuration.GetConnectionString("DefaultConnection")!;
         services.AddMvc();
         services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
-        services.AddScoped<IBaseRepository<User>, BaseRepository<User>>();
-        services.AddScoped<IBaseRepository<Product>, BaseRepository<Product>>();
-        services.AddControllers();
+        services.AddControllers(options => options.AllowEmptyInputInBodyModelBinding = true);
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
