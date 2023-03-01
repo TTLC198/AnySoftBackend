@@ -1,6 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RPM_PR_LIB;
 using RPM_Project_Backend.Repositories;
+using RPM_Project_Backend.Services.Database;
+
+//using System.Text.Json;
 
 namespace RPM_Project_Backend.Controllers.ProductsController;
 
@@ -16,6 +22,7 @@ public class ProductsController : ControllerBase
         _logger = logger;
         _productsRepository = productsRepository;
     }
+
     /// <summary>
     /// Get api/products
     /// </summary>
@@ -24,13 +31,29 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<IEnumerable<Product>>> Get()
     {
         _logger.LogDebug("Get list of products");
-        var products = await _productsRepository.GetAllAsync();
+        var json = JsonConvert.DeserializeObject<ProductJson>(Request.Query["ProductsParam"]);
+        await using var dbContext = new ApplicationContext();
+        var products = dbContext.Products.Where(product =>
+            product.Name.Contains(json.Name) &&
+            (json.Rating.Min <= product.Rating && product.Rating <= json.Rating.Max) &&
+            (json.Cost.Min <= product.Cost && product.Cost <= json.Cost.Max) &&
+            product.Discount >= json.Discount &&
+            product.CatId == json.Category &&
+            product.Quantity >= json.Quantity);
+
+        products = json.Attributes.Aggregate(products,
+            (current, attribute) => current.Include(product =>
+                product.ProductsHaveAttributes.Where(productsHaveAttribute => attribute.Value.Contains(productsHaveAttribute.Value))));
         return products.Count() switch
         {
             0 => NotFound(),
             _ => Ok(products)
         };
+
+        //var products = await _productsRepository.GetAllAsync();
+        
     }
+
     /// <summary>
     /// Get api/product/{id}
     /// </summary>
@@ -47,9 +70,9 @@ public class ProductsController : ControllerBase
             _ => Ok(product)
         };
     }
-    
+
     //// Дальше то, что обычному пользователю нельзя
-    
+
     /// <summary>
     /// Post api/products
     /// </summary>
@@ -65,6 +88,7 @@ public class ProductsController : ControllerBase
             _ => Ok(await _productsRepository.CreateAsync(product))
         };
     }
+
     /// <summary>
     /// Put api/products/
     /// </summary>
@@ -81,6 +105,7 @@ public class ProductsController : ControllerBase
             _ => Ok(await _productsRepository.UpdateAsync(product))
         };
     }
+
     /// <summary>
     /// Delete api/products
     /// </summary>

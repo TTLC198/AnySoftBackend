@@ -38,7 +38,7 @@ public interface IBaseRepository<TModel> where TModel : class
     /// </summary>
     /// <param name="predicate">Where predicate</param>
     /// <returns>items</returns>
-    IEnumerable<TModel> GetWhereAsync(Func<TModel, bool> predicate);
+    Task<IEnumerable<TModel>> GetWhereAsync(Func<TModel, bool> predicate);
     /// <summary>
     /// Get item by id
     /// </summary>
