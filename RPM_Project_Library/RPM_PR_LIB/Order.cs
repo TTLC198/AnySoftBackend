@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_PR_LIB;
 
@@ -22,8 +23,9 @@ public partial class Order
     [Column("or_time")]
     public DateTime Time { get; set; }
 
+    [ValidateNever]
     public virtual Address OrAd { get; set; } = null!;
-
+    [ValidateNever]
     public virtual User OrU { get; set; } = null!;
 
     public virtual ICollection<OrdersHaveProduct> OrdersHaveProducts { get; } = new List<OrdersHaveProduct>();

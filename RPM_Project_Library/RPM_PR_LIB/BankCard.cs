@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_PR_LIB;
 
@@ -13,5 +14,6 @@ public partial class BankCard
     [Column("bc_payment_id")] public int PaymentId { get; set; }
     [Column("bc_id")] public int Id { get; set; }
 
+    [ValidateNever]
     public virtual Payment BcPayment { get; set; } = null!;
 }

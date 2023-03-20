@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_PR_LIB;
 
@@ -17,7 +18,7 @@ public partial class Payment
     public bool IsActive { get; set; }
 
     public virtual ICollection<BankCard> BankCards { get; } = new List<BankCard>();
-
+    [ValidateNever]
     public virtual User PayUser { get; set; } = null!;
 
     public virtual ICollection<Qiwi> Qiwis { get; } = new List<Qiwi>();
