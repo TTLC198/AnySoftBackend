@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
 using RPM_Project_Backend.Services.Database;
 
@@ -25,6 +26,11 @@ public class Startup
         services.AddMvc();
         services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
         services.AddControllers(options => options.AllowEmptyInputInBodyModelBinding = true);
+        services.AddControllers().AddJsonOptions(opt =>
+        {
+            opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+        services.AddControllers().AddNewtonsoftJson();
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {

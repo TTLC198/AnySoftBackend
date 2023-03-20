@@ -1,8 +1,12 @@
-﻿#nullable enable
+﻿using System.Text.Json;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
+using RPM_Project_Backend.Helpers;
+using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
 
 namespace RPM_Project_Backend.Controllers.UsersController;
@@ -26,20 +30,49 @@ public class UsersController : ControllerBase
     /// Get api/users
     /// </summary>
     /// <returns></returns>
-    public async Task<ActionResult<IEnumerable<User>>> Get()
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<User>>> Get([FromQuery]QueryParameters<User> queryParameters)
     {
         _logger.LogDebug("Get list of users");
-        
-        var users = await _dbSet
-            .AsNoTracking()
-            .Include(user => user.Addresses)
-            .Include(user => user.Role)
-            .ToListAsync()!;
-        
-        return users.Count() switch
+
+        IQueryable<User> allUsers = 
+            _dbSet.OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
+
+        if (queryParameters.HasQuery())
+        {
+            try
+            {
+                var userQuery = (User)queryParameters.Object;
+                allUsers = allUsers.Where(u => 
+                    u.Id == userQuery.Id ||
+                    u.Email == userQuery.Email ||
+                    u.Login == userQuery.Login
+                );
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+            }
+        }
+
+        var paginationMetadata = new
+        {
+            totalCount = allUsers.Count(),
+            pageSize = queryParameters.PageCount,
+            currentPage = queryParameters.Page,
+            totalPages = queryParameters.GetTotalPages(allUsers.Count())
+        };
+
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
+        return allUsers.Count() switch
         {
             0 => NotFound(),
-            _ => Ok(users)
+            _ => Ok(
+                allUsers
+                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
+                    .Take(queryParameters.PageCount)
+            )
         };
     }
     /// <summary>
@@ -47,7 +80,7 @@ public class UsersController : ControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<User>> GetById(int id)
     {
         _logger.LogDebug("Get user with id = {id}", id);
@@ -55,34 +88,6 @@ public class UsersController : ControllerBase
         var user = await _dbSet
             .FindAsync(id);
 
-        return user switch
-        {
-            null => NotFound(),
-            _ => Ok(user)
-        };
-    }
-
-    /// <summary>
-    /// Get api/users/?id={id}
-    /// </summary>
-    /// <param name="userFields"></param>
-    /// <returns></returns>
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> GetByFieldsFromQuery([FromQuery]User? userFields)
-    {
-        if (userFields is null)
-            return await Get();
-        
-        var user = await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u =>
-                (userFields.Id == 0 || u.Id == userFields.Id) &&
-                (userFields.Login == null || u.Login == userFields.Login) &&
-                (userFields.Email == null || u.Email == userFields.Email)
-            );
-        
-        _logger.LogDebug("Get user with query params");
-        
         return user switch
         {
             null => NotFound(),
@@ -98,6 +103,9 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<User>> Post([FromBody]User user)
     {
         _logger.LogDebug("Create new user with id = {id}", user.Id);
+
+        if (user is null)
+            return BadRequest();
         
         await _dbSet.AddAsync(user);
 
@@ -107,10 +115,12 @@ public class UsersController : ControllerBase
             _ => Ok(user)
         };
     }
+
     /// <summary>
     /// Put api/users/
     /// </summary>
-    /// <param name="user"></param>
+    /// <param name="userDto"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
     [HttpPut]
     public async Task<ActionResult<User>> Put([FromBody]User user)
@@ -126,17 +136,31 @@ public class UsersController : ControllerBase
             _ => Ok(user)
         };
     }
+
     /// <summary>
     /// Patch api/users/
     /// </summary>
-    /// <param name="user"></param>
+    /// <param name="userPatch"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
-    [HttpPatch]
-    public async Task<ActionResult<User>> Patch([FromBody]User user)
+    [HttpPatch("{id:int}")]
+    public async Task<ActionResult<User>> Patch([FromBody]JsonPatchDocument<User> userPatch, int id)
     {
-        if (!_dbSet.Any(u => u.Id == user.Id)) return NotFound(user);
+        if (userPatch is null)
+            return BadRequest();
+
+        var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
         
-        _logger.LogDebug("Update existing user with id = {id}", user.Id);
+        if (user is null) 
+            return NotFound();
+        
+        _logger.LogDebug("Update existing user with id = {id}", id);
+        
+        userPatch.ApplyTo(user, ModelState);
+        
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         _context.Entry(user).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
@@ -154,7 +178,8 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<User>> DeleteById(long id)
     {
         var toDelete = await _dbSet.FindAsync(id);
-        if (toDelete is null) return NotFound(id);
+        if (toDelete is null) 
+            return NotFound(id);
         
         _logger.LogDebug("Delete existing user with id = {id}", id);
 
