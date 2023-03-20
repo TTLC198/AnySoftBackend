@@ -2,7 +2,7 @@
 
 namespace RPM_PR_LIB;
 
-public class ProductRequest
+public class ProductRequestDto
 {
     [ValidateNever]
     public string? Name { get; set; }

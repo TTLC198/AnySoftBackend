@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
 using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
+using Microsoft.AspNetCore.JsonPatch;
+using RPM_Project_Backend.Helpers;
+using RPM_Project_Backend.Models;
 
 namespace RPM_Project_Backend.Controllers.ProductsController;
 
@@ -26,32 +30,56 @@ public class ProductsController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> Get([FromQuery]ProductRequest requestBody)
+    public async Task<ActionResult<IEnumerable<Product>>> Get([FromQuery]QueryParameters<ProductRequestDto> queryParameters)
     {
         _logger.LogDebug("Get list of products");
+        
+        IQueryable<Product> allProducts = 
+            _dbSet.OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
-        var products = _dbSet.Where(product =>
-            (requestBody.Name == null ||
-             product.Name.Contains(requestBody.Name)) &&
-            (requestBody.Rating == null ||
-             (requestBody.Rating.Min <= product.Rating && product.Rating <= requestBody.Rating.Max)) &&
-            (requestBody.Name == null ||
-             (requestBody.Cost.Min <= product.Cost && product.Cost <= requestBody.Cost.Max)) &&
-            (requestBody.Discount == null ||
-             product.Discount >= requestBody.Discount) &&
-            (requestBody.Category == null ||
-             product.CatId == requestBody.Category) &&
-            (requestBody.Quantity == null ||
-             product.Quantity >= requestBody.Quantity));
+        if (queryParameters.HasQuery())
+        {
+            try
+            {
+                var productQuery = (ProductRequestDto)queryParameters.Object;
+               allProducts = _dbSet.Where(product =>
+                    (productQuery.Name == null ||
+                     product.Name.Contains(productQuery.Name)) &&
+                    (productQuery.Rating == null ||
+                     (productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max)) &&
+                    (productQuery.Name == null ||
+                     (productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max)) &&
+                    (productQuery.Discount == null ||
+                     product.Discount >= productQuery.Discount) &&
+                    (productQuery.Category == null ||
+                     product.CatId == productQuery.Category) &&
+                    (productQuery.Quantity == null ||
+                     product.Quantity >= productQuery.Quantity));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+            }
+        }
         
-        /*products = requestBody.Attributes.Aggregate(products,
-            (current, attribute) => current.Include(product =>
-                product.ProductsHaveAttributes.Where(productsHaveAttribute => attribute.Value.Contains(productsHaveAttribute.Value))));*/
+        var paginationMetadata = new
+        {
+            totalCount = allProducts.Count(),
+            pageSize = queryParameters.PageCount,
+            currentPage = queryParameters.Page,
+            totalPages = queryParameters.GetTotalPages(allProducts.Count())
+        };
+
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
         
-        return await products.CountAsync() switch
+        return allProducts.Count() switch
         {
             0 => NotFound(),
-            _ => Ok(products)
+            _ => Ok(
+                allProducts
+                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
+                    .Take(queryParameters.PageCount)
+            )
         };
     }
 
@@ -60,11 +88,14 @@ public class ProductsController : ControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> Get(long id)
     {
         _logger.LogDebug("Get product with id = {id}", id);
-        var product = await _dbSet.FindAsync(id);
+        
+        var product = await _dbSet
+            .FindAsync(id);
+        
         return product switch
         {
             null => NotFound(),
@@ -72,17 +103,20 @@ public class ProductsController : ControllerBase
         };
     }
 
-    //// Дальше то, что обычному пользователю нельзя
+    //// Publisher territory
 
     /// <summary>
     /// Post api/products
     /// </summary>
     /// <param name="product"></param>
     /// <returns></returns>
-    //[HttpPost]
+    [HttpPost]
     public async Task<ActionResult<Product>> Post(Product product)
     {
         _logger.LogDebug("Create new product with id = {id}", product.Id);
+        
+        if (product is null)
+            return BadRequest();
         
         await _dbSet.AddAsync(product);
 
@@ -99,12 +133,12 @@ public class ProductsController : ControllerBase
     /// <param name="product"></param>
     /// <returns></returns>
     [HttpPut]
-    public async Task<ActionResult<Product>> Put(Product product)
+    public async Task<ActionResult<Product>> Put([FromBody]Product product)
     {
-        if (!_dbSet.Any(p => p.Id == product.Id)) return NotFound(product);
+        if (!_dbSet.Any(p => p.Id == product.Id)) 
+            return NotFound(product);
         
         _logger.LogDebug("Update existing product with id = {id}", product.Id);
-        
         _context.Entry(product).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
@@ -113,17 +147,49 @@ public class ProductsController : ControllerBase
             _ => Ok(product)
         };
     }
+    /// <summary>
+    /// Patch api/products/
+    /// </summary>
+    /// <param name="productPatch"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPatch("{id:int}")]
+    public async Task<ActionResult<Product>> Patch([FromBody]JsonPatchDocument<Product> productPatch, int id)
+    {
+        if (productPatch is null)
+            return BadRequest();
 
+        var product = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
+        
+        if (product is null) 
+            return NotFound();
+        
+        _logger.LogDebug("Update existing product with id = {id}", id);
+        
+        productPatch.ApplyTo(product, ModelState);
+        
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _context.Entry(product).State = EntityState.Modified;
+
+        return await _context.SaveChangesAsync() switch
+        {
+            0 => BadRequest(),
+            _ => Ok(product)
+        };
+    }
     /// <summary>
     /// Delete api/products
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<ActionResult<Product>> Delete(long id)
     {
         var toDelete = await _dbSet.FindAsync(id);
-        if (toDelete is null) return NotFound(id);
+        if (toDelete is null)
+            return NotFound(id);
         
         _logger.LogDebug("Delete existing product with id = {id}", id);
         

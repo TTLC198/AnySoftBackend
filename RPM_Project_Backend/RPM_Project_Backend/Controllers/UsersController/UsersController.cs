@@ -81,7 +81,7 @@ public class UsersController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<User>> GetById(int id)
+    public async Task<ActionResult<User>> Get(int id)
     {
         _logger.LogDebug("Get user with id = {id}", id);
         
@@ -125,7 +125,8 @@ public class UsersController : ControllerBase
     [HttpPut]
     public async Task<ActionResult<User>> Put([FromBody]User user)
     {
-        if (!_dbSet.Any(u => u.Id == user.Id)) return NotFound(user);
+        if (!_dbSet.Any(u => u.Id == user.Id))
+            return NotFound(user);
         
         _logger.LogDebug("Update existing user with id = {id}", user.Id);
         _context.Entry(user).State = EntityState.Modified;
@@ -174,47 +175,14 @@ public class UsersController : ControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<User>> DeleteById(long id)
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult<User>> Delete(long id)
     {
         var toDelete = await _dbSet.FindAsync(id);
         if (toDelete is null) 
             return NotFound(id);
         
         _logger.LogDebug("Delete existing user with id = {id}", id);
-
-        var entityEntry = _dbSet.Remove(toDelete);
-
-        return await _context.SaveChangesAsync() switch
-        {
-            0 => NotFound(),
-            _ => Ok(entityEntry)
-        };
-    }
-
-    /// <summary>
-    /// Delete api/users
-    /// </summary>
-    /// <param name="userFields"></param>
-    /// <returns></returns>
-    [HttpDelete]
-    public async Task<ActionResult<User>> DeleteFromQuery([FromQuery]User? userFields)
-    {
-        if (userFields is null)
-            return NotFound(userFields);
-        
-        var toDelete = await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u =>
-                (userFields.Id == 0 || u.Id == userFields.Id) &&
-                (userFields.Login == null || u.Login == userFields.Login) &&
-                (userFields.Email == null || u.Email == userFields.Email)
-            );
-        
-        if (toDelete is null)
-            return NotFound(userFields);
-
-        _logger.LogDebug("Delete existing user with id = {id}", toDelete.Id);
 
         var entityEntry = _dbSet.Remove(toDelete);
 
