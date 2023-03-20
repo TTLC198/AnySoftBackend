@@ -31,21 +31,35 @@ public class Startup
             opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
         services.AddControllers().AddNewtonsoftJson();
+#if DEBUG
+        // Inject an implementation of ISwaggerProvider with defaulted settings applied.
+        services.AddSwaggerGen();
+#endif
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+#if DEBUG
+        app.UseSwaggerUI(c => {
+            c.RoutePrefix = "swagger/ui";
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "RPM_Project_APi v1");
+        });
+        
+        // Enable middleware to serve generated Swagger as a JSON endpoint
+        app.UseSwagger();
+
+        // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
+        app.UseSwaggerUI();
+#endif
+        
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
         }
-        
         app.UseHttpsRedirection();
+        app.UseStaticFiles();
         app.UseRouting();
-
         app.UseCors();
-        
         app.UseAuthorization();
-        
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
