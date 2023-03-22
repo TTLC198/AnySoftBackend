@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.JsonPatch;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 
-namespace RPM_Project_Backend.Controllers.ProductsController;
+namespace RPM_Project_Backend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/products")]
 public class ProductsController : ControllerBase
 {
     private readonly ILogger<ProductsController> _logger;
