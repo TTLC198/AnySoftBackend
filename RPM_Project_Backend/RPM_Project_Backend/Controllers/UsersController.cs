@@ -1,7 +1,11 @@
 ﻿using System.Text.Json;
 using System.Linq.Dynamic.Core;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
@@ -9,21 +13,23 @@ using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
 
-namespace RPM_Project_Backend.Controllers.UsersController;
+namespace RPM_Project_Backend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 [EnableCors("MyPolicy")]
 public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;
     private readonly ApplicationContext _context;
     private readonly DbSet<User> _dbSet;
+    private readonly IMapper _mapper;
 
-    public UsersController(ILogger<UsersController> logger, ApplicationContext context)
+    public UsersController(ILogger<UsersController> logger, ApplicationContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
+        _mapper = mapper;
         _dbSet = _context.Set<User>();
     }
     /// <summary>
@@ -31,6 +37,7 @@ public class UsersController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<IEnumerable<User>>> Get([FromQuery]QueryParameters<User> queryParameters)
     {
         _logger.LogDebug("Get list of users");
@@ -80,6 +87,7 @@ public class UsersController : ControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    [Authorize(Roles = "user, admin, seller")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<User>> Get(int id)
     {
@@ -94,25 +102,37 @@ public class UsersController : ControllerBase
             _ => Ok(user)
         };
     }
+
     /// <summary>
     /// Post api/users
     /// </summary>
-    /// <param name="user"></param>
+    /// <param name="userFields"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<ActionResult<User>> Post([FromBody]User user)
+    [AllowAnonymous]
+    public async Task<ActionResult<User>> Post([FromBody]UserDto userFields)
     {
-        _logger.LogDebug("Create new user with id = {id}", user.Id);
-
-        if (user is null)
+        if (userFields is null)
             return BadRequest();
         
+        _logger.LogDebug("Create new user with login = {login}", userFields.Login);
+
+        var existedUser = await _dbSet.FirstOrDefaultAsync(u => u.Email == userFields.Email || u.Login == userFields.Login);
+        if (existedUser is not null)
+            return BadRequest("User with the same login or email already exists");
+
+        var hasher = new PasswordHasher<User>();
+        var user = _mapper.Map<User>(userFields);
+        
+        user.Password = hasher.HashPassword(user, user.Password);
+        user.RoleId = 2; // Client
+
         await _dbSet.AddAsync(user);
 
         return await _context.SaveChangesAsync() switch
         {
             0 => BadRequest(),
-            _ => Ok(user)
+            _ => Ok(userFields)
         };
     }
 
@@ -123,6 +143,7 @@ public class UsersController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpPut]
+    [Authorize(Roles = "user, admin, seller")]
     public async Task<ActionResult<User>> Put([FromBody]User user)
     {
         if (!_dbSet.Any(u => u.Id == user.Id))
@@ -145,6 +166,7 @@ public class UsersController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpPatch("{id:int}")]
+    [Authorize(Roles = "user, admin, seller")]
     public async Task<ActionResult<User>> Patch([FromBody]JsonPatchDocument<User> userPatch, int id)
     {
         if (userPatch is null)
@@ -176,6 +198,7 @@ public class UsersController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<User>> Delete(long id)
     {
         var toDelete = await _dbSet.FindAsync(id);
