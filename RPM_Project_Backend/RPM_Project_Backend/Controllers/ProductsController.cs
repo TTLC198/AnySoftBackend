@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
 using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
@@ -30,6 +31,7 @@ public class ProductsController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<Product>>> Get([FromQuery]QueryParameters<ProductRequestDto> queryParameters)
     {
         _logger.LogDebug("Get list of products");
@@ -89,6 +91,7 @@ public class ProductsController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<ActionResult<Product>> Get(long id)
     {
         _logger.LogDebug("Get product with id = {id}", id);
@@ -111,6 +114,7 @@ public class ProductsController : ControllerBase
     /// <param name="product"></param>
     /// <returns></returns>
     [HttpPost]
+    [Authorize(Roles = "seller")]
     public async Task<ActionResult<Product>> Post(Product product)
     {
         _logger.LogDebug("Create new product with id = {id}", product.Id);
@@ -133,10 +137,17 @@ public class ProductsController : ControllerBase
     /// <param name="product"></param>
     /// <returns></returns>
     [HttpPut]
+    [Authorize(Roles = "seller")]
     public async Task<ActionResult<Product>> Put([FromBody]Product product)
     {
         if (!_dbSet.Any(p => p.Id == product.Id)) 
             return NotFound(product);
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
+            return Unauthorized(new
+            {
+                message = "Access is denied"
+            });
         
         _logger.LogDebug("Update existing product with id = {id}", product.Id);
         _context.Entry(product).State = EntityState.Modified;
@@ -154,6 +165,7 @@ public class ProductsController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpPatch("{id:int}")]
+    [Authorize(Roles = "seller")]
     public async Task<ActionResult<Product>> Patch([FromBody]JsonPatchDocument<Product> productPatch, int id)
     {
         if (productPatch is null)
@@ -163,6 +175,12 @@ public class ProductsController : ControllerBase
         
         if (product is null) 
             return NotFound();
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
+            return Unauthorized(new
+            {
+                message = "Access is denied"
+            });
         
         _logger.LogDebug("Update existing product with id = {id}", id);
         
@@ -187,13 +205,20 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<Product>> Delete(long id)
     {
-        var toDelete = await _dbSet.FindAsync(id);
-        if (toDelete is null)
+        var product = await _dbSet.FindAsync(id);
+        
+        if (product is null)
             return NotFound(id);
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
+            return Unauthorized(new
+            {
+                message = "Access is denied"
+            });
         
         _logger.LogDebug("Delete existing product with id = {id}", id);
         
-        var entityEntry = _dbSet.Remove(toDelete);
+        var entityEntry = _dbSet.Remove(product);
 
         return await _context.SaveChangesAsync() switch
         {

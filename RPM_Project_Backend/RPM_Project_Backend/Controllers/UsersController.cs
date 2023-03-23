@@ -92,6 +92,12 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<User>> Get(int id)
     {
         _logger.LogDebug("Get user with id = {id}", id);
+
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
+            return Unauthorized(new
+            {
+                message = "Access is denied"
+            });
         
         var user = await _dbSet
             .FindAsync(id);
@@ -139,23 +145,31 @@ public class UsersController : ControllerBase
     /// <summary>
     /// Put api/users/
     /// </summary>
-    /// <param name="userDto"></param>
-    /// <param name="id"></param>
+    /// <param name="userFields"></param>
     /// <returns></returns>
     [HttpPut]
     [Authorize(Roles = "user, admin, seller")]
-    public async Task<ActionResult<User>> Put([FromBody]User user)
+    public async Task<ActionResult<User>> Put([FromBody]User userFields)
     {
-        if (!_dbSet.Any(u => u.Id == user.Id))
-            return NotFound(user);
+        if (userFields is null)
+            return BadRequest();
         
-        _logger.LogDebug("Update existing user with id = {id}", user.Id);
-        _context.Entry(user).State = EntityState.Modified;
+        if (!_dbSet.Any(u => u.Id == userFields.Id))
+            return NotFound(userFields);
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{userFields.Id}"))
+            return Unauthorized(new
+            {
+                message = "Access is denied"
+            });
+        
+        _logger.LogDebug("Update existing user with id = {id}", userFields.Id);
+        _context.Entry(userFields).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
         {
             0 => BadRequest(),
-            _ => Ok(user)
+            _ => Ok(userFields)
         };
     }
 
@@ -171,6 +185,12 @@ public class UsersController : ControllerBase
     {
         if (userPatch is null)
             return BadRequest();
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
+            return Unauthorized(new
+            {
+                message = "Access is denied"
+            });
 
         var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
         
@@ -198,14 +218,24 @@ public class UsersController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "user, admin, seller")]
     public async Task<ActionResult<User>> Delete(long id)
     {
-        var toDelete = await _dbSet.FindAsync(id);
-        if (toDelete is null) 
-            return NotFound(id);
+        if (id == 0) 
+            return BadRequest();
         
         _logger.LogDebug("Delete existing user with id = {id}", id);
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
+            return Unauthorized(new
+            {
+                message = "Access is denied"
+            });
+        
+        var toDelete = await _dbSet.FindAsync(id);
+        
+        if (toDelete is null) 
+            return NotFound(id);
 
         var entityEntry = _dbSet.Remove(toDelete);
 

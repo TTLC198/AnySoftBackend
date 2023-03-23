@@ -55,8 +55,8 @@ public class AccountController : ControllerBase
         var result = hasher.VerifyHashedPassword(user, user.Password, userDto.Password);
         var authClaims = new List<Claim>
         {
-            new (JwtRegisteredClaimNames.Sub, Strings.Trim(user.Login)),
-            new ("role", user.Role.Name),
+            new ("id", Strings.Trim($"{user.Id}")),
+            new ("role", Strings.Trim(user.Role.Name)),
             new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
         
