@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Linq.Dynamic.Core;
+using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -32,12 +33,30 @@ public class UsersController : ControllerBase
         _mapper = mapper;
         _dbSet = _context.Set<User>();
     }
+    
     /// <summary>
-    /// Get api/users
+    /// Get users list
     /// </summary>
-    /// <returns></returns>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// GET api/users?
+    ///     Query={ "Login": "zclark" }
+    ///     &OrderBy=Login
+    ///     &PageCount=2
+    ///     &Page=3
+    /// 
+    /// </remarks>
+    /// <response code="200">Return users list</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">Users not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpGet]
     [Authorize(Roles = "admin")]
+    [ProducesResponseType(typeof(IEnumerable<User>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<IEnumerable<User>>> Get([FromQuery]QueryParameters<User> queryParameters)
     {
         _logger.LogDebug("Get list of users");
@@ -59,6 +78,7 @@ public class UsersController : ControllerBase
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
+                return StatusCode(500, new ErrorModel("Some error has occurred"));
             }
         }
 
@@ -74,7 +94,7 @@ public class UsersController : ControllerBase
 
         return allUsers.Count() switch
         {
-            0 => NotFound(),
+            0 => NotFound(new ErrorModel("User not found")),
             _ => Ok(
                 allUsers
                     .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
@@ -83,43 +103,69 @@ public class UsersController : ControllerBase
         };
     }
     /// <summary>
-    /// Get api/users/{id}
+    /// Get single user
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// GET api/users/11
+    /// 
+    /// </remarks>
     /// <param name="id"></param>
-    /// <returns></returns>
-    [Authorize(Roles = "user, admin, seller")]
+    /// <response code="200">Return user with specific id</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">User not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpGet("{id:int}")]
+    [Authorize(Roles = "user, admin, seller")]
+    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     public async Task<ActionResult<User>> Get(int id)
     {
         _logger.LogDebug("Get user with id = {id}", id);
 
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
-            return Unauthorized(new
-            {
-                message = "Access is denied"
-            });
+            return Unauthorized(new ErrorModel("Access is denied"));
         
         var user = await _dbSet
-            .FindAsync(id);
+            .Include(u => u.Addresses)
+            .FirstAsync(u => u.Id == id);
 
         return user switch
         {
-            null => NotFound(),
+            null => NotFound(new ErrorModel("User not found")),
             _ => Ok(user)
         };
     }
 
     /// <summary>
-    /// Post api/users
+    /// Create new user (registration)
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// POST api/users
+    ///     {
+    ///         "login": "ttlc198",
+    ///         "password": "M$4d3ikx+L",
+    ///         "email": "ttlc198@gmail.com",
+    ///         "roleId": 3
+    ///     }
+    /// 
+    /// </remarks>
     /// <param name="userFields"></param>
-    /// <returns></returns>
+    /// <response code="200">Return created user</response>
+    /// <response code="400">Same user found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<User>> Post([FromBody]UserDto userFields)
     {
         if (userFields is null)
-            return BadRequest();
+            return BadRequest(new ErrorModel("Input data is empty"));
         
         _logger.LogDebug("Create new user with login = {login}", userFields.Login);
 
@@ -131,71 +177,106 @@ public class UsersController : ControllerBase
         var user = _mapper.Map<User>(userFields);
         
         user.Password = hasher.HashPassword(user, user.Password);
-        user.RoleId = 2; // Client
+        user.RoleId = 2; // Client by default
 
         await _dbSet.AddAsync(user);
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(),
-            _ => Ok(userFields)
+            0 => BadRequest(new ErrorModel("Some error has occurred")),
+            _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
         };
     }
 
     /// <summary>
-    /// Put api/users/
+    /// Update single user
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// PUT api/users
+    ///     {
+    ///         "id": 3,
+    ///         "login": "ttlc198",
+    ///         "password": "M$4d3ikx+L1",
+    ///         "email": "ttlc198@gmail.com",
+    ///         "roleId": 3
+    ///     }
+    /// 
+    /// </remarks>
     /// <param name="userFields"></param>
-    /// <returns></returns>
+    /// <response code="200">Return changed user</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">User not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpPut]
     [Authorize(Roles = "user, admin, seller")]
+    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<User>> Put([FromBody]User userFields)
     {
         if (userFields is null)
-            return BadRequest();
+            return BadRequest(new ErrorModel("Input data is empty"));
         
         if (!_dbSet.Any(u => u.Id == userFields.Id))
-            return NotFound(userFields);
+            return NotFound(new ErrorModel("User not found"));
         
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{userFields.Id}"))
-            return Unauthorized(new
-            {
-                message = "Access is denied"
-            });
+            return Unauthorized(new ErrorModel("Access is denied"));
         
         _logger.LogDebug("Update existing user with id = {id}", userFields.Id);
         _context.Entry(userFields).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(),
-            _ => Ok(userFields)
+            0 => BadRequest(new ErrorModel("Some error has occurred")),
+            _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
         };
     }
 
     /// <summary>
-    /// Patch api/users/
+    /// Patch single user
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// PATCH api/users/11
+    ///     [
+    ///         {
+    ///             "op": "replace",
+    ///             "path": "/login",
+    ///             "value": "ttlc198"
+    ///         }
+    ///     ]
+    /// 
+    /// </remarks>
     /// <param name="userPatch"></param>
     /// <param name="id"></param>
-    /// <returns></returns>
+    /// <response code="200">Return changed user</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">User not found</response>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = "user, admin, seller")]
+    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<User>> Patch([FromBody]JsonPatchDocument<User> userPatch, int id)
     {
         if (userPatch is null)
-            return BadRequest();
+            return BadRequest(new ErrorModel("Input data is empty"));
         
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
-            return Unauthorized(new
-            {
-                message = "Access is denied"
-            });
+            return Unauthorized(new ErrorModel("Access is denied"));
 
         var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
         
         if (user is null) 
-            return NotFound();
+            return NotFound(new ErrorModel("User not found"));
         
         _logger.LogDebug("Update existing user with id = {id}", id);
         
@@ -208,40 +289,50 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(),
+            0 => BadRequest(new ErrorModel("Some error has occurred")),
             _ => Ok(user)
         };
     }
     /// <summary>
-    /// Delete api/users
+    /// Delete single user
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// DELETE api/users/11
+    /// 
+    /// </remarks>
     /// <param name="id"></param>
-    /// <returns></returns>
+    /// <response code="200">Return deleted user</response>
+    /// <response code="400">The input data is empty</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">User not found</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "user, admin, seller")]
+    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<User>> Delete(long id)
     {
         if (id == 0) 
-            return BadRequest();
+            return BadRequest(new ErrorModel("The input data is empty"));
         
         _logger.LogDebug("Delete existing user with id = {id}", id);
         
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
-            return Unauthorized(new
-            {
-                message = "Access is denied"
-            });
+            return Unauthorized(new ErrorModel("Access is denied"));
         
         var toDelete = await _dbSet.FindAsync(id);
         
         if (toDelete is null) 
-            return NotFound(id);
+            return NotFound(new ErrorModel("User not found"));
 
         var entityEntry = _dbSet.Remove(toDelete);
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => NotFound(),
+            0 => BadRequest(new ErrorModel("Some error has occurred")),
             _ => Ok(entityEntry)
         };
     }
