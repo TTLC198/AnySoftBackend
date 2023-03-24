@@ -32,19 +32,20 @@ public class ProductsController : ControllerBase
     /// <returns></returns>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<Product>>> Get([FromQuery]QueryParameters<ProductRequestDto> queryParameters)
+    public async Task<ActionResult<IEnumerable<Product>>> Get(
+        [FromQuery] QueryParameters<ProductRequestDto> queryParameters)
     {
         _logger.LogDebug("Get list of products");
-        
-        IQueryable<Product> allProducts = 
+
+        IQueryable<Product> allProducts =
             _dbSet.OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
         if (queryParameters.HasQuery())
         {
             try
             {
-                var productQuery = (ProductRequestDto)queryParameters.Object;
-               allProducts = _dbSet.Where(product =>
+                var productQuery = (ProductRequestDto) queryParameters.Object;
+                allProducts = _dbSet.Where(product =>
                     (productQuery.Name == null ||
                      product.Name.Contains(productQuery.Name)) &&
                     (productQuery.Rating == null ||
@@ -63,7 +64,7 @@ public class ProductsController : ControllerBase
                 _logger.LogError(e.Message);
             }
         }
-        
+
         var paginationMetadata = new
         {
             totalCount = allProducts.Count(),
@@ -73,7 +74,7 @@ public class ProductsController : ControllerBase
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
-        
+
         return allProducts.Count() switch
         {
             0 => NotFound(),
@@ -95,10 +96,10 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<Product>> Get(long id)
     {
         _logger.LogDebug("Get product with id = {id}", id);
-        
+
         var product = await _dbSet
             .FindAsync(id);
-        
+
         return product switch
         {
             null => NotFound(),
@@ -118,10 +119,10 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<Product>> Post(Product product)
     {
         _logger.LogDebug("Create new product with id = {id}", product.Id);
-        
+
         if (product is null)
             return BadRequest();
-        
+
         await _dbSet.AddAsync(product);
 
         return await _context.SaveChangesAsync() switch
@@ -138,17 +139,17 @@ public class ProductsController : ControllerBase
     /// <returns></returns>
     [HttpPut]
     [Authorize(Roles = "seller")]
-    public async Task<ActionResult<Product>> Put([FromBody]Product product)
+    public async Task<ActionResult<Product>> Put([FromBody] Product product)
     {
-        if (!_dbSet.Any(p => p.Id == product.Id)) 
+        if (!_dbSet.Any(p => p.Id == product.Id))
             return NotFound(product);
-        
+
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
             return Unauthorized(new
             {
                 message = "Access is denied"
             });
-        
+
         _logger.LogDebug("Update existing product with id = {id}", product.Id);
         _context.Entry(product).State = EntityState.Modified;
 
@@ -158,6 +159,7 @@ public class ProductsController : ControllerBase
             _ => Ok(product)
         };
     }
+
     /// <summary>
     /// Patch api/products/
     /// </summary>
@@ -166,26 +168,26 @@ public class ProductsController : ControllerBase
     /// <returns></returns>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = "seller")]
-    public async Task<ActionResult<Product>> Patch([FromBody]JsonPatchDocument<Product> productPatch, int id)
+    public async Task<ActionResult<Product>> Patch([FromBody] JsonPatchDocument<Product> productPatch, int id)
     {
         if (productPatch is null)
             return BadRequest();
 
         var product = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
-        
-        if (product is null) 
+
+        if (product is null)
             return NotFound();
-        
+
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
             return Unauthorized(new
             {
                 message = "Access is denied"
             });
-        
+
         _logger.LogDebug("Update existing product with id = {id}", id);
-        
+
         productPatch.ApplyTo(product, ModelState);
-        
+
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
@@ -197,6 +199,7 @@ public class ProductsController : ControllerBase
             _ => Ok(product)
         };
     }
+
     /// <summary>
     /// Delete api/products
     /// </summary>
@@ -206,18 +209,18 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<Product>> Delete(long id)
     {
         var product = await _dbSet.FindAsync(id);
-        
+
         if (product is null)
             return NotFound(id);
-        
+
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
             return Unauthorized(new
             {
                 message = "Access is denied"
             });
-        
+
         _logger.LogDebug("Delete existing product with id = {id}", id);
-        
+
         var entityEntry = _dbSet.Remove(product);
 
         return await _context.SaveChangesAsync() switch
