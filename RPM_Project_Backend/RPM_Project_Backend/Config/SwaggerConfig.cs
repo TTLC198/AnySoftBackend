@@ -14,11 +14,9 @@ public static class SwaggerConfig
                 Description = "Developed by Vadim Kh. & Andrey K. 2023",
                 Contact = new OpenApiContact { Name = "Vadim Kh.", Email = "yorehacked@gmail.com" }
             });
-            
-            var basePath = AppContext.BaseDirectory;
 
-            var xmlPath = Path.Combine(basePath, "RPM_Project_Backend.xml");
-            c.IncludeXmlComments(xmlPath);
+            c.IncludeXmlComments(Path.Combine($"{System.AppDomain.CurrentDomain.BaseDirectory}", "RPM_Project_Backend.xml"));
+            c.IncludeXmlComments(Path.Combine($"{System.AppDomain.CurrentDomain.BaseDirectory}", "RPM_PR_LIB.xml"));
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
