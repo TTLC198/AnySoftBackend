@@ -29,14 +29,14 @@ public class UsersController : ControllerBase
     private readonly IMapper _mapper;
 
     /// <inheritdoc />
-    public UsersController(ILogger<UsersController> logger, ApplicationContext context, IMapper mapper)
+    public UsersController(
+        ILogger<UsersController> logger, ApplicationContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
         _mapper = mapper;
         _dbSet = _context.Set<User>();
     }
-    
     /// <summary>
     /// Get users list
     /// </summary>
