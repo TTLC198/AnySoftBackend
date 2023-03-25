@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Dynamic.Core;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,7 @@ using RPM_Project_Backend.Services.Database;
 
 namespace RPM_Project_Backend.Controllers;
 
+/// <inheritdoc />
 [ApiController]
 [Route("api/auth")]
 public class AccountController : ControllerBase
@@ -24,6 +26,7 @@ public class AccountController : ControllerBase
     private readonly ApplicationContext _context;
     private readonly DbSet<User> _dbSet;
 
+    /// <inheritdoc />
     public AccountController(
         IConfiguration configuration, ILogger<AccountController> logger, ApplicationContext context)
     {
@@ -32,14 +35,35 @@ public class AccountController : ControllerBase
         _context = context;
         _dbSet = _context.Set<User>();
     }
-
+    /// <summary>
+    /// Login as user and get JWT Bearer token to get access to non anonymous methods 
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// POST /api/auth/login&#xA;&#xD;
+    ///     {
+    ///        "login": "ttlc198",
+    ///        "email": "",
+    ///        "password": "M$4d3ikx+L"
+    ///     }
+    /// 
+    /// </remarks>
+    /// <response code="200">Return users list</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="404">User not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [AllowAnonymous]
     [Route("login")]
+    [ProducesResponseType(typeof(JwtResponseModel), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<IActionResult> Login([FromBody] UserDto userDto)
     {
-        if (userDto is null)
-            return BadRequest();
+        if (userDto is null or {Password: null})
+            return BadRequest(new ErrorModel("Input data is empty"));
         
         _logger.LogDebug("Login user with login = {login}", userDto.Login);
 
@@ -49,7 +73,7 @@ public class AccountController : ControllerBase
             .FirstAsync();
         
         if (user is null)
-            return BadRequest("User with the same login or email does not exist");
+            return NotFound("User with the same login or email does not exist");
         
         var hasher = new PasswordHasher<User>();
         var result = hasher.VerifyHashedPassword(user, user.Password, userDto.Password);
@@ -65,13 +89,13 @@ public class AccountController : ControllerBase
         return result switch
         {
             PasswordVerificationResult.Success or PasswordVerificationResult.SuccessRehashNeeded => Ok(
-                    new
+                    new JwtResponseModel()
                     {
-                        token = new JwtSecurityTokenHandler().WriteToken(token),
-                        expiration = token.ValidTo
+                        Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        Expiration = token.ValidTo
                     }
                 ),
-            _ => BadRequest("Wrong password")
+            _ => BadRequest(new ErrorModel("User with the same login or email and password does not exist"))
         };
     }
 
@@ -82,7 +106,7 @@ public class AccountController : ControllerBase
         var token = new JwtSecurityToken(
             issuer: _configuration["JwtConfiguration:Issuer"],
             audience: _configuration["JwtConfiguration:Audience"],
-            expires: DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(Int64.Parse(_configuration["JwtConfiguration:Expiration"]))),
+            expires: DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(long.Parse(_configuration["JwtConfiguration:Expiration"]))),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
         );
