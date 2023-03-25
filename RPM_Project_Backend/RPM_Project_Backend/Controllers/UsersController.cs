@@ -18,6 +18,7 @@ namespace RPM_Project_Backend.Controllers;
 
 /// <inheritdoc />
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/users")]
 [EnableCors("MyPolicy")]
 public class UsersController : ControllerBase
@@ -94,7 +95,7 @@ public class UsersController : ControllerBase
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
-        return allUsers.Count() switch
+        return await allUsers.CountAsync() switch
         {
             0 => NotFound(new ErrorModel("User not found")),
             _ => Ok(
