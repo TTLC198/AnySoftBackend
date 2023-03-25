@@ -16,6 +16,7 @@ using RPM_Project_Backend.Services.Database;
 
 namespace RPM_Project_Backend.Controllers;
 
+/// <inheritdoc />
 [ApiController]
 [Route("api/users")]
 [EnableCors("MyPolicy")]
@@ -26,6 +27,7 @@ public class UsersController : ControllerBase
     private readonly DbSet<User> _dbSet;
     private readonly IMapper _mapper;
 
+    /// <inheritdoc />
     public UsersController(ILogger<UsersController> logger, ApplicationContext context, IMapper mapper)
     {
         _logger = logger;
@@ -40,7 +42,7 @@ public class UsersController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// GET api/users?
+    /// GET api/users?&#xA;&#xD;
     ///     Query={ "Login": "zclark" }
     ///     &OrderBy=Login
     ///     &PageCount=2
@@ -121,16 +123,17 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Get(int id)
     {
         _logger.LogDebug("Get user with id = {id}", id);
-
-        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
-            return Unauthorized(new ErrorModel("Access is denied"));
         
         var user = await _dbSet
             .Include(u => u.Addresses)
             .FirstAsync(u => u.Id == id);
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}") && !user.Role.Name.Contains("admin"))
+            return Unauthorized(new ErrorModel("Access is denied"));
 
         return user switch
         {
@@ -145,7 +148,7 @@ public class UsersController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// POST api/users
+    /// POST api/users&#xA;&#xD;
     ///     {
     ///         "login": "ttlc198",
     ///         "password": "M$4d3ikx+L",
@@ -162,6 +165,7 @@ public class UsersController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Post([FromBody]UserDto userFields)
     {
         if (userFields is null)
@@ -183,7 +187,7 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(new ErrorModel("Some error has occurred")),
+            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
             _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
         };
     }
@@ -194,7 +198,7 @@ public class UsersController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// PUT api/users
+    /// PUT api/users&#xA;&#xD;
     ///     {
     ///         "id": 3,
     ///         "login": "ttlc198",
@@ -216,6 +220,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Put([FromBody]User userFields)
     {
         if (userFields is null)
@@ -232,7 +237,7 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(new ErrorModel("Some error has occurred")),
+            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
             _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
         };
     }
@@ -243,7 +248,7 @@ public class UsersController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// PATCH api/users/11
+    /// PATCH api/users/11&#xA;&#xD;
     ///     [
     ///         {
     ///             "op": "replace",
@@ -259,12 +264,14 @@ public class UsersController : ControllerBase
     /// <response code="400">Input data is empty</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="404">User not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = "user, admin, seller")]
     [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Patch([FromBody]JsonPatchDocument<User> userPatch, int id)
     {
         if (userPatch is null)
@@ -283,13 +290,13 @@ public class UsersController : ControllerBase
         userPatch.ApplyTo(user, ModelState);
         
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(new ErrorModel("Model state is invalid"));
 
         _context.Entry(user).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(new ErrorModel("Some error has occurred")),
+            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
             _ => Ok(user)
         };
     }
@@ -307,15 +314,17 @@ public class UsersController : ControllerBase
     /// <response code="400">The input data is empty</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="404">User not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "user, admin, seller")]
     [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Delete(long id)
     {
-        if (id == 0) 
+        if (id <= 0) 
             return BadRequest(new ErrorModel("The input data is empty"));
         
         _logger.LogDebug("Delete existing user with id = {id}", id);
@@ -332,7 +341,7 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(new ErrorModel("Some error has occurred")),
+            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
             _ => Ok(entityEntry)
         };
     }
