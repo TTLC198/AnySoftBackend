@@ -1,9 +1,11 @@
 ﻿using System.Linq.Dynamic.Core;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
 using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using RPM_Project_Backend.Helpers;
@@ -11,6 +13,7 @@ using RPM_Project_Backend.Models;
 
 namespace RPM_Project_Backend.Controllers;
 
+/// <inheritdoc />
 [ApiController]
 [Route("api/products")]
 public class ProductsController : ControllerBase
@@ -18,27 +21,52 @@ public class ProductsController : ControllerBase
     private readonly ILogger<ProductsController> _logger;
     private readonly ApplicationContext _context;
     private readonly DbSet<Product> _dbSet;
+    private readonly IMapper _mapper;
 
-    public ProductsController(ILogger<ProductsController> logger, ApplicationContext context)
+    /// <inheritdoc />
+    public ProductsController(ILogger<ProductsController> logger, ApplicationContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
+        _mapper = mapper;
         _dbSet = _context.Set<Product>();
     }
 
     /// <summary>
-    /// Get api/products
+    /// Get products list
     /// </summary>
-    /// <returns></returns>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// GET api/products?
+    ///     Name=SomeName
+    ///     &Discount=20\n
+    ///     &Category=1234\n
+    ///     &Quantity=4999\n
+    ///     &Rating.Min=0.1\n
+    ///     &Rating.Max=4.9\n
+    ///     &Cost.Min=0.1\n
+    ///     &Cost.Max=499.9\n
+    ///     &Order.Type=SomeType\n
+    ///     &Order.Direction=0\n
+    /// 
+    /// </remarks>
+    /// <response code="200">Return products list</response>
+    /// <response code="404">Products not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpGet]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(IEnumerable<Product>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<IEnumerable<Product>>> Get(
         [FromQuery] QueryParameters<ProductRequestDto> queryParameters)
     {
         _logger.LogDebug("Get list of products");
 
-        IQueryable<Product> allProducts =
-            _dbSet.OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
+        IQueryable<Product> allProducts = _dbSet
+                .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
+                .Include(p => p.Category);
 
         if (queryParameters.HasQuery())
         {
@@ -77,7 +105,7 @@ public class ProductsController : ControllerBase
 
         return allProducts.Count() switch
         {
-            0 => NotFound(),
+            0 => NotFound(new ErrorModel("Products not found")),
             _ => Ok(
                 allProducts
                     .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
@@ -87,12 +115,23 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
-    /// Get api/product/{id}
+    /// Get single product
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// GET api/products/11
+    /// 
+    /// </remarks>
     /// <param name="id"></param>
-    /// <returns></returns>
+    /// <response code="200">Return product with specific id</response>
+    /// <response code="404">Product not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpGet("{id:int}")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Get(long id)
     {
         _logger.LogDebug("Get product with id = {id}", id);
@@ -102,130 +141,221 @@ public class ProductsController : ControllerBase
 
         return product switch
         {
-            null => NotFound(),
+            null => NotFound(new ErrorModel("Product not found")),
             _ => Ok(product)
         };
     }
 
-    //// Publisher territory
-
     /// <summary>
-    /// Post api/products
+    /// Create new product
     /// </summary>
-    /// <param name="product"></param>
-    /// <returns></returns>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// POST api/products&#xA;&#xD;
+    ///     {
+    ///         "name": "SomeName",
+    ///         "cost": 100,
+    ///         "discount": 0,
+    ///         "catId": 3,
+    ///         "photosPath": "/seller/SomeName"
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="productDto"></param>
+    /// <response code="200">Return created product</response>
+    /// <response code="400">Same product found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [Authorize(Roles = "seller")]
-    public async Task<ActionResult<Product>> Post(Product product)
+    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<Product>> Post(ProductDto productDto)
     {
-        _logger.LogDebug("Create new product with id = {id}", product.Id);
-
-        if (product is null)
+        if (productDto is null)
             return BadRequest();
+        
+        _logger.LogDebug("Create new product with name = {id}", productDto.Name);
+
+        var sellerId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
+
+        var existedProduct = await _dbSet.FirstOrDefaultAsync(
+                    p => p.Name == productDto.Name 
+                 && p.SellerId == sellerId);
+        if (existedProduct is not null)
+            return BadRequest("Product with same name already exists");
+        
+        var product = _mapper.Map<Product>(productDto);
+
+        product.SellerId = sellerId;
+        product.Quantity = 0;
+        product.Rating = 5;
 
         await _dbSet.AddAsync(product);
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(),
-            _ => Ok(product)
+            0 => StatusCode(500, new ErrorModel("Some error has occurred")),
+            _ => Ok(await _dbSet.FirstAsync(p => p.Name == productDto.Name && p.SellerId == sellerId))
         };
     }
 
     /// <summary>
-    /// Put api/products/
+    /// Update single product
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// PUT api/products&#xA;&#xD;
+    ///     {
+    ///         "id": 11
+    ///         "name": "SomeName",
+    ///         "cost": 100,
+    ///         "discount": 0,
+    ///         "quantity": 0,
+    ///         "catId": 3,
+    ///         "photosPath": "/seller/SomeName"
+    ///     }
+    /// 
+    /// </remarks>
     /// <param name="product"></param>
-    /// <returns></returns>
+    /// <response code="200">Return created user</response>
+    /// <response code="400">The input data is empty</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">User not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpPut]
     [Authorize(Roles = "seller")]
+    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Put([FromBody] Product product)
     {
+        var sellerId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
+        
+        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{sellerId}"))
+            return Unauthorized(new ErrorModel("Access is denied"));
+        
         if (!_dbSet.Any(p => p.Id == product.Id))
-            return NotFound(product);
-
-        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
-            return Unauthorized(new
-            {
-                message = "Access is denied"
-            });
+            return NotFound(new ErrorModel("Product not found"));
+        
+        product.SellerId = sellerId;
 
         _logger.LogDebug("Update existing product with id = {id}", product.Id);
         _context.Entry(product).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(),
+            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
             _ => Ok(product)
         };
     }
 
     /// <summary>
-    /// Patch api/products/
+    /// Patch single product
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// PATCH api/products/11&#xA;&#xD;
+    ///     [
+    ///         {
+    ///             "op": "replace",
+    ///             "path": "/name",
+    ///             "value": "anotherName"
+    ///         }
+    ///     ]
+    /// 
+    /// </remarks>
     /// <param name="productPatch"></param>
     /// <param name="id"></param>
-    /// <returns></returns>
+    /// <response code="200">Return changed product</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">Product not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = "seller")]
+    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Patch([FromBody] JsonPatchDocument<Product> productPatch, int id)
     {
         if (productPatch is null)
-            return BadRequest();
+            return BadRequest(new ErrorModel("Input data is empty"));
 
         var product = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
 
         if (product is null)
-            return NotFound();
+            return NotFound(new ErrorModel("Product not found"));
 
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
-            return Unauthorized(new
-            {
-                message = "Access is denied"
-            });
+            return Unauthorized(new ErrorModel("Access is denied"));
 
         _logger.LogDebug("Update existing product with id = {id}", id);
 
         productPatch.ApplyTo(product, ModelState);
 
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(new ErrorModel("Model state is invalid"));
 
         _context.Entry(product).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => BadRequest(),
+            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
             _ => Ok(product)
         };
     }
 
     /// <summary>
-    /// Delete api/products
+    /// Delete single product
     /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// DELETE api/products/11
+    /// 
+    /// </remarks>
     /// <param name="id"></param>
-    /// <returns></returns>
+    /// <response code="200">Return deleted product</response>
+    /// <response code="400">The input data is empty</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">Product not found</response>
+    /// <response code="500">Oops! Server internal error</response>
+    [Authorize(Roles = "seller")]
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Delete(long id)
     {
+        if (id <= 0) 
+            return BadRequest(new ErrorModel("The input data is empty"));
+        
         var product = await _dbSet.FindAsync(id);
 
         if (product is null)
-            return NotFound(id);
-
+            return NotFound(new ErrorModel("Product not found"));
+        
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
-            return Unauthorized(new
-            {
-                message = "Access is denied"
-            });
-
+            return Unauthorized(new ErrorModel("Access is denied"));
+        
         _logger.LogDebug("Delete existing product with id = {id}", id);
 
         var entityEntry = _dbSet.Remove(product);
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => NotFound(),
+            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
             _ => Ok(entityEntry)
         };
     }
