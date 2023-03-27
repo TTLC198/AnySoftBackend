@@ -1,6 +1,22 @@
 use rpm_project_3
 go
 
+create table dbo.Images
+(
+    img_id           int identity
+        primary key,
+    img_res_id       int                             not null
+        constraint Images_Products_pro_id_fk
+            references dbo.Products
+        constraint Images_Users_u_id_fk
+            references dbo.Users,
+    img_type         int                             not null,
+    img_description  nvarchar(200),
+    img_path         varchar(200)                    not null,
+    img_ts           smalldatetime                   not null,
+    img_content_type varchar(50) default 'image/png' not null
+)
+
 create table dbo.Attributes
 (
     atr_id   int identity
