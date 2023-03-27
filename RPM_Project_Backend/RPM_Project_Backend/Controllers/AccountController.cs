@@ -19,6 +19,7 @@ namespace RPM_Project_Backend.Controllers;
 
 /// <inheritdoc />
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/auth")]
 public class AccountController : ControllerBase
 {
