@@ -7,6 +7,7 @@ using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
@@ -15,7 +16,9 @@ namespace RPM_Project_Backend.Controllers;
 
 /// <inheritdoc />
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/products")]
+[EnableCors("MyPolicy")]
 public class ProductsController : ControllerBase
 {
     private readonly ILogger<ProductsController> _logger;
@@ -38,17 +41,7 @@ public class ProductsController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// GET api/products?
-    ///     Name=SomeName
-    ///     &Discount=20\n
-    ///     &Category=1234\n
-    ///     &Quantity=4999\n
-    ///     &Rating.Min=0.1\n
-    ///     &Rating.Max=4.9\n
-    ///     &Cost.Min=0.1\n
-    ///     &Cost.Max=499.9\n
-    ///     &Order.Type=SomeType\n
-    ///     &Order.Direction=0\n
+    /// GET api/products
     /// 
     /// </remarks>
     /// <response code="200">Return products list</response>
@@ -63,10 +56,13 @@ public class ProductsController : ControllerBase
         [FromQuery] QueryParameters<ProductRequestDto> queryParameters)
     {
         _logger.LogDebug("Get list of products");
-
-        IQueryable<Product> allProducts = _dbSet
+        
+        var allProducts = _dbSet
+                .Include(p => p.Category)
+                .Include(p => p.Reviews)
+                .Include(p => p.Seller)
                 .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
-                .Include(p => p.Category);
+                .AsQueryable();
 
         if (queryParameters.HasQuery())
         {
@@ -83,7 +79,7 @@ public class ProductsController : ControllerBase
                     (productQuery.Discount == null ||
                      product.Discount >= productQuery.Discount) &&
                     (productQuery.Category == null ||
-                     product.CatId == productQuery.Category) &&
+                     product.CategoryId == productQuery.Category) &&
                     (productQuery.Quantity == null ||
                      product.Quantity >= productQuery.Quantity));
             }
@@ -103,7 +99,7 @@ public class ProductsController : ControllerBase
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
-        return allProducts.Count() switch
+        return await allProducts.CountAsync() switch
         {
             0 => NotFound(new ErrorModel("Products not found")),
             _ => Ok(
@@ -134,6 +130,9 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Get(long id)
     {
+        if (id <= 0) 
+            return BadRequest(new ErrorModel("The input data is empty"));
+        
         _logger.LogDebug("Get product with id = {id}", id);
 
         var product = await _dbSet
@@ -287,7 +286,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Patch([FromBody] JsonPatchDocument<Product> productPatch, int id)
     {
-        if (productPatch is null)
+        if (productPatch is null || id <= 0)
             return BadRequest(new ErrorModel("Input data is empty"));
 
         var product = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
