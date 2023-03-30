@@ -28,8 +28,10 @@ public partial class Address
     public bool IsActive { get; set; }
     
     [JsonIgnore]
+    [NotMapped]
     public virtual ICollection<Order> Orders { get; } = new List<Order>();
     [ValidateNever]
     [JsonIgnore]
+    [NotMapped]
     public virtual User User { get; set; } = null!;
 }

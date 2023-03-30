@@ -25,5 +25,6 @@ public partial class Review : BaseModel
     [Column("rew_pro_id")]
     public int ProductId { get; set; }
     [ValidateNever]
+    [NotMapped]
     public virtual Product Product { get; set; } = null!;
 }
