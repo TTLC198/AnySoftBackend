@@ -16,6 +16,8 @@ public partial class ApplicationContext : DbContext
         : base(options)
     {
     }
+    
+    public virtual DbSet<Image> Images { get; set; }
 
     public virtual DbSet<Address> Addresses { get; set; }
 

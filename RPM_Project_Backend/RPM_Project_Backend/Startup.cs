@@ -54,7 +54,7 @@ public class Startup
         app.UseSwaggerUI();
         app.UseSwaggerConfiguration();
 
-        
+        app.UseStaticFiles();
         
         if (env.IsDevelopment())
         {

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using RPM_PR_LIB;
+using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
 
@@ -18,6 +19,7 @@ namespace RPM_Project_Backend.Controllers;
 
 /// <inheritdoc />
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/auth")]
 public class AccountController : ControllerBase
 {
@@ -49,7 +51,7 @@ public class AccountController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <response code="200">Return users list</response>
+    /// <response code="200">Return Jwt Bearer token</response>
     /// <response code="400">Input data is empty</response>
     /// <response code="404">User not found</response>
     /// <response code="500">Oops! Server internal error</response>
@@ -84,7 +86,7 @@ public class AccountController : ControllerBase
             new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
         
-        var token = GetToken(authClaims);
+        var token = JwtTokenGeneratorHelper.GetToken(authClaims, _configuration);
         
         return result switch
         {
@@ -97,20 +99,5 @@ public class AccountController : ControllerBase
                 ),
             _ => BadRequest(new ErrorModel("User with the same login or email and password does not exist"))
         };
-    }
-
-    private JwtSecurityToken GetToken(List<Claim> authClaims)
-    {
-        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtConfiguration:Secret"] ?? throw new InvalidOperationException()));
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["JwtConfiguration:Issuer"],
-            audience: _configuration["JwtConfiguration:Audience"],
-            expires: DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(long.Parse(_configuration["JwtConfiguration:Expiration"]))),
-            claims: authClaims,
-            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-        );
-
-        return token;
     }
 }
