@@ -93,6 +93,7 @@ public class AccountController : ControllerBase
             PasswordVerificationResult.Success or PasswordVerificationResult.SuccessRehashNeeded => Ok(
                     new JwtResponseModel()
                     {
+                        UserId = user.Id,
                         Token = new JwtSecurityTokenHandler().WriteToken(token),
                         Expiration = token.ValidTo
                     }
