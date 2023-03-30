@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace RPM_Project_Backend.Enums;
+namespace RPM_PR_LIB.Enums;
 
 public enum ImageType
 {

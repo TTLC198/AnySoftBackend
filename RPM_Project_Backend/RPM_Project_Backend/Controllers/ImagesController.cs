@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_PR_LIB;
-using RPM_Project_Backend.Enums;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
@@ -12,7 +12,7 @@ namespace RPM_Project_Backend.Controllers;
 /// <inheritdoc />
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/image")]
+[Route("resources/image")]
 public class ImagesController : ControllerBase
 {
     private readonly IConfiguration _configuration;
@@ -32,8 +32,24 @@ public class ImagesController : ControllerBase
         _dbSet = _context.Set<Image>();
     }
 
-    [HttpGet("{id:int}")]
+    /// <summary>
+    /// Get single image by id
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// GET api/image/4
+    ///
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <response code="200">Return image as file</response>
+    /// <response code="404">Image not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [AllowAnonymous]
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(Image), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Image>> Get(int id)
     {
         if (id <= 0)
@@ -51,8 +67,24 @@ public class ImagesController : ControllerBase
         return File(imageData, image.ContentType);
     }
     
-    [HttpGet("{filename}")]
+    /// <summary>
+    /// Get single image by filename
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// GET api/image/4
+    ///
+    /// </remarks>
+    /// <param name="filename"></param>
+    /// <response code="200">Return image as file</response>
+    /// <response code="404">Image not found</response>
+    /// <response code="500">Oops! Server internal error</response>
     [AllowAnonymous]
+    [HttpGet("{filename}")]
+    [ProducesResponseType(typeof(Image), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Image>> Get(string filename)
     {
         if (filename is null or {Length: 0})
@@ -70,11 +102,34 @@ public class ImagesController : ControllerBase
         return File(imageData, image.ContentType);
     }
 
+    /// <summary>
+    /// Upload single image
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    ///
+    /// POST /resources/images/upload&#xA;&#xD;
+    ///
+    /// Form data:&#xA;&#xD;
+    ///
+    /// resourceId:2
+    /// type:1
+    /// description:Some description
+    /// image:[image file]
+    /// 
+    /// </remarks>
+    /// <param name="imageDto"></param>
+    /// <response code="200">Return image as created object</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="500">Oops! Server internal error</response>
+    /// <exception cref="InvalidOperationException"></exception>
     [HttpPost]
     [Authorize]
-    [AllowAnonymous]
     [Route("upload")]
     [RequestSizeLimit(8 * 1024 * 1024)]
+    [ProducesResponseType(typeof(Image), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Image>> Upload([FromForm]ImageDto imageDto)
     {
         if (imageDto is null or {ResourceId: <= 0} or {Type: <= 0} or {Image: null})
@@ -82,14 +137,10 @@ public class ImagesController : ControllerBase
         
         var uniqueFileName = FileNameHelper.GetUniqueFileName(imageDto.Image.FileName);
         
-        var imagesPath = Path.Combine(_environment.WebRootPath,
+        var filePath = Path.Combine(_environment.WebRootPath,
             "images",
-            imageDto.ResourceId.ToString());
-        
-        var filePath = Path.Combine(imagesPath,
-            imageDto.Type.GetDescription(),
             uniqueFileName);
-        
+
         _logger.LogDebug("Upload image with path = {name}", filePath);
         
         var image = new Image
@@ -128,9 +179,25 @@ public class ImagesController : ControllerBase
         };
     }
     
-    [HttpDelete("{id:int}")]
+    /// <summary>
+    /// Delete single image by id
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    ///
+    /// DELETE /resources/images/delete/2
+    /// 
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <response code="204">Deleted successful</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="500">Oops! Server internal error</response>
+    [HttpDelete("delete/{id:int}")]
     [Authorize(Roles = "admin")]
-    public async Task<ActionResult<Image>> Delete(int id)
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult> Delete(int id)
     {
         if (id <= 0)
             return BadRequest(new ErrorModel("Input data is empty"));
@@ -142,19 +209,45 @@ public class ImagesController : ControllerBase
         if (image is null)
             return NotFound(new ErrorModel("Image not found"));
         
-        var entityEntry = _dbSet.Remove(image);
+        if (System.IO.File.Exists(image.ImagePath))
+        {
+            System.IO.File.Delete(image.ImagePath);
+        }
+        else
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new ErrorModel("Some error has occurred"));
+        }
+        
+        _dbSet.Remove(image);
 
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(StatusCodes.Status500InternalServerError,
                 new ErrorModel("Some error has occurred")),
-            _ => Ok(entityEntry)
+            _ => Empty
         };
     }
-    
-    [HttpDelete("{filename}")]
+
+    /// <summary>
+    /// Delete single image by filename
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// DELETE /resources/images/delete/filename.png
+    /// 
+    /// </remarks>
+    /// <param name="filename"></param>
+    /// <response code="204">Deleted successful</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="500">Oops! Server internal error</response>
+    [HttpDelete("delete/{filename}")]
     [Authorize(Roles = "admin")]
-    public async Task<ActionResult<Image>> Delete(string filename)
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult> Delete(string filename)
     {
         if (filename is null or {Length: 0})
             return BadRequest(new ErrorModel("Input data is empty"));
@@ -166,13 +259,23 @@ public class ImagesController : ControllerBase
         if (image is null)
             return NotFound(new ErrorModel("Image not found"));
 
-        var entityEntry = _dbSet.Remove(image);
+        if (System.IO.File.Exists(image.ImagePath))
+        {
+            System.IO.File.Delete(image.ImagePath);
+        }
+        else
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new ErrorModel("Some error has occurred"));
+        }
+        
+        _dbSet.Remove(image);
 
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(StatusCodes.Status500InternalServerError,
                 new ErrorModel("Some error has occurred")),
-            _ => Ok(entityEntry)
+            _ => Empty
         };
     }
 }
