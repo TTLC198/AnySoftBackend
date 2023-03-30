@@ -68,8 +68,8 @@ public class ProductsController : ControllerBase
         {
             try
             {
-                var productQuery = (ProductRequestDto) queryParameters.Object;
-                allProducts = _dbSet.Where(product =>
+                var productQuery = (ProductRequestDto)queryParameters.Object;
+                allProducts = allProducts.Where(product =>
                     (productQuery.Name == null ||
                      product.Name.Contains(productQuery.Name)) &&
                     (productQuery.Rating == null ||
@@ -77,11 +77,11 @@ public class ProductsController : ControllerBase
                     (productQuery.Name == null ||
                      (productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max)) &&
                     (productQuery.Discount == null ||
-                     product.Discount >= productQuery.Discount) &&
+                     product.Discount == productQuery.Discount) &&
                     (productQuery.Category == null ||
                      product.CategoryId == productQuery.Category) &&
                     (productQuery.Quantity == null ||
-                     product.Quantity >= productQuery.Quantity));
+                     product.Quantity == productQuery.Quantity));
             }
             catch (Exception e)
             {
@@ -156,8 +156,7 @@ public class ProductsController : ControllerBase
     ///         "name": "SomeName",
     ///         "cost": 100,
     ///         "discount": 0,
-    ///         "catId": 3,
-    ///         "photosPath": "/seller/SomeName"
+    ///         "catId": 3
     ///     }
     /// 
     /// </remarks>
@@ -169,7 +168,7 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "seller")]
     [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Post(ProductDto productDto)
     {
@@ -214,8 +213,7 @@ public class ProductsController : ControllerBase
     ///         "cost": 100,
     ///         "discount": 0,
     ///         "quantity": 0,
-    ///         "catId": 3,
-    ///         "photosPath": "/seller/SomeName"
+    ///         "categoryId": 3
     ///     }
     /// 
     /// </remarks>
@@ -230,7 +228,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Put([FromBody] Product product)
     {
@@ -323,14 +321,14 @@ public class ProductsController : ControllerBase
     /// 
     /// </remarks>
     /// <param name="id"></param>
-    /// <response code="200">Return deleted product</response>
+    /// <response code="204">Delete product</response>
     /// <response code="400">The input data is empty</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="404">Product not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [Authorize(Roles = "seller")]
     [HttpDelete("{id:int}")]
-    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
@@ -350,12 +348,12 @@ public class ProductsController : ControllerBase
         
         _logger.LogDebug("Delete existing product with id = {id}", id);
 
-        var entityEntry = _dbSet.Remove(product);
+        _dbSet.Remove(product);
 
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(500,new ErrorModel("Some error has occurred")),
-            _ => Ok(entityEntry)
+            _ => NoContent()
         };
     }
 }
