@@ -16,14 +16,14 @@ namespace RPM_Project_Backend.Controllers;
 public class ImagesController : ControllerBase
 {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<AccountController> _logger;
+    private readonly ILogger<ImagesController> _logger;
     private readonly IWebHostEnvironment _environment;
     private readonly ApplicationContext _context;
     private readonly DbSet<Image> _dbSet;
 
     /// <inheritdoc />
     public ImagesController(
-        IConfiguration configuration, ILogger<AccountController> logger, ApplicationContext context, IWebHostEnvironment environment)
+        IConfiguration configuration, ILogger<ImagesController> logger, ApplicationContext context, IWebHostEnvironment environment)
     {
         _configuration = configuration;
         _logger = logger;
@@ -225,7 +225,7 @@ public class ImagesController : ControllerBase
         {
             0 => StatusCode(StatusCodes.Status500InternalServerError,
                 new ErrorModel("Some error has occurred")),
-            _ => Empty
+            _ => NoContent()
         };
     }
 
@@ -275,7 +275,7 @@ public class ImagesController : ControllerBase
         {
             0 => StatusCode(StatusCodes.Status500InternalServerError,
                 new ErrorModel("Some error has occurred")),
-            _ => Empty
+            _ => NoContent()
         };
     }
 }

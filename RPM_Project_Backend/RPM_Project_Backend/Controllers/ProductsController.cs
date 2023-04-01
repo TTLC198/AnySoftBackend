@@ -7,6 +7,7 @@ using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
@@ -15,7 +16,9 @@ namespace RPM_Project_Backend.Controllers;
 
 /// <inheritdoc />
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/products")]
+[EnableCors("MyPolicy")]
 public class ProductsController : ControllerBase
 {
     private readonly ILogger<ProductsController> _logger;
@@ -38,17 +41,7 @@ public class ProductsController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// GET api/products?
-    ///     Name=SomeName
-    ///     &Discount=20\n
-    ///     &Category=1234\n
-    ///     &Quantity=4999\n
-    ///     &Rating.Min=0.1\n
-    ///     &Rating.Max=4.9\n
-    ///     &Cost.Min=0.1\n
-    ///     &Cost.Max=499.9\n
-    ///     &Order.Type=SomeType\n
-    ///     &Order.Direction=0\n
+    /// GET api/products
     /// 
     /// </remarks>
     /// <response code="200">Return products list</response>
@@ -63,17 +56,20 @@ public class ProductsController : ControllerBase
         [FromQuery] QueryParameters<ProductRequestDto> queryParameters)
     {
         _logger.LogDebug("Get list of products");
-
-        IQueryable<Product> allProducts = _dbSet
+        
+        var allProducts = _dbSet
+                .Include(p => p.Category)
+                .Include(p => p.Reviews)
+                .Include(p => p.Seller)
                 .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
-                .Include(p => p.Category);
+                .AsQueryable();
 
         if (queryParameters.HasQuery())
         {
             try
             {
-                var productQuery = (ProductRequestDto) queryParameters.Object;
-                allProducts = _dbSet.Where(product =>
+                var productQuery = (ProductRequestDto)queryParameters.Object;
+                allProducts = allProducts.Where(product =>
                     (productQuery.Name == null ||
                      product.Name.Contains(productQuery.Name)) &&
                     (productQuery.Rating == null ||
@@ -81,11 +77,11 @@ public class ProductsController : ControllerBase
                     (productQuery.Name == null ||
                      (productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max)) &&
                     (productQuery.Discount == null ||
-                     product.Discount >= productQuery.Discount) &&
+                     product.Discount == productQuery.Discount) &&
                     (productQuery.Category == null ||
-                     product.CatId == productQuery.Category) &&
+                     product.CategoryId == productQuery.Category) &&
                     (productQuery.Quantity == null ||
-                     product.Quantity >= productQuery.Quantity));
+                     product.Quantity == productQuery.Quantity));
             }
             catch (Exception e)
             {
@@ -103,7 +99,7 @@ public class ProductsController : ControllerBase
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
-        return allProducts.Count() switch
+        return await allProducts.CountAsync() switch
         {
             0 => NotFound(new ErrorModel("Products not found")),
             _ => Ok(
@@ -134,6 +130,9 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Get(long id)
     {
+        if (id <= 0) 
+            return BadRequest(new ErrorModel("The input data is empty"));
+        
         _logger.LogDebug("Get product with id = {id}", id);
 
         var product = await _dbSet
@@ -157,8 +156,7 @@ public class ProductsController : ControllerBase
     ///         "name": "SomeName",
     ///         "cost": 100,
     ///         "discount": 0,
-    ///         "catId": 3,
-    ///         "photosPath": "/seller/SomeName"
+    ///         "catId": 3
     ///     }
     /// 
     /// </remarks>
@@ -170,7 +168,7 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "seller")]
     [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Post(ProductDto productDto)
     {
@@ -215,8 +213,7 @@ public class ProductsController : ControllerBase
     ///         "cost": 100,
     ///         "discount": 0,
     ///         "quantity": 0,
-    ///         "catId": 3,
-    ///         "photosPath": "/seller/SomeName"
+    ///         "categoryId": 3
     ///     }
     /// 
     /// </remarks>
@@ -231,7 +228,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Put([FromBody] Product product)
     {
@@ -287,7 +284,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Patch([FromBody] JsonPatchDocument<Product> productPatch, int id)
     {
-        if (productPatch is null)
+        if (productPatch is null || id <= 0)
             return BadRequest(new ErrorModel("Input data is empty"));
 
         var product = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
@@ -324,14 +321,14 @@ public class ProductsController : ControllerBase
     /// 
     /// </remarks>
     /// <param name="id"></param>
-    /// <response code="200">Return deleted product</response>
+    /// <response code="204">Delete product</response>
     /// <response code="400">The input data is empty</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="404">Product not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [Authorize(Roles = "seller")]
     [HttpDelete("{id:int}")]
-    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
@@ -351,12 +348,12 @@ public class ProductsController : ControllerBase
         
         _logger.LogDebug("Delete existing product with id = {id}", id);
 
-        var entityEntry = _dbSet.Remove(product);
+        _dbSet.Remove(product);
 
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(500,new ErrorModel("Some error has occurred")),
-            _ => Ok(entityEntry)
+            _ => NoContent()
         };
     }
 }

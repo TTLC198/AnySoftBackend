@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_PR_LIB;
 
-
 public partial class Category
 {
     [Column("cat_id")]
@@ -16,11 +15,15 @@ public partial class Category
     public string Name { get; set; } = null!;
 
     [ValidateNever]
+    [NotMapped]
     public virtual Category? CatParent { get; set; }
-
+    
+    [NotMapped]
     public virtual ICollection<CategoriesHaveAttribute> CategoriesHaveAttributes { get; } = new List<CategoriesHaveAttribute>();
 
+    [NotMapped]
     public virtual ICollection<Category> InverseCatParent { get; } = new List<Category>();
 
+    [NotMapped]
     public virtual ICollection<Product> Products { get; } = new List<Product>();
 }

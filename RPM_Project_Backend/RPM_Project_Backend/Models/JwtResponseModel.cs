@@ -6,6 +6,10 @@
 public class JwtResponseModel
 {
     /// <summary>
+    /// Authorized user id
+    /// </summary>
+    public int UserId { get; set; }
+    /// <summary>
     /// JWT Bearer Token
     /// </summary>
     public string Token { get; set; }

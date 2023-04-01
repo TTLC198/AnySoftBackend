@@ -39,7 +39,7 @@ public class Product : BaseModel
     /// Product Category Identifier
     /// </summary>
     [Column("pro_cat_id")]
-    public int CatId { get; set; }
+    public int CategoryId { get; set; }
     /// <summary>
     /// Product Category 
     /// </summary>
@@ -54,12 +54,7 @@ public class Product : BaseModel
     /// Product Seller
     /// </summary>
     [ValidateNever]
-    public virtual User Seller { get; set; } = null!; //Does it need "=null!"? What is its purpose?
-    /// <summary>
-    /// Path to ALL photos on server
-    /// </summary>
-    [Column("pro_photos_path")]
-    public string PhotosPath { get; set; } = null!;
+    public virtual User Seller { get; set; } = null!;
     /// <summary>
     /// Product Rating (0 to 5)
     /// </summary>
@@ -100,9 +95,4 @@ public class ProductDto
     /// </summary>
     [Required(AllowEmptyStrings = false, ErrorMessage = "Category is required!")]
     public int CatId { get; set; }
-    /// <summary>
-    /// Path to ALL photos on server
-    /// </summary>
-    [Required(AllowEmptyStrings = false, ErrorMessage = "Photos is required!")]
-    public string PhotosPath { get; set; } = null!;
 }

@@ -29,8 +29,7 @@ public class UsersController : ControllerBase
     private readonly IMapper _mapper;
 
     /// <inheritdoc />
-    public UsersController(
-        ILogger<UsersController> logger, ApplicationContext context, IMapper mapper)
+    public UsersController(ILogger<UsersController> logger, ApplicationContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
@@ -43,11 +42,7 @@ public class UsersController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// GET api/users?&#xA;&#xD;
-    ///     Query={ "Login": "zclark" }
-    ///     &OrderBy=Login
-    ///     &PageCount=2
-    ///     &Page=3
+    /// GET api/users
     /// 
     /// </remarks>
     /// <response code="200">Return users list</response>
@@ -58,21 +53,24 @@ public class UsersController : ControllerBase
     [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(IEnumerable<User>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<IEnumerable<User>>> Get([FromQuery]QueryParameters<User> queryParameters)
     {
         _logger.LogDebug("Get list of users");
 
         IQueryable<User> allUsers = 
-            _dbSet.OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
+            _dbSet
+                .Include(u => u.Addresses)
+                .Include(u => u.Role)
+                .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
         if (queryParameters.HasQuery())
         {
             try
             {
                 var userQuery = (User)queryParameters.Object;
-                allUsers = allUsers.Where(u => 
+                allUsers = allUsers.Where(u =>
                     u.Id == userQuery.Id ||
                     u.Email == userQuery.Email ||
                     u.Login == userQuery.Login
@@ -120,7 +118,7 @@ public class UsersController : ControllerBase
     /// <response code="404">User not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet("{id:int}")]
-    [Authorize(Roles = "user, admin, seller")]
+    [Authorize]
     [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
@@ -131,16 +129,19 @@ public class UsersController : ControllerBase
         
         var user = await _dbSet
             .Include(u => u.Addresses)
-            .FirstAsync(u => u.Id == id);
-        
-        if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}") && !user.Role.Name.Contains("admin"))
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user is null)
+            return NotFound(new ErrorModel("User not found"));
+
+        var userIdClaim = User.Claims.SingleOrDefault(cl => cl.Type == "id") ?? throw new InvalidOperationException("Invalid auth. Null id claims");
+        var userRoleClaim = User.Claims.SingleOrDefault(cl => cl.Type.Contains("role")) ?? throw new InvalidOperationException("Invalid auth. Null role claims");
+
+        if (!(userRoleClaim.Value == "admin" || userIdClaim.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        return user switch
-        {
-            null => NotFound(new ErrorModel("User not found")),
-            _ => Ok(user)
-        };
+        return Ok(user);
     }
 
     /// <summary>
@@ -311,14 +312,14 @@ public class UsersController : ControllerBase
     /// 
     /// </remarks>
     /// <param name="id"></param>
-    /// <response code="200">Return deleted user</response>
+    /// <response code="204">Delete user</response>
     /// <response code="400">The input data is empty</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="404">User not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "user, admin, seller")]
-    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
@@ -338,12 +339,12 @@ public class UsersController : ControllerBase
         if (toDelete is null) 
             return NotFound(new ErrorModel("User not found"));
 
-        var entityEntry = _dbSet.Remove(toDelete);
+        _dbSet.Remove(toDelete);
 
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(500,new ErrorModel("Some error has occurred")),
-            _ => Ok(entityEntry)
+            _ => NoContent()
         };
     }
 }
