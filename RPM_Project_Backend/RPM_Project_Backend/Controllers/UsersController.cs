@@ -24,17 +24,17 @@ namespace RPM_Project_Backend.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;
-    private readonly ApplicationContext _context;
+    private readonly IApplicationContext _context;
     private readonly DbSet<User> _dbSet;
     private readonly IMapper _mapper;
 
     /// <inheritdoc />
-    public UsersController(ILogger<UsersController> logger, ApplicationContext context, IMapper mapper)
+    public UsersController(ILogger<UsersController> logger, IApplicationContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
         _mapper = mapper;
-        _dbSet = _context.Set<User>();
+        _dbSet = _context.Users;
     }
     /// <summary>
     /// Get users list
@@ -235,7 +235,7 @@ public class UsersController : ControllerBase
             return Unauthorized(new ErrorModel("Access is denied"));
         
         _logger.LogDebug("Update existing user with id = {id}", userFields.Id);
-        _context.Entry(userFields).State = EntityState.Modified;
+        _context.MarkAsModified(userFields);
 
         return await _context.SaveChangesAsync() switch
         {
@@ -294,7 +294,7 @@ public class UsersController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(new ErrorModel("Model state is invalid"));
 
-        _context.Entry(user).State = EntityState.Modified;
+        _context.MarkAsModified(user);
 
         return await _context.SaveChangesAsync() switch
         {

@@ -25,17 +25,17 @@ public class AccountController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<AccountController> _logger;
-    private readonly ApplicationContext _context;
+    private readonly IApplicationContext _context;
     private readonly DbSet<User> _dbSet;
 
     /// <inheritdoc />
     public AccountController(
-        IConfiguration configuration, ILogger<AccountController> logger, ApplicationContext context)
+        IConfiguration configuration, ILogger<AccountController> logger, IApplicationContext context)
     {
         _configuration = configuration;
         _logger = logger;
         _context = context;
-        _dbSet = _context.Set<User>();
+        _dbSet = _context.Users;
     }
     /// <summary>
     /// Login as user and get JWT Bearer token to get access to non anonymous methods 
