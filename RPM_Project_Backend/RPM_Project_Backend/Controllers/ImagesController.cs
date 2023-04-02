@@ -18,18 +18,18 @@ public class ImagesController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<ImagesController> _logger;
     private readonly IWebHostEnvironment _environment;
-    private readonly IApplicationContext _context;
+    private readonly ApplicationContext _context;
     private readonly DbSet<Image> _dbSet;
 
     /// <inheritdoc />
     public ImagesController(
-        IConfiguration configuration, ILogger<ImagesController> logger, IApplicationContext context, IWebHostEnvironment environment)
+        IConfiguration configuration, ILogger<ImagesController> logger, ApplicationContext context, IWebHostEnvironment environment)
     {
         _configuration = configuration;
         _logger = logger;
         _context = context;
         _environment = environment;
-        _dbSet = _context.Images;
+        _dbSet = _context.Set<Image>();
     }
 
     /// <summary>

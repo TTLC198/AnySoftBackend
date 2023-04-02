@@ -22,17 +22,17 @@ namespace RPM_Project_Backend.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly ILogger<ProductsController> _logger;
-    private readonly IApplicationContext _context;
+    private readonly ApplicationContext _context;
     private readonly DbSet<Product> _dbSet;
     private readonly IMapper _mapper;
 
     /// <inheritdoc />
-    public ProductsController(ILogger<ProductsController> logger, IApplicationContext context, IMapper mapper)
+    public ProductsController(ILogger<ProductsController> logger, ApplicationContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
         _mapper = mapper;
-        _dbSet = _context.Products;
+        _dbSet = _context.Set<Product>();
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ public class ProductsController : ControllerBase
         product.SellerId = sellerId;
 
         _logger.LogDebug("Update existing product with id = {id}", product.Id);
-        _context.MarkAsModified(product);
+        _context.Entry(product).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
         {
@@ -302,7 +302,7 @@ public class ProductsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(new ErrorModel("Model state is invalid"));
 
-        _context.MarkAsModified(product);
+        _context.Entry(product).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
         {

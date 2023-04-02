@@ -6,7 +6,7 @@ using Attribute = RPM_PR_LIB.Attribute;
 
 namespace RPM_Project_Backend.Services.Database;
 
-public partial class ApplicationContext : DbContext, IApplicationContext
+public partial class ApplicationContext : DbContext
 {
     public ApplicationContext()
     {
@@ -56,17 +56,6 @@ public partial class ApplicationContext : DbContext, IApplicationContext
     public virtual DbSet<Transaction> Transactions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-
-    public int SaveChanges() =>
-        SaveChanges();
-    
-    public async Task<int> SaveChangesAsync() =>
-        await SaveChangesAsync();
-
-    public void MarkAsModified(Object item)
-    {
-        Entry(item).State = EntityState.Modified;
-    }
 
     /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
