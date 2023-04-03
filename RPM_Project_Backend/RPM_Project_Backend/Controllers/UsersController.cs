@@ -160,7 +160,7 @@ public class UsersController : ControllerBase
     /// 
     /// </remarks>
     /// <param name="userFields"></param>
-    /// <response code="200">Return created user</response>
+    /// <response code="201">Return created user</response>
     /// <response code="400">Same user found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
@@ -187,11 +187,16 @@ public class UsersController : ControllerBase
 
         await _dbSet.AddAsync(user);
 
-        return await _context.SaveChangesAsync() switch
+        switch (await _context.SaveChangesAsync())
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
-            _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
-        };
+            case 0:
+                return StatusCode(500, new ErrorModel("Some error has occurred"));
+            default:
+                var createdUser = await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
+                if (createdUser is null)
+                    return StatusCode(500, new ErrorModel("Some error has occurred"));
+                return StatusCode(StatusCodes.Status201Created, createdUser);
+        }
     }
 
     /// <summary>
@@ -235,13 +240,19 @@ public class UsersController : ControllerBase
             return Unauthorized(new ErrorModel("Access is denied"));
         
         _logger.LogDebug("Update existing user with id = {id}", userFields.Id);
+        var t1 = _context.Entry(userFields);
         _context.Entry(userFields).State = EntityState.Modified;
 
-        return await _context.SaveChangesAsync() switch
+        switch (await _context.SaveChangesAsync())
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
-            _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
-        };
+            case 0:
+                return StatusCode(500, new ErrorModel("Some error has occurred"));
+            default:
+                var createdUser = await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
+                return createdUser is null 
+                    ? StatusCode(500, new ErrorModel("Some error has occurred")) 
+                    : Ok(createdUser);
+        }
     }
 
     /// <summary>
@@ -334,7 +345,7 @@ public class UsersController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
         
-        var toDelete = await _dbSet.FindAsync(id);
+        var toDelete = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
         
         if (toDelete is null) 
             return NotFound(new ErrorModel("User not found"));
