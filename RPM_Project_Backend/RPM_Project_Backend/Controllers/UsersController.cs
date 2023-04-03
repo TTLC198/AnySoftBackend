@@ -79,7 +79,7 @@ public class UsersController : ControllerBase
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
-                return StatusCode(500, new ErrorModel("Some error has occurred"));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
             }
         }
 
@@ -190,11 +190,11 @@ public class UsersController : ControllerBase
         switch (await _context.SaveChangesAsync())
         {
             case 0:
-                return StatusCode(500, new ErrorModel("Some error has occurred"));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
             default:
                 var createdUser = await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
                 if (createdUser is null)
-                    return StatusCode(500, new ErrorModel("Some error has occurred"));
+                    return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
                 return StatusCode(StatusCodes.Status201Created, createdUser);
         }
     }
@@ -246,11 +246,11 @@ public class UsersController : ControllerBase
         switch (await _context.SaveChangesAsync())
         {
             case 0:
-                return StatusCode(500, new ErrorModel("Some error has occurred"));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
             default:
                 var createdUser = await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
                 return createdUser is null 
-                    ? StatusCode(500, new ErrorModel("Some error has occurred")) 
+                    ? StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred")) 
                     : Ok(createdUser);
         }
     }
@@ -309,7 +309,7 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(StatusCodes.Status500InternalServerError,new ErrorModel("Some error has occurred")),
             _ => Ok(user)
         };
     }
@@ -354,7 +354,7 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(StatusCodes.Status500InternalServerError,new ErrorModel("Some error has occurred")),
             _ => NoContent()
         };
     }
