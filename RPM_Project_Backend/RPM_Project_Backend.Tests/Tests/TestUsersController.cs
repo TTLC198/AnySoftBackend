@@ -18,7 +18,8 @@ using Xunit;
 
 namespace RPM_Project_Backend.Tests.Tests;
 
-public class TestUsersController : IClassFixture<ApplicationContextDataFixture>
+[Collection("ApplicationContext Collection")]
+public class TestUsersController
 {
     private readonly ApplicationContextDataFixture _fixture;
     private UsersController _controller;
@@ -289,7 +290,7 @@ public class TestUsersController : IClassFixture<ApplicationContextDataFixture>
     }
 
     [Fact]
-    public async Task DeleteUser_ShouldReturnModifiedUser()
+    public async Task DeleteUser_ShouldReturnNull()
     {
         // Arrange
         var id = _random.Next(1, 3);
