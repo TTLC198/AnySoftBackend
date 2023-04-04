@@ -2,7 +2,7 @@
 
 namespace RPM_Project_Backend.Tests;
 
-public static class TestValues
+public static partial class TestValues
 {
     public static IReadOnlyList<Role> Roles = new List<Role>()
     {
@@ -59,5 +59,81 @@ public static class TestValues
         Password = "userpass",
         RoleId = 2,
         Role = Roles[1]
+    };
+}
+
+public static partial class TestValues
+{
+    public static IReadOnlyList<Category> Categories = new List<Category>()
+    {
+        new ()
+        {
+            Id = 1, Name = "root category"
+        },
+        new ()
+        {
+            Id = 2, Name = "simple category"
+        },
+        new ()
+        {
+            Id = 3, Name = "category", ParentId = 1
+        },
+    };
+    
+    public static IReadOnlyList<Product> Products = new List<Product>()
+    {
+        new ()
+        {
+            Id = 1,
+            Cost = 1000,
+            Discount = 0,
+            Name = "First product",
+            Quantity = 0,
+            Rating = 5,
+            SellerId = 3,
+            CategoryId = 1,
+            Category = Categories.First(c => c.Id == 1),
+            Seller = Users.First(u => u.Id == 3)
+        },
+        new ()
+        {
+            Id = 2,
+            Cost = 2000,
+            Discount = 20,
+            Name = "Second product",
+            Quantity = 0,
+            Rating = 3.2,
+            SellerId = 3,
+            CategoryId = 3,
+            Category = Categories.First(c => c.Id == 3),
+            Seller = Users.First(u => u.Id == 3)
+        },
+        new ()
+        {
+            Id = 3,
+            Cost = 3000,
+            Discount = 10,
+            Name = "Third product",
+            Quantity = 0,
+            Rating = 4.6,
+            SellerId = 3,
+            CategoryId = 2,
+            Category = Categories.First(c => c.Id == 2),
+            Seller = Users.First(u => u.Id == 3)
+        },
+    };
+
+    public static Product SingleProduct = new()
+    {
+        Id = 4,
+        Cost = 4000,
+        Discount = 20,
+        Name = "Single product",
+        Quantity = 0,
+        Rating = 4.2,
+        SellerId = 2,
+        CategoryId = 2,
+        Category = Categories.First(c => c.Id == 2),
+        Seller = Users.First(u => u.Id == 3)
     };
 }
