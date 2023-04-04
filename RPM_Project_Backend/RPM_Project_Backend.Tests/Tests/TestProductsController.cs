@@ -97,6 +97,9 @@ public class TestProductsController
         _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(user.Id, user.Role.Name);
         Assert.NotNull(_controller.User);
 
+        var selectedProducts = _context.Products.ToList().Where(
+            p => p.Name.Contains("First product"));
+        
         // Act
         var result = await _controller.Get(new QueryParameters<ProductRequestDto>()
         {
@@ -113,7 +116,7 @@ public class TestProductsController
         var valueResult = okResult!.Value as IEnumerable<Product>;
         
         Assert.NotNull(okResult!.Value);
-        Assert.NotEqual(_context.Products.ToList(), valueResult!.ToList());
+        Assert.Equal(selectedProducts.ToList(), valueResult!.ToList());
     }
     
     [Fact]
