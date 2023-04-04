@@ -94,5 +94,5 @@ public class ProductDto
     /// Category Identifier
     /// </summary>
     [Required(AllowEmptyStrings = false, ErrorMessage = "Category is required!")]
-    public int CatId { get; set; }
+    public int CategoryId { get; set; }
 }
