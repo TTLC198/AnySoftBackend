@@ -69,19 +69,24 @@ public class ProductsController : ControllerBase
             try
             {
                 var productQuery = (ProductRequestDto)queryParameters.Object;
-                allProducts = allProducts.Where(product =>
-                    (productQuery.Name == null ||
-                     product.Name.Contains(productQuery.Name)) &&
-                    (productQuery.Rating == null ||
-                     (productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max)) &&
-                    (productQuery.Name == null ||
-                     (productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max)) &&
-                    (productQuery.Discount == null ||
-                     product.Discount == productQuery.Discount) &&
-                    (productQuery.Category == null ||
-                     product.CategoryId == productQuery.Category) &&
-                    (productQuery.Quantity == null ||
-                     product.Quantity == productQuery.Quantity));
+                if (productQuery.Name is not null)
+                    allProducts = allProducts
+                        .Where(product => product.Name == productQuery.Name);
+                if (productQuery.Rating is {Min: not null} and {Max: not null})
+                    allProducts = allProducts
+                        .Where(product => productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max); 
+                if (productQuery.Cost is {Min: not null} and {Max: not null})
+                    allProducts = allProducts
+                        .Where(product => productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max);
+                if (productQuery.Discount is not null)
+                    allProducts = allProducts
+                        .Where(product => product.Discount == productQuery.Discount);
+                if (productQuery.Category is not null)
+                    allProducts = allProducts
+                        .Where(product => product.CategoryId == productQuery.Category);
+                if (productQuery.Quantity is not null)
+                    allProducts = allProducts
+                        .Where(product => product.Quantity == productQuery.Quantity);
             }
             catch (Exception e)
             {
@@ -135,8 +140,7 @@ public class ProductsController : ControllerBase
         
         _logger.LogDebug("Get product with id = {id}", id);
 
-        var product = await _dbSet
-            .FindAsync(id);
+        var product = await _dbSet.FirstOrDefaultAsync(p => p.Id == id);
 
         return product switch
         {
@@ -338,7 +342,7 @@ public class ProductsController : ControllerBase
         if (id <= 0) 
             return BadRequest(new ErrorModel("The input data is empty"));
         
-        var product = await _dbSet.FindAsync(id);
+        var product = await _dbSet.FirstOrDefaultAsync(p => p.Id == id);
 
         if (product is null)
             return NotFound(new ErrorModel("Product not found"));
@@ -352,7 +356,7 @@ public class ProductsController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(StatusCodes.Status500InternalServerError,new ErrorModel("Some error has occurred")),
             _ => NoContent()
         };
     }
