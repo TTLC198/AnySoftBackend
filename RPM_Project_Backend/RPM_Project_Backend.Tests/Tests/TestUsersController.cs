@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
+using System.Web.Http.Results;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,7 @@ using RPM_Project_Backend.Mappings;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Tests.Helpers;
 using Xunit;
+using BadRequestResult = Microsoft.AspNetCore.Mvc.BadRequestResult;
 
 namespace RPM_Project_Backend.Tests.Tests;
 
@@ -152,8 +154,71 @@ public class TestUsersController
         Assert.Equal(user, valueResult);
     }
     
+    [Theory]
+    [InlineData("", "", "")]
+    [InlineData("", "", "examplePassword")]
+    [InlineData("exampleMail", "", "")]
+    [InlineData("", "exampleLogin", "examplePassword")]
+    [InlineData("exampleMail", "", "examplePassword")]
+    public async Task PostUserTheory_ShouldReturnSameUser(string email, string login, string password)
+    {
+        // Arrange
+        var userDto = new UserDto()
+        {
+            Email = email,
+            Login = login,
+            Password = password
+        };
+        var hasher = new PasswordHasher<User>();
+        
+        //Setup DB context
+        _context = _fixture.ApplicationContext;
+
+        //Setup logger
+        var logger = new Logger<UsersController>(new LoggerFactory());
+        
+        //Setup AutoMapper config
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
+        _mapper = config.CreateMapper();
+        
+        _controller = new UsersController(
+            logger,
+            _context,
+            _mapper
+        );
+        
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+        // Act
+        var result = await _controller.Post(userDto);
+
+        // Assert
+        Assert.NotNull(result);
+
+        var okResult = result.Result as ObjectResult;
+        if (okResult is CreatedResult)
+        {
+            var valueResult = okResult!.Value as User;
+            Assert.NotNull(valueResult);
+        
+            Assert.NotEqual(PasswordVerificationResult.Failed, hasher.VerifyHashedPassword(valueResult, valueResult.Password, userDto.Password));
+            Assert.Equal(userDto.Email, valueResult.Email);
+            Assert.Equal(userDto.Login, valueResult.Login);
+        }
+        else if (okResult is BadRequestResult)
+        {
+            var valueResult = okResult!.Value as ErrorModel;
+            Assert.NotNull(valueResult);
+        }
+        else if (okResult is InternalServerErrorResult)
+        {
+            var valueResult = okResult!.Value as ErrorModel;
+            Assert.NotNull(valueResult);
+        }
+    }
+    
     [Fact]
-    public async Task PostUser_ShouldReturnSameUser()
+    public async Task PostUserFact_ShouldReturnSameUser()
     {
         // Arrange
         var user = TestValues.SingleUser;
