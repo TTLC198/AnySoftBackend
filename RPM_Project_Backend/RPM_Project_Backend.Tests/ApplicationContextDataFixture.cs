@@ -15,11 +15,15 @@ public class ApplicationContextDataFixture : IDisposable
         ApplicationContext = new ApplicationContext(options);
 
         ApplicationContext.Users.AddRange(TestValues.Users);
+        ApplicationContext.Categories.AddRange(TestValues.Categories);
+        ApplicationContext.Products.AddRange(TestValues.Products);
+        
         ApplicationContext.SaveChanges();
     }
 
     public void Dispose()
     {
         ApplicationContext.Dispose();
+        ApplicationContext = null!;
     }
 }
