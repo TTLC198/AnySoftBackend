@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using RPM_PR_LIB;
-using Attribute = RPM_PR_LIB.Attribute;
+﻿using Microsoft.EntityFrameworkCore;
+using RPM_Project_Backend.Domain;
+using Attribute = System.Attribute;
 
 namespace RPM_Project_Backend.Services.Database;
 
-public partial class ApplicationContext : DbContext
+public class ApplicationContext : DbContext
 {
     public ApplicationContext()
     {

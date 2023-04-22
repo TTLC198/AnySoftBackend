@@ -2,13 +2,13 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RPM_PR_LIB;
 using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
+using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 
@@ -71,7 +71,7 @@ public class ProductsController : ControllerBase
                 var productQuery = (ProductRequestDto)queryParameters.Object;
                 if (productQuery.Name is not null)
                     allProducts = allProducts
-                        .Where(product => product.Name == productQuery.Name);
+                        .Where(product => product.Name.Contains(productQuery.Name));
                 if (productQuery.Rating is {Min: not null} and {Max: not null})
                     allProducts = allProducts
                         .Where(product => productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max); 
