@@ -10,6 +10,7 @@ public class ApplicationContextDataFixture : IDisposable
     {
         var options = new DbContextOptionsBuilder<ApplicationContext>()
             .UseInMemoryDatabase("ApplicationContextDatabase")
+            .EnableSensitiveDataLogging()
             .Options;
 
         ApplicationContext = new ApplicationContext(options);
