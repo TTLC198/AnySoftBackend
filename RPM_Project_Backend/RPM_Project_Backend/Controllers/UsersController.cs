@@ -2,14 +2,13 @@
 using System.Linq.Dynamic.Core;
 using System.Net;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RPM_PR_LIB;
+using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
@@ -125,7 +124,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Get(int id)
     {
-        _logger.LogDebug("Get user with id = {id}", id);
+        _logger.LogDebug("Get user with id = {Id}", id);
         
         var user = await _dbSet
             .Include(u => u.Addresses)
@@ -173,7 +172,7 @@ public class UsersController : ControllerBase
         if (userFields is null)
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        _logger.LogDebug("Create new user with login = {login}", userFields.Login);
+        _logger.LogDebug("Create new user with login = {Login}", userFields.Login);
 
         var existedUser = await _dbSet.FirstOrDefaultAsync(u => u.Email == userFields.Email || u.Login == userFields.Login);
         if (existedUser is not null)
@@ -193,9 +192,9 @@ public class UsersController : ControllerBase
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
             default:
                 var createdUser = await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
-                if (createdUser is null)
-                    return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
-                return StatusCode(StatusCodes.Status201Created, createdUser);
+                return createdUser is null
+                    ? StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"))
+                    : StatusCode(StatusCodes.Status201Created, createdUser);
         }
     }
 
@@ -239,8 +238,7 @@ public class UsersController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{userFields.Id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
         
-        _logger.LogDebug("Update existing user with id = {id}", userFields.Id);
-        var t1 = _context.Entry(userFields);
+        _logger.LogDebug("Update existing user with id = {Id}", userFields.Id);
         _context.Entry(userFields).State = EntityState.Modified;
 
         switch (await _context.SaveChangesAsync())
@@ -298,7 +296,7 @@ public class UsersController : ControllerBase
         if (user is null) 
             return NotFound(new ErrorModel("User not found"));
         
-        _logger.LogDebug("Update existing user with id = {id}", id);
+        _logger.LogDebug("Update existing user with id = {Id}", id);
         
         userPatch.ApplyTo(user, ModelState);
         
@@ -340,7 +338,7 @@ public class UsersController : ControllerBase
         if (id <= 0) 
             return BadRequest(new ErrorModel("The input data is empty"));
         
-        _logger.LogDebug("Delete existing user with id = {id}", id);
+        _logger.LogDebug("Delete existing user with id = {Id}", id);
         
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));

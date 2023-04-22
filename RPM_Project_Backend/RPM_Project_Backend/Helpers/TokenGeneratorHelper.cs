@@ -1,11 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
 namespace RPM_Project_Backend.Helpers;
 
-public static class JwtTokenGeneratorHelper
+public static class TokenGeneratorHelper
 {
     /// <summary>
     /// Get Jwt Bearer security token
@@ -14,7 +15,7 @@ public static class JwtTokenGeneratorHelper
     /// <param name="configuration"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">Check appsettings.json file</exception>
-    public static JwtSecurityToken GetToken(List<Claim> authClaims, IConfiguration configuration)
+    public static JwtSecurityToken GenerateToken(List<Claim> authClaims, IConfiguration configuration)
     {
         var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtConfiguration:Secret"] ?? throw new InvalidOperationException("JWT Secret is null")));
 

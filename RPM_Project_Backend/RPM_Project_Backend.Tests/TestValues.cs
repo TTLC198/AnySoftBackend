@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using RPM_Project_Backend.Domain;
 
 namespace RPM_Project_Backend.Tests;
 
@@ -135,5 +136,30 @@ public static partial class TestValues
         CategoryId = 2,
         Category = Categories.First(c => c.Id == 2),
         Seller = Users.First(u => u.Id == 3)
+    };
+}
+
+public static partial class TestValues
+{
+    public static IReadOnlyList<Image> Images = new List<Image>()
+    {
+        new ()
+        {
+            Id = 1, 
+        },
+        new ()
+        {
+            Id = 2, 
+        },
+        new ()
+        {
+            Id = 3, 
+        },
+    };
+
+    public static Image SingleImage = new()
+    {
+        Id = 4,
+        
     };
 }

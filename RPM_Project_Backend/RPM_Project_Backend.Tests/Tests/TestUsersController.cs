@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Web.Http.Results;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -8,9 +7,6 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.VisualBasic;
-using Moq;
 using RPM_Project_Backend.Controllers;
 using RPM_Project_Backend.Mappings;
 using RPM_Project_Backend.Models;
