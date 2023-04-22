@@ -6,6 +6,14 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>RPM_Project_Backend.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>RPM_Project_Backend.xml</DocumentationFile>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
@@ -33,6 +41,8 @@
 
     <ItemGroup>
       <Folder Include="Services" />
+      <Folder Include="wwwroot" />
+      <Folder Include="wwwroot\images" />
     </ItemGroup>
 
     <ItemGroup>
@@ -43,6 +53,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\RPM_Project_Library\RPM_PR_LIB\RPM_PR_LIB.csproj" />
+      <ProjectReference Include="..\RPM_Project_Backend.Domain\RPM_Project_Backend.Domain.csproj" />
     </ItemGroup>
 
 </Project>
