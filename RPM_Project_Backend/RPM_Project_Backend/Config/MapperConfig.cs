@@ -8,5 +8,7 @@ public static class MapperConfig
     {
         services
             .AddAutoMapper(typeof(UserMappingProfile));
+        services
+            .AddAutoMapper(typeof(ProductMappingProfile));
     }
 }
