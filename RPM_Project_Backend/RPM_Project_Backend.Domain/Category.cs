@@ -1,16 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_PR_LIB;
 
 namespace RPM_Project_Backend.Domain;
 
 public class Category
 {
-    [Column("cat_id")]
+    [Key]
+    [Column("cat_id"), Required]
     public int Id { get; set; }
-    [Column("cat_parent_id")]
+    [Column("cat_parent_id"), Required]
     public int? ParentId { get; set; }
-    [Column("cat_name")]
+    [Column("cat_name"), Required]
     public string Name { get; set; } = null!;
 
     [ValidateNever]
@@ -18,11 +19,11 @@ public class Category
     public virtual Category? CatParent { get; set; }
     
     [NotMapped]
-    public virtual ICollection<CategoriesHaveAttribute> CategoriesHaveAttributes { get; } = new List<CategoriesHaveAttribute>();
+    public virtual IEnumerable<CategoriesHaveAttribute> CategoriesHaveAttributes { get; } = new List<CategoriesHaveAttribute>();
 
     [NotMapped]
-    public virtual ICollection<Category> InverseCatParent { get; } = new List<Category>();
+    public virtual IEnumerable<Category> InverseCatParent { get; } = new List<Category>();
 
     [NotMapped]
-    public virtual ICollection<Product> Products { get; } = new List<Product>();
+    public virtual IEnumerable<Product> Products { get; } = new List<Product>();
 }

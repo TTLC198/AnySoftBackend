@@ -1,23 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
 public class ProductsHaveAttribute 
 {
-    [Column("pha_id")]
+    [Key]
+    [Column("pha_id"), Required]
     public int Id { get; set; }
 
-    [Column("pha_pro_id")]
+    [Column("pha_pro_id"), Required]
     public int ProductId { get; set; }
-    [ValidateNever]
-    public virtual Product Product { get; set; } = null!;
 
-    [Column("pha_atr_id")]
+    [Column("pha_atr_id"), Required]
     public int AttributeId { get; set; }
+
+    [Column("pha_value"), Required]
+    public string? Value { get; set; }
+
     [ValidateNever]
-    public virtual Attribute Attribute { get; set; } = null!;
-    
-    [Column("pha_value")]
-    public string Value { get; set; } = null!;
+    public virtual Attribute? Attribute { get; set; }
+    [ValidateNever]
+    public virtual Product? Product { get; set; }
 }

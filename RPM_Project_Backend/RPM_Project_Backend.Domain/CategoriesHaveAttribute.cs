@@ -1,17 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_PR_LIB;
 
 namespace RPM_Project_Backend.Domain;
 
 
 public class CategoriesHaveAttribute
 {
-    [Column("cha_id")]
+    [Key]
+    [Column("cha_id"), Required]
     public int Id { get; set; }
-    [Column("cha_cat_id")]
+    [Column("cha_cat_id"), Required]
     public int CategoryId { get; set; }
-    [Column("cha_atr_id")]
+    [Column("cha_atr_id"), Required]
     public int AttributeId { get; set; }
 
     [ValidateNever]

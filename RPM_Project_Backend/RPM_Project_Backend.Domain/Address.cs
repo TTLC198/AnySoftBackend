@@ -2,12 +2,12 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_PR_LIB;
 
 namespace RPM_Project_Backend.Domain;
 
 public class Address
 {
+    [Key]
     [Column("ad_id"), Required]
     public int Id { get; set; }
     [Column("ad_street"), Required]
@@ -27,7 +27,7 @@ public class Address
     
     [JsonIgnore]
     [NotMapped]
-    public virtual ICollection<Order> Orders { get; } = new List<Order>();
+    public virtual IEnumerable<Order> Orders { get; } = new List<Order>();
     [ValidateNever]
     [JsonIgnore]
     [NotMapped]

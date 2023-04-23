@@ -1,18 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
 public class Qiwi
 {
-    [Column("qiwi_id")]
+    [Key]
+    [Column("qiwi_id"), Required]
     public int Id { get; set; }
     
-    [Column("qiwi_number")]
+    [Column("qiwi_number"), Required]
     public int Number { get; set; }
     
-    [Column("qiwi_pay_id")]
+    [Column("qiwi_pay_id"), Required]
     public int PayId { get; set; }
+    
     [ValidateNever]
-    public virtual Payment Payment { get; set; }
+    public virtual Payment? Payment { get; set; }
 }

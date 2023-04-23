@@ -1,28 +1,31 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_PR_LIB;
 
 namespace RPM_Project_Backend.Domain;
 
-public partial class Review
+public class Review
 {
-    [Column("rew_id")]
+    [Key]
+    [Column("rew_id"), Required]
     public int Id { get; set; }
 
-    [Column("rew_u_id")]
+    [Column("rew_u_id"), Required]
     public int UserId { get; set; }
-    [ValidateNever]
-    public virtual User User { get; set; } = null!;
 
-    [Column("rew_text")]
-    public string Text { get; set; } = null!;
+    [Column("rew_text"), Required]
+    public string? Text { get; set; }
 
-    [Column("rew_grade")]
+    [Column("rew_grade"), Required]
     public double Grade { get; set; }
 
-    [Column("rew_pro_id")]
+    [Column("rew_pro_id"), Required]
     public int ProductId { get; set; }
+
     [ValidateNever]
     [NotMapped]
-    public virtual Product Product { get; set; } = null!;
+    public virtual Product? Product { get; set; }
+
+    [ValidateNever]
+    public virtual User? User { get; set; }
 }

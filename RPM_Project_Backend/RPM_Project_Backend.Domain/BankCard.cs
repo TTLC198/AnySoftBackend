@@ -1,23 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_PR_LIB;
 
 namespace RPM_Project_Backend.Domain;
 
 public class BankCard
 {
-    [Column("bc_number")] 
-    public int Number { get; set; }
-    [Column("bc_name")] 
-    public string Name { get; set; } = null!;
-    [Column("bc_expiration_date")]
-    public DateTime ExpirationDate { get; set; }
-    [Column("bc_cvc")] 
-    public int Cvc { get; set; }
-    [Column("bc_payment_id")] 
-    public int PaymentId { get; set; }
-    [Column("bc_id")] 
+    [Key]
+    [Column("bc_id"), Required] 
     public int Id { get; set; }
+    [Column("bc_number"), Required] 
+    public int Number { get; set; }
+    [Column("bc_name"), Required] 
+    public string Name { get; set; } = null!;
+    [Column("bc_expiration_date"), Required]
+    public DateTime ExpirationDate { get; set; }
+    [Column("bc_cvc"), Required] 
+    public int Cvc { get; set; }
+    [Column("bc_payment_id"), Required] 
+    public int PaymentId { get; set; }
 
     [ValidateNever]
     public virtual Payment BcPayment { get; set; } = null!;

@@ -11,32 +11,33 @@ public class User
     /// <summary>
     /// Identifier
     /// </summary>
-    [Column("u_id")]
+    [Key]
+    [Column("u_id"), Required]
     public int Id { get; set; }
     /// <summary>
     /// Login
     /// </summary>
-    [Column("u_login")]
-    public string Login { get; set; } = null!;
+    [Column("u_login"), Required]
+    public string? Login { get; set; }
     /// <summary>
     /// Password
     /// </summary>
-    [Column("u_password")]
-    public string Password { get; set; } = null!;
+    [Column("u_password"), Required]
+    public string? Password { get; set; }
     /// <summary>
     /// Email
     /// </summary>
-    [Column("u_email")]
-    public string Email { get; set; } = null!;
+    [Column("u_email"), Required]
+    public string? Email { get; set; }
     /// <summary>
     /// Role identifier
     /// </summary>
-    [Column("u_role_id")]
+    [Column("u_role_id"), Required]
     public int RoleId { get; set; }
     /// <summary>
     /// Role Object
     /// </summary>
-    public virtual Role Role { get; set; } = null!;
+    public virtual Role? Role { get; set; }
     /// <summary>
     /// User addresses
     /// </summary>

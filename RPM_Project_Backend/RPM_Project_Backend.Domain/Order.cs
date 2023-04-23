@@ -1,33 +1,33 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_PR_LIB;
 
 namespace RPM_Project_Backend.Domain;
 
 
 public class Order
 {
-    [Column("or_id")]
+    [Column("or_id"), Required]
     public int Id { get; set; }
-    [Column("or_number")]
+    [Column("or_number"), Required]
     public int Number { get; set; }
-    [Column("or_status")]
-    public string Status { get; set; } = null!;
-    [Column("or_ad_id")]
+    [Column("or_status"), Required]
+    public string? Status { get; set; }
+    [Column("or_ad_id"), Required]
     public int AddressId { get; set; }
-    [Column("or_u_id")]
+    [Column("or_u_id"), Required]
     public int UserId { get; set; }
-    [Column("or_f_cost")]
+    [Column("or_f_cost"), Required]
     public double FinalCost { get; set; }
-    [Column("or_time")]
+    [Column("or_time"), Required]
     public DateTime Time { get; set; }
 
     [ValidateNever]
-    public virtual Address OrAd { get; set; } = null!;
+    public virtual Address? OrAd { get; set; }
     [ValidateNever]
-    public virtual User OrU { get; set; } = null!;
+    public virtual User? OrU { get; set; }
 
-    public virtual ICollection<OrdersHaveProduct> OrdersHaveProducts { get; } = new List<OrdersHaveProduct>();
+    public virtual IEnumerable<OrdersHaveProduct> OrdersHaveProducts { get; } = new List<OrdersHaveProduct>();
 
-    public virtual ICollection<Transaction> Transactions { get; } = new List<Transaction>();
+    public virtual IEnumerable<Transaction> Transactions { get; } = new List<Transaction>();
 }

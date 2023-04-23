@@ -1,19 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_PR_LIB;
 
 namespace RPM_Project_Backend.Domain;
 
 
 public class ListsHaveProduct
 {
-    [Column("lhp_id")] //регистр важен? в бд L
+    [Key]
+    [Column("lhp_id"), Required]
     public int Id { get; set; }
-    [Column("lhp_pl_id")]
+    [Column("lhp_pl_id"), Required]
     public int ProductListId { get; set; }
-    [Column("lhp_pro_id")]
+    [Column("lhp_pro_id"), Required]
     public int ProductId { get; set; }
-    [Column("lhp_quantity")]
+    [Column("lhp_quantity"), Required]
     public int Quantity { get; set; }
     
     [ValidateNever]
