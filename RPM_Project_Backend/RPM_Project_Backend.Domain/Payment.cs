@@ -12,17 +12,17 @@ public class Payment
     public int Id { get; set; }
     [Column("pay_user_id"), Required]
     public int UserId { get; set; }
-    [Column("pay_method"), Required]
+    [Column("pay_method"), Required, StringLength(50)]
     public string? Method { get; set; }
     [Column("pay_is_active"), Required]
     public bool IsActive { get; set; }
     
     [ValidateNever]
-    public virtual IEnumerable<BankCard> BankCards { get; } = new List<BankCard>();
+    public virtual IEnumerable<BankCard>? BankCards { get; }
     [ValidateNever]
     public virtual User? PayUser { get; set; }
     [ValidateNever]
-    public virtual IEnumerable<Qiwi> Qiwis { get; } = new List<Qiwi>();
+    public virtual IEnumerable<Qiwi>? Qiwis { get; }
     [ValidateNever]
-    public virtual IEnumerable<Transaction> Transactions { get; } = new List<Transaction>();
+    public virtual IEnumerable<Transaction>? Transactions { get; }
 }

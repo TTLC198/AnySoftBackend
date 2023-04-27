@@ -4,20 +4,23 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
-public class OrdersHaveProduct
+public class ProductsHaveGenres
 {
     [Key]
-    [Column("ohp_id"), Required]
+    [Column("pha_id"), Required]
     public int Id { get; set; }
-    [Column("ohp_pro_id"), Required]
+
+    [Column("pha_pro_id"), Required]
     public int ProductId { get; set; }
-    [Column("ohp_or_id"), Required]
-    public int OrderId { get; set; }
-    [Column("ohp_quantity"), Required]
-    public int Quantity { get; set; }
-    
+
+    [Column("pha_gen_id"), Required]
+    public int GenreId { get; set; }
+
+    [Column("pha_value"), Required, StringLength(50)]
+    public string? Value { get; set; }
+
     [ValidateNever]
-    public virtual Order? Order { get; set; }
+    public virtual Genre? Genre { get; set; }
     [ValidateNever]
     public virtual Product? Product { get; set; }
 }

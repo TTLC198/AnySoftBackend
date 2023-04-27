@@ -16,7 +16,7 @@ public class ApplicationContextDataFixture : IDisposable
         ApplicationContext = new ApplicationContext(options);
 
         ApplicationContext.Users.AddRange(TestValues.Users);
-        ApplicationContext.Categories.AddRange(TestValues.Categories);
+        ApplicationContext.Genres.AddRange(TestValues.Genres);
         ApplicationContext.Products.AddRange(TestValues.Products);
         
         ApplicationContext.SaveChanges();

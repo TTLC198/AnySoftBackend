@@ -58,9 +58,10 @@ public class ProductsController : ControllerBase
         _logger.LogDebug("Get list of products");
         
         var allProducts = _dbSet
-                .Include(p => p.Category)
+                .Include(p => p.Genres)
                 .Include(p => p.Reviews)
                 .Include(p => p.Seller)
+                .Include(p => p.Properties)
                 .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
                 .AsQueryable();
 
@@ -81,12 +82,12 @@ public class ProductsController : ControllerBase
                 if (productQuery.Discount is not null)
                     allProducts = allProducts
                         .Where(product => product.Discount == productQuery.Discount);
-                if (productQuery.Category is not null)
+                if (productQuery.GenreId is not null)
                     allProducts = allProducts
-                        .Where(product => product.CategoryId == productQuery.Category);
-                if (productQuery.Quantity is not null)
+                        .Where(product => product.Genres.Any(g => g.Id == productQuery.GenreId));
+                if (productQuery.PropertyId is not null)
                     allProducts = allProducts
-                        .Where(product => product.Quantity == productQuery.Quantity);
+                        .Where(product => product.Properties.Any(p => p.Id == productQuery.PropertyId));
             }
             catch (Exception e)
             {
@@ -192,7 +193,6 @@ public class ProductsController : ControllerBase
         var product = _mapper.Map<Product>(productDto);
 
         product.SellerId = sellerId;
-        product.Quantity = 0;
         product.Rating = 5;
 
         await _dbSet.AddAsync(product);

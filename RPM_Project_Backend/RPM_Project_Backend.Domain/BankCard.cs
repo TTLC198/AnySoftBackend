@@ -11,8 +11,8 @@ public class BankCard
     public int Id { get; set; }
     [Column("bc_number"), Required] 
     public int Number { get; set; }
-    [Column("bc_name"), Required] 
-    public string Name { get; set; } = null!;
+    [Column("bc_name"), Required, StringLength(50)] 
+    public string? Name { get; set; }
     [Column("bc_expiration_date"), Required]
     public DateTime ExpirationDate { get; set; }
     [Column("bc_cvc"), Required] 
@@ -21,5 +21,5 @@ public class BankCard
     public int PaymentId { get; set; }
 
     [ValidateNever]
-    public virtual Payment BcPayment { get; set; } = null!;
+    public virtual Payment? BankCardPayment { get; set; }
 }

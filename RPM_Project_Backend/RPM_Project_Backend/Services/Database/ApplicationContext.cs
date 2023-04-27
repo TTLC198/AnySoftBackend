@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Domain;
-using Attribute = System.Attribute;
 
 namespace RPM_Project_Backend.Services.Database;
 
@@ -8,26 +7,26 @@ public class ApplicationContext : DbContext
 {
     public ApplicationContext()
     {
+        Database.EnsureCreated();   // создаем базу данных при первом обращении
     }
 
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options)
     {
+        Database.EnsureCreated();   // создаем базу данных при первом обращении
     }
     
     public virtual DbSet<Image> Images { get; set; }
 
     public virtual DbSet<Address> Addresses { get; set; }
 
-    public virtual DbSet<Attribute> Attributes { get; set; }
+    public virtual DbSet<Property> Properties { get; set; }
 
     public virtual DbSet<BankCard> BankCards { get; set; }
 
-    public virtual DbSet<CategoriesHaveAttribute> CategoriesHaveAttributes { get; set; }
-
-    public virtual DbSet<Category> Categories { get; set; }
-
-    public virtual DbSet<ListsHaveProduct> ListsHaveProducts { get; set; }
+    public virtual DbSet<Genre> Genres { get; set; }
+    
+    public virtual DbSet<CartsHaveProduct> CartsHaveProduct { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
 
@@ -35,21 +34,17 @@ public class ApplicationContext : DbContext
 
     public virtual DbSet<Payment> Payments { get; set; }
 
-    public virtual DbSet<Permission> Permissions { get; set; }
-
     public virtual DbSet<Product> Products { get; set; }
 
-    public virtual DbSet<ProductList> ProductLists { get; set; }
+    public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
-    public virtual DbSet<ProductsHaveAttribute> ProductsHaveAttributes { get; set; }
+    public virtual DbSet<ProductsHaveProperties> ProductsHaveProperties { get; set; }
 
     public virtual DbSet<Qiwi> Qiwis { get; set; }
 
     public virtual DbSet<Review> Reviews { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
-
-    public virtual DbSet<RoleHasPermission> RoleHasPermissions { get; set; }
 
     public virtual DbSet<Transaction> Transactions { get; set; }
 

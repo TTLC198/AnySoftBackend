@@ -13,7 +13,7 @@ public class Review
     [Column("rew_u_id"), Required]
     public int UserId { get; set; }
 
-    [Column("rew_text"), Required]
+    [Column("rew_text"), Required, StringLength(50)]
     public string? Text { get; set; }
 
     [Column("rew_grade"), Required]

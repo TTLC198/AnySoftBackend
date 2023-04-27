@@ -11,7 +11,7 @@ public class Order
     public int Id { get; set; }
     [Column("or_number"), Required]
     public int Number { get; set; }
-    [Column("or_status"), Required]
+    [Column("or_status"), Required, StringLength(50)]
     public string? Status { get; set; }
     [Column("or_ad_id"), Required]
     public int AddressId { get; set; }
@@ -23,11 +23,11 @@ public class Order
     public DateTime Time { get; set; }
 
     [ValidateNever]
-    public virtual Address? OrAd { get; set; }
+    public virtual Address? Address { get; set; }
     [ValidateNever]
-    public virtual User? OrU { get; set; }
+    public virtual User? User { get; set; }
 
-    public virtual IEnumerable<OrdersHaveProduct> OrdersHaveProducts { get; } = new List<OrdersHaveProduct>();
+    public virtual IEnumerable<OrdersHaveProduct>? OrdersHaveProducts { get; }
 
-    public virtual IEnumerable<Transaction> Transactions { get; } = new List<Transaction>();
+    public virtual IEnumerable<Transaction>? Transactions { get; }
 }

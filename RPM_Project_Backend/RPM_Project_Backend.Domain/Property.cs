@@ -1,23 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace RPM_Project_Backend.Domain;
 
 [Index(nameof(Name), IsUnique = true)]
-public class Attribute
+public class Property
 {
     [Key]
     [Column("atr_id"), Required]
     public int Id { get; set; }
-    [Column("atr_name"), Required]
+    [Column("atr_name"), Required, StringLength(50)]
     public string? Name { get; set; }
-    [Column("atr_type"), Required]
+    [Column("atr_type"), Required, StringLength(50)]
     public string? Type { get; set; }
 
-    public virtual IEnumerable<CategoriesHaveAttribute> CategoriesHaveAttributes { get; } =
-        new List<CategoriesHaveAttribute>();
-
-    public virtual IEnumerable<ProductsHaveAttribute> ProductsHaveAttributes { get; } =
-        new List<ProductsHaveAttribute>();
+    [ValidateNever]
+    public virtual IEnumerable<ProductsHaveProperties>? ProductsHaveProperties { get; }
 }

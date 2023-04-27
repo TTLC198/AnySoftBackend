@@ -9,6 +9,6 @@ public class Role
     [Column("r_id"), Required]   
     public int Id { get; set; }
     
-    [Column("r_name"), Required]
+    [Column("r_name"), Required, StringLength(50)]
     public string? Name { get; set; }
 }

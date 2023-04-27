@@ -14,7 +14,7 @@ public class Qiwi
     public int Number { get; set; }
     
     [Column("qiwi_pay_id"), Required]
-    public int PayId { get; set; }
+    public int PaymentId { get; set; }
     
     [ValidateNever]
     public virtual Payment? Payment { get; set; }

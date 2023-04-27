@@ -13,11 +13,11 @@ public class ProductRequestDto
     [ValidateNever]
     public int? Discount { get; set; }
     [ValidateNever]
-    public int? Category { get; set; }
+    public int? GenreId { get; set; }
+    [ValidateNever]
+    public int? PropertyId { get; set; }
     [ValidateNever]
     public Dictionary<int, List<string>>? Attributes { get; set; }
-    [ValidateNever]
-    public int? Quantity { get; set; }
     [ValidateNever]
     public SortOrder? Order { get; set; }
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
-public class ProductsHaveAttribute 
+public class ProductsHaveProperties
 {
     [Key]
     [Column("pha_id"), Required]
@@ -13,14 +13,14 @@ public class ProductsHaveAttribute
     [Column("pha_pro_id"), Required]
     public int ProductId { get; set; }
 
-    [Column("pha_atr_id"), Required]
-    public int AttributeId { get; set; }
+    [Column("pha_prp_id"), Required]
+    public int PropertyId { get; set; }
 
-    [Column("pha_value"), Required]
+    [Column("pha_value"), Required, StringLength(50)]
     public string? Value { get; set; }
 
     [ValidateNever]
-    public virtual Attribute? Attribute { get; set; }
+    public virtual Property? Property { get; set; }
     [ValidateNever]
     public virtual Product? Product { get; set; }
 }

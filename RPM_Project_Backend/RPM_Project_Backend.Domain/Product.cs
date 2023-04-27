@@ -17,13 +17,8 @@ public class Product
     /// <summary>
     /// Name
     /// </summary>
-    [Column("pro_name"), Required]
-    public string Name { get; set; } = null!;
-    /// <summary>
-    /// Product Quantity
-    /// </summary>
-    [Column("pro_quantity"), Required]
-    public int Quantity { get; set; }
+    [Column("pro_name"), Required, StringLength(50)]
+    public string? Name { get; set; }
     /// <summary>
     /// Product Cost
     /// </summary>
@@ -35,41 +30,51 @@ public class Product
     [Column("pro_discount"), Required]
     public int? Discount { get; set; }
     /// <summary>
-    /// Product Category Identifier
-    /// </summary>
-    [Column("pro_cat_id"), Required]
-    public int CategoryId { get; set; }
-    /// <summary>
     /// Product Rating (0 to 5)
     /// </summary>
     [Column("pro_rating")]
     public double Rating { get; set; }
-
-    /// <summary>
-    /// Product Category 
-    /// </summary>
-    [ValidateNever]
-    public virtual Category Category { get; set; } = null!;
     /// <summary>
     /// Product Seller Identifier
     /// </summary>
     [Column("pro_s_id")]
     public int SellerId { get; set; }
+
     /// <summary>
     /// Product Seller
     /// </summary>
     [ValidateNever]
-    public virtual User Seller { get; set; } = null!;
+    public virtual User? Seller { get; set; }
+
+    /// <summary>
+    /// Product Genres 
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<Genre>? Genres { get; set; }
+
     /// <summary>
     /// Product attributes
     /// </summary>
     [ValidateNever]
-    public virtual IEnumerable<ProductsHaveAttribute> ProductsHaveAttributes { get; } = new List<ProductsHaveAttribute>();
+    public virtual IEnumerable<ProductsHaveProperties>? ProductsHaveProperties { get; }
+    
+    /// <summary>
+    /// Product properties
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<Property>? Properties { get; }
+    
+    /// <summary>
+    /// Product images
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<Image>? Images { get; }
+    
     /// <summary>
     /// Product reviews
     /// </summary>
     [ValidateNever]
-    public virtual IEnumerable<Review> Reviews { get; } = new List<Review>();
+    public virtual IEnumerable<Review>? Reviews { get; }
 }
 /// <summary>
 /// Product Data Transfer Object
@@ -80,11 +85,11 @@ public class ProductDto
     /// Product Name
     /// </summary>
     [Required(AllowEmptyStrings = false, ErrorMessage = "Name is required!")]
-    public string Name { get; set; } = null!;
+    public string? Name { get; set; }
     /// <summary>
     /// Product Cost
     /// </summary>
-    [Required(AllowEmptyStrings = false, ErrorMessage = "Name is required!")]
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Cost is required!")]
     public int Cost { get; set; }
     /// <summary>
     /// Discount

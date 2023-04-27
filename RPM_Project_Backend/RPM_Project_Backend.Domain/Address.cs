@@ -10,26 +10,26 @@ public class Address
     [Key]
     [Column("ad_id"), Required]
     public int Id { get; set; }
-    [Column("ad_street"), Required]
-    public string Street { get; set; } = null!;
-    [Column("ad_city"), Required]
-    public string City { get; set; } = null!;
-    [Column("ad_state"), Required]
-    public string State { get; set; } = null!;
-    [Column("ad_country"), Required]
-    public string Country { get; set; } = null!;
+    [Column("ad_street"), Required, StringLength(50)]
+    public string? Street { get; set; }
+    [Column("ad_city"), Required, StringLength(50)]
+    public string? City { get; set; }
+    [Column("ad_state"), Required, StringLength(50)]
+    public string? State { get; set; }
+    [Column("ad_country"), Required, StringLength(50)]
+    public string? Country { get; set; }
     [Column("ad_u_id"), Required]
     public int UserId { get; set; }
-    [Column("ad_zip"), Required]
-    public string Zip { get; set; }
+    [Column("ad_zip"), Required, StringLength(20)]
+    public string? Zip { get; set; }
     [Column("ad_is_active"), Required]
     public bool IsActive { get; set; }
     
     [JsonIgnore]
     [NotMapped]
-    public virtual IEnumerable<Order> Orders { get; } = new List<Order>();
+    public virtual IEnumerable<Order>? Orders { get; }
     [ValidateNever]
     [JsonIgnore]
     [NotMapped]
-    public virtual User User { get; set; } = null!;
+    public virtual User? User { get; set; }
 }
