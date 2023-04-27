@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
-public class ProductList
+public class ShoppingCart
 {
     [Key]
     [Column("pl_id"), Required]
@@ -12,8 +12,6 @@ public class ProductList
 
     [Column("pl_u_id"), Required]
     public int UserId { get; set; }
-    [Column("pl_name"), Required]
-    public string? Name { get; set; }
 
     [ValidateNever]
     public virtual User? User { get; set; }
