@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using RPM_Project_Backend.Domain;
-
-namespace RPM_Project_Backend.Tests;
+﻿namespace RPM_Project_Backend.Tests;
 
 public static partial class TestValues
 {
-    public static IReadOnlyList<Role> Roles = new List<Role>()
+    public static readonly IReadOnlyList<Role> Roles = new List<Role>()
     {
         new ()
         {
@@ -21,7 +18,7 @@ public static partial class TestValues
         },
     };
     
-    public static IReadOnlyList<User> Users = new List<User>()
+    public static readonly IReadOnlyList<User> Users = new List<User>()
     {
         new ()
         {
@@ -65,7 +62,7 @@ public static partial class TestValues
 
 public static partial class TestValues
 {
-    public static IReadOnlyList<Category> Categories = new List<Category>()
+    public static IReadOnlyList<Genre> Genres = new List<Genre>()
     {
         new ()
         {
@@ -77,7 +74,7 @@ public static partial class TestValues
         },
         new ()
         {
-            Id = 3, Name = "category", ParentId = 1
+            Id = 3, Name = "category"
         },
     };
     
@@ -89,11 +86,9 @@ public static partial class TestValues
             Cost = 1000,
             Discount = 0,
             Name = "First product",
-            Quantity = 0,
             Rating = 5,
             SellerId = 3,
-            CategoryId = 1,
-            Category = Categories.First(c => c.Id == 1),
+            Genres = Genres,
             Seller = Users.First(u => u.Id == 3)
         },
         new ()
@@ -102,11 +97,9 @@ public static partial class TestValues
             Cost = 2000,
             Discount = 20,
             Name = "Second product",
-            Quantity = 0,
             Rating = 3.2,
             SellerId = 3,
-            CategoryId = 3,
-            Category = Categories.First(c => c.Id == 3),
+            Genres = Genres,
             Seller = Users.First(u => u.Id == 3)
         },
         new ()
@@ -115,11 +108,9 @@ public static partial class TestValues
             Cost = 3000,
             Discount = 10,
             Name = "Third product",
-            Quantity = 0,
             Rating = 4.6,
             SellerId = 3,
-            CategoryId = 2,
-            Category = Categories.First(c => c.Id == 2),
+            Genres = Genres,
             Seller = Users.First(u => u.Id == 3)
         },
     };
@@ -130,11 +121,9 @@ public static partial class TestValues
         Cost = 4000,
         Discount = 20,
         Name = "Single product",
-        Quantity = 0,
         Rating = 4.2,
         SellerId = 2,
-        CategoryId = 2,
-        Category = Categories.First(c => c.Id == 2),
+        Genres = Genres,
         Seller = Users.First(u => u.Id == 3)
     };
 }
@@ -160,6 +149,5 @@ public static partial class TestValues
     public static Image SingleImage = new()
     {
         Id = 4,
-        
     };
 }

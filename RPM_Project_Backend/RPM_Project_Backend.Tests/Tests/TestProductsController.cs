@@ -200,7 +200,6 @@ public class TestProductsController
         Assert.Equal(product.Name, valueResult.Name);
         Assert.Equal(product.Id, valueResult.Id);
         Assert.Equal(product.Cost, valueResult.Cost);
-        Assert.Equal(product.Quantity, valueResult.Quantity);
         Assert.Equal(product.Discount, valueResult.Discount);
         //Assert.Equal(product.Rating, valueResult.Rating); // Rating by default = 5
     }
@@ -300,7 +299,6 @@ public class TestProductsController
         Assert.Equal(product.Name, valueResult.Name);
         Assert.Equal(product.Id, valueResult.Id);
         Assert.Equal(product.Cost, valueResult.Cost);
-        Assert.Equal(product.Quantity, valueResult.Quantity);
         Assert.Equal(product.Discount, valueResult.Discount);
         Assert.Equal(product.Rating, valueResult.Rating);
     }
