@@ -14,5 +14,6 @@ public class ShoppingCart
     public int UserId { get; set; }
 
     [ValidateNever]
+    [ForeignKey("pl_u_id")]
     public virtual User? User { get; set; }
 }

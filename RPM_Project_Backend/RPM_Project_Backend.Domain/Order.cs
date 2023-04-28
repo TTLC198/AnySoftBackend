@@ -7,6 +7,7 @@ namespace RPM_Project_Backend.Domain;
 
 public class Order
 {
+    [Key]
     [Column("or_id"), Required]
     public int Id { get; set; }
     [Column("or_number"), Required]
@@ -23,8 +24,10 @@ public class Order
     public DateTime Time { get; set; }
 
     [ValidateNever]
+    [ForeignKey("or_ad_id")]
     public virtual Address? Address { get; set; }
     [ValidateNever]
+    [ForeignKey("or_u_id")]
     public virtual User? User { get; set; }
 
     public virtual IEnumerable<OrdersHaveProduct>? OrdersHaveProducts { get; }

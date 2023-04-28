@@ -26,10 +26,8 @@ public class Address
     public bool IsActive { get; set; }
     
     [JsonIgnore]
-    [NotMapped]
     public virtual IEnumerable<Order>? Orders { get; }
     [ValidateNever]
-    [JsonIgnore]
-    [NotMapped]
+    [ForeignKey("ad_u_id")]
     public virtual User? User { get; set; }
 }

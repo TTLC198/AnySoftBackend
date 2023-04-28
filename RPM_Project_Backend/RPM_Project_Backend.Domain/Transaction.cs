@@ -20,7 +20,9 @@ public class Transaction
     public DateTime Time { get; set; }
 
     [ValidateNever]
+    [ForeignKey("tr_order_id")]
     public virtual Order? Order { get; set; }
     [ValidateNever]
+    [ForeignKey("tr_pay_id")]
     public virtual Payment? Payment { get; set; }
 }

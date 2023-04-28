@@ -17,7 +17,9 @@ public class CartsHaveProduct
     public int Quantity { get; set; }
     
     [ValidateNever]
+    [ForeignKey("lhp_pl_id")]
     public virtual ShoppingCart? ShoppingCart { get; set; }
     [ValidateNever]
+    [ForeignKey("lhp_pro_id")]
     public virtual Product? Product { get; set; }
 }

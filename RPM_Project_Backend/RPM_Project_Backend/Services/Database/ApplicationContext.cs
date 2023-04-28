@@ -15,7 +15,22 @@ public class ApplicationContext : DbContext
     {
         Database.EnsureCreated();   // создаем базу данных при первом обращении
     }
-    
+
+    /*protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Order>()
+            .Has(c => c.Stage)
+            .WithMany()
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<User>()
+            .HasRequired(s => s.Stage)
+            .WithMany()
+            .WillCascadeOnDelete(false);
+        
+        base.OnModelCreating(modelBuilder);
+    }*/
+
     public virtual DbSet<Image> Images { get; set; }
 
     public virtual DbSet<Address> Addresses { get; set; }

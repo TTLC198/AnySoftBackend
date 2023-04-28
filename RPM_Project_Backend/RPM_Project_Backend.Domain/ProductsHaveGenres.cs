@@ -20,7 +20,9 @@ public class ProductsHaveGenres
     public string? Value { get; set; }
 
     [ValidateNever]
+    [ForeignKey("pha_gen_id")]
     public virtual Genre? Genre { get; set; }
     [ValidateNever]
+    [ForeignKey("pha_pro_id")]
     public virtual Product? Product { get; set; }
 }

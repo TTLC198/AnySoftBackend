@@ -20,7 +20,9 @@ public class ProductsHaveProperties
     public string? Value { get; set; }
 
     [ValidateNever]
+    [ForeignKey("pha_prp_id")]
     public virtual Property? Property { get; set; }
     [ValidateNever]
+    [ForeignKey("pha_pro_id")]
     public virtual Product? Product { get; set; }
 }

@@ -20,7 +20,8 @@ public class Payment
     [ValidateNever]
     public virtual IEnumerable<BankCard>? BankCards { get; }
     [ValidateNever]
-    public virtual User? PayUser { get; set; }
+    [ForeignKey("pay_user_id")]
+    public virtual User? User { get; set; }
     [ValidateNever]
     public virtual IEnumerable<Qiwi>? Qiwis { get; }
     [ValidateNever]

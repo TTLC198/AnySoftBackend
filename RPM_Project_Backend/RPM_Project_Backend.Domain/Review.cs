@@ -17,15 +17,16 @@ public class Review
     public string? Text { get; set; }
 
     [Column("rew_grade"), Required]
-    public double Grade { get; set; }
+    public double Grade { get; set; }   
 
     [Column("rew_pro_id"), Required]
     public int ProductId { get; set; }
 
     [ValidateNever]
-    [NotMapped]
+    [ForeignKey("rew_pro_id")]
     public virtual Product? Product { get; set; }
 
     [ValidateNever]
+    [ForeignKey("rew_u_id")]
     public virtual User? User { get; set; }
 }

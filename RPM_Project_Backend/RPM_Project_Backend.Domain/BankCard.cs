@@ -21,5 +21,6 @@ public class BankCard
     public int PaymentId { get; set; }
 
     [ValidateNever]
+    [ForeignKey("bc_payment_id")]
     public virtual Payment? BankCardPayment { get; set; }
 }

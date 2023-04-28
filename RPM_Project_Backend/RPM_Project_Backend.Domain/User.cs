@@ -37,6 +37,7 @@ public class User
     /// <summary>
     /// Role Object
     /// </summary>
+    [ForeignKey("u_role_id")]
     public virtual Role? Role { get; set; }
     /// <summary>
     /// User addresses

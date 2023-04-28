@@ -44,6 +44,7 @@ public class Product
     /// Product Seller
     /// </summary>
     [ValidateNever]
+    [ForeignKey("pro_s_id")]
     public virtual User? Seller { get; set; }
 
     /// <summary>
