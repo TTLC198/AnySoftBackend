@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-preview.2.23128.3" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+        <PackageReference Include="Moq.EntityFrameworkCore" Version="7.0.0.2" />
+        <PackageReference Include="coverlet.collector" Version="3.1.2" />
+        <PackageReference Include="xunit" Version="2.4.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\RPM_Project_Library\RPM_PR_LIB\RPM_PR_LIB.csproj" />
+      <ProjectReference Include="..\RPM_Project_Backend.Domain\RPM_Project_Backend.Domain.csproj" />
+      <ProjectReference Include="..\RPM_Project_Backend\RPM_Project_Backend.csproj" />
+    </ItemGroup>
+
+</Project>
