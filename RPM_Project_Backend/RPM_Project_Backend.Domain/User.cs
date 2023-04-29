@@ -18,17 +18,17 @@ public class User
     /// <summary>
     /// Login
     /// </summary>
-    [Column("u_login"), Required]
+    [Column("u_login"), Required, StringLength(256)]
     public string? Login { get; set; }
     /// <summary>
     /// Password
     /// </summary>
-    [Column("u_password"), Required]
+    [Column("u_password"), Required, StringLength(256)]
     public string? Password { get; set; }
     /// <summary>
     /// Email
     /// </summary>
-    [Column("u_email"), Required]
+    [Column("u_email"), Required, StringLength(256)]
     public string? Email { get; set; }
     /// <summary>
     /// Role identifier

@@ -18,5 +18,5 @@ public class ShoppingCart
     public virtual User? User { get; }
     
     [ValidateNever]
-    public virtual IEnumerable<CartsHaveProduct>? CartsHaveProducts { get; }
+    public virtual IEnumerable<CartsHaveProducts>? CartsHaveProducts { get; }
 }

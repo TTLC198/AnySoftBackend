@@ -17,7 +17,7 @@ public class Product
     /// <summary>
     /// Name
     /// </summary>
-    [Column("pro_name"), Required, StringLength(50)]
+    [Column("pro_name"), Required, StringLength(128)]
     public string? Name { get; set; }
     /// <summary>
     /// Product Cost
@@ -69,7 +69,7 @@ public class Product
     /// Product in shopping carts
     /// </summary>
     [ValidateNever]
-    public virtual IEnumerable<CartsHaveProduct>? CartsHaveProduct { get; }
+    public virtual IEnumerable<CartsHaveProducts>? CartsHaveProducts { get; }
 
     /// <summary>
     /// Product images

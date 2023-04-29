@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
-public class CartsHaveProduct
+public class CartsHaveProducts
 {
     [Key]
     [Column("chp_id"), Required]

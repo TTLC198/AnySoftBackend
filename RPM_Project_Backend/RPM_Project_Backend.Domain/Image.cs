@@ -23,7 +23,7 @@ public class Image
     [Column("img_content_type"), Required, StringLength(50)]
     public string? ContentType { get; set; }
 
-    [Column("img_path"), Required, StringLength(50)]
+    [Column("img_path"), Required, StringLength(200)]
     public string? ImagePath { get; set; }
 
     [Column("img_ts"), Required]

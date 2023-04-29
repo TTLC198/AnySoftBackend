@@ -31,7 +31,7 @@ public class ApplicationContext : DbContext
             .OnDelete(DeleteBehavior.NoAction);
         
         modelBuilder
-            .Entity<CartsHaveProduct>()
+            .Entity<CartsHaveProducts>()
             .HasOne(o => o.ShoppingCart)
             .WithMany(o => o.CartsHaveProducts)
             .OnDelete(DeleteBehavior.NoAction);
@@ -59,7 +59,7 @@ public class ApplicationContext : DbContext
 
     public virtual DbSet<Genre> Genres { get; set; }
     
-    public virtual DbSet<CartsHaveProduct> CartsHaveProduct { get; set; }
+    public virtual DbSet<CartsHaveProducts> CartsHaveProducts { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
 

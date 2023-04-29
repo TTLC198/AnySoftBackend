@@ -10,8 +10,8 @@ public class Qiwi
     [Column("qiwi_id"), Required]
     public int Id { get; set; }
     
-    [Column("qiwi_number"), Required]
-    public int Number { get; set; }
+    [Column("qiwi_number"), Required, StringLength(16)]
+    public string? Number { get; set; }
     
     [Column("qiwi_pay_id"), Required]
     public int PaymentId { get; set; }

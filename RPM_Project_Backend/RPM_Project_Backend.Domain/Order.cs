@@ -10,7 +10,7 @@ public class Order
     [Key]
     [Column("or_id"), Required]
     public int Id { get; set; }
-    [Column("or_status"), Required, StringLength(50)]
+    [Column("or_status"), Required, StringLength(128)]
     public string? Status { get; set; }
     [Column("or_ad_id"), Required]
     public int AddressId { get; set; }
