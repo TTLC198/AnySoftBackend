@@ -7,19 +7,19 @@ namespace RPM_Project_Backend.Domain;
 public class ProductsHaveProperties
 {
     [Key]
-    [Column("pha_id"), Required]
+    [Column("php_id"), Required]
     public int Id { get; set; }
 
-    [Column("pha_pro_id"), Required]
+    [Column("php_pro_id"), Required]
     public int ProductId { get; set; }
 
-    [Column("pha_prp_id"), Required]
+    [Column("php_prp_id"), Required]
     public int PropertyId { get; set; }
 
     [ValidateNever]
     [ForeignKey("PropertyId")]
-    public virtual Property? Property { get; }
+    public virtual Property? Property { get; set; }
     [ValidateNever]
     [ForeignKey("ProductId")]
-    public virtual Product? Product { get; }
+    public virtual Product? Product { get; set; }
 }

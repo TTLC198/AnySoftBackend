@@ -18,8 +18,8 @@ public class ProductsHaveGenres
 
     [ValidateNever]
     [ForeignKey("ProductId")]
-    public virtual Product? Product { get; }
+    public virtual Product? Product { get; set; }
     [ValidateNever]
     [ForeignKey("GenreId")]
-    public virtual Genre? Genre { get; }
+    public virtual Genre? Genre { get; set; }
 }

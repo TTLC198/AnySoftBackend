@@ -22,7 +22,7 @@ public class Review
     [Column("rew_pro_id"), Required]
     public int ProductId { get; set; }
     
-    [Column("img_ts"), Required]
+    [Column("rew_ts"), Required]
     public DateTime Ts { get; set; }
 
     [ValidateNever]

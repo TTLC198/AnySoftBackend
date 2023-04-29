@@ -102,6 +102,7 @@ public class ProductDto
     /// Discount
     /// </summary>
     public int? Discount { get; set; }
+    //TODO
     /// <summary>
     /// Category Identifier
     /// </summary>

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,5 +18,6 @@ public class Property
     public string? Icon { get; set; }
 
     [ValidateNever]
+    [JsonIgnore]
     public virtual IEnumerable<ProductsHaveProperties>? ProductsHaveProperties { get; }
 }

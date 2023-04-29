@@ -28,9 +28,10 @@ public class Startup
         services.AddControllers(options => options.AllowEmptyInputInBodyModelBinding = true);
         services.AddControllers().AddJsonOptions(opt =>
         {
+            opt.JsonSerializerOptions.DefaultIgnoreCondition =
+                JsonIgnoreCondition.WhenWritingNull;
             opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
-        services.AddControllers().AddNewtonsoftJson();
         // Use Swagger
         // Inject an implementation of ISwaggerProvider with defaulted settings applied.
         services.AddSwaggerGen();
