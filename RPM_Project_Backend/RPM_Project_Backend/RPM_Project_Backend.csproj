@@ -25,7 +25,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0-preview.2.23153.2" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-preview.2.23128.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-preview.3.23174.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-preview.2.23128.3">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -46,13 +46,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="RPM_PR_LIB">
-        <HintPath>..\..\RPM_PR_LIB\RPM_PR_LIB\bin\Debug\net6.0\RPM_PR_LIB.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\RPM_Project_Library\RPM_PR_LIB\RPM_PR_LIB.csproj" />
       <ProjectReference Include="..\RPM_Project_Backend.Domain\RPM_Project_Backend.Domain.csproj" />
     </ItemGroup>
 
