@@ -49,36 +49,42 @@ public class ProductsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(IEnumerable<Product>), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<IEnumerable<Product>>> Get(
+    [ProducesResponseType(typeof(IEnumerable<ProductResponseDto>), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> Get(
         [FromQuery] QueryParameters<ProductRequestDto> queryParameters)
     {
         _logger.LogDebug("Get list of products");
-        
-        var allProducts = _dbSet
-                .Include(p => p.ProductsHaveGenres)
-                .Include(p => p.Reviews)
-                .Include(p => p.Seller)
-                .Include(p => p.ProductsHaveProperties)
-                .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
-                .AsQueryable();
+
+        var allProducts = _context.Products
+            .Include(p => p.ProductsHaveGenres)
+            .ThenInclude(phg => phg.Genre)
+            .Include(p => p.Reviews)
+            .ThenInclude(r => r.User)
+            .ThenInclude(u => u.Images)
+            .Include(p => p.Seller)
+            .Include(p => p.ProductsHaveProperties)
+            .ThenInclude(php => php.Property)
+            .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
+            .AsQueryable();
 
         if (queryParameters.HasQuery())
         {
             try
             {
-                var productQuery = (ProductRequestDto)queryParameters.Object;
+                var productQuery = (ProductRequestDto) queryParameters.Object;
                 if (productQuery.Name is not null)
                     allProducts = allProducts
                         .Where(product => product.Name.Contains(productQuery.Name));
                 if (productQuery.Rating is {Min: not null} and {Max: not null})
                     allProducts = allProducts
-                        .Where(product => productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max); 
+                        .Where(product =>
+                            productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max);
                 if (productQuery.Cost is {Min: not null} and {Max: not null})
                     allProducts = allProducts
-                        .Where(product => productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max);
+                        .Where(product =>
+                            productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max);
                 if (productQuery.Discount is not null)
                     allProducts = allProducts
                         .Where(product => product.Discount == productQuery.Discount);
@@ -112,6 +118,41 @@ public class ProductsController : ControllerBase
                 allProducts
                     .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
                     .Take(queryParameters.PageCount)
+                    .Select(p => new ProductResponseDto()
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Cost = p.Cost,
+                        Discount = p.Discount,
+                        Rating = p.Rating,
+                        Seller = new UserResponseDto()
+                        {
+                            Id = p.Seller.Id,
+                            Login = p.Seller.Login,
+                            Image = p.Seller.Images.First().ImagePath
+                        },
+                        Images = p.Images
+                            .Select(i => i.ImagePath)
+                            .ToList(),
+                        Reviews = p.Reviews
+                            .Select(r => new ReviewResponseDto()
+                            {
+                                Text = r.Text,
+                                Grade = r.Grade,
+                                Ts = r.Ts,
+                                User = new UserResponseDto()
+                                {
+                                    Login = r.User.Login,
+                                    Image = r.User.Images.First().ImagePath
+                                }
+                            }),
+                        Properties = p.ProductsHaveProperties
+                            .Select(php => php.Property)
+                            .ToList(),
+                        Genres = p.ProductsHaveGenres
+                            .Select(phg => phg.Genre)
+                            .ToList()
+                    })
             )
         };
     }
@@ -131,17 +172,60 @@ public class ProductsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet("{id:int}")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(ProductResponseDto), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Get(long id)
     {
-        if (id <= 0) 
+        if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
-        
+
         _logger.LogDebug("Get product with id = {id}", id);
 
-        var product = await _dbSet.FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _context.Products
+            .Include(p => p.ProductsHaveGenres)
+            .ThenInclude(phg => phg.Genre)
+            .Include(p => p.Reviews)
+            .ThenInclude(r => r.User)
+            .ThenInclude(u => u.Images)
+            .Include(p => p.Seller)
+            .Include(p => p.ProductsHaveProperties)
+            .ThenInclude(php => php.Property)
+            .Select(p => new ProductResponseDto()
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Cost = p.Cost,
+                Discount = p.Discount,
+                Rating = p.Rating,
+                Seller = new UserResponseDto()
+                {
+                    Id = p.Seller.Id,
+                    Login = p.Seller.Login,
+                    Image = p.Seller.Images.First().ImagePath
+                },
+                Images = p.Images
+                    .Select(i => i.ImagePath)
+                    .ToList(),
+                Reviews = p.Reviews
+                    .Select(r => new ReviewResponseDto()
+                    {
+                        Text = r.Text,
+                        Grade = r.Grade,
+                        Ts = r.Ts,
+                        User = new UserResponseDto()
+                        {
+                            Login = r.User.Login,
+                            Image = r.User.Images.First().ImagePath
+                        }
+                    }),
+                Properties = p.ProductsHaveProperties
+                    .Select(php => php.Property)
+                    .ToList(),
+                Genres = p.ProductsHaveGenres
+                    .Select(phg => phg.Genre)
+                    .ToList()
+            }).FirstOrDefaultAsync(p => p.Id == id);
 
         return product switch
         {
@@ -171,25 +255,25 @@ public class ProductsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [Authorize(Roles = "seller")]
-    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(Product), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Post(ProductDto productDto)
     {
         if (productDto is null)
             return BadRequest();
-        
+
         _logger.LogDebug("Create new product with name = {id}", productDto.Name);
 
         var sellerId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
 
         var existedProduct = await _dbSet.FirstOrDefaultAsync(
-                    p => p.Name == productDto.Name 
+            p => p.Name == productDto.Name
                  && p.SellerId == sellerId);
         if (existedProduct is not null)
             return BadRequest("Product with same name already exists");
-        
+
         var product = _mapper.Map<Product>(productDto);
 
         product.SellerId = sellerId;
@@ -229,21 +313,21 @@ public class ProductsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpPut]
     [Authorize(Roles = "seller")]
-    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(Product), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Put([FromBody] Product product)
     {
         var sellerId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
-        
+
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{sellerId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
-        
+
         if (!_dbSet.Any(p => p.Id == product.Id))
             return NotFound(new ErrorModel("Product not found"));
-        
+
         product.SellerId = sellerId;
 
         _logger.LogDebug("Update existing product with id = {id}", product.Id);
@@ -251,7 +335,7 @@ public class ProductsController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(500, new ErrorModel("Some error has occurred")),
             _ => Ok(product)
         };
     }
@@ -281,11 +365,11 @@ public class ProductsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = "seller")]
-    [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(Product), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Patch([FromBody] JsonPatchDocument<Product> productPatch, int id)
     {
         if (productPatch is null || id <= 0)
@@ -310,7 +394,7 @@ public class ProductsController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(500, new ErrorModel("Some error has occurred")),
             _ => Ok(product)
         };
     }
@@ -332,31 +416,31 @@ public class ProductsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [Authorize(Roles = "seller")]
     [HttpDelete("{id:int}")]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(void), (int) HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Product>> Delete(long id)
     {
-        if (id <= 0) 
+        if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
-        
+
         var product = await _dbSet.FirstOrDefaultAsync(p => p.Id == id);
 
         if (product is null)
             return NotFound(new ErrorModel("Product not found"));
-        
+
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
-        
+
         _logger.LogDebug("Delete existing product with id = {id}", id);
 
         _dbSet.Remove(product);
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(StatusCodes.Status500InternalServerError,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred")),
             _ => NoContent()
         };
     }

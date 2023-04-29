@@ -59,6 +59,7 @@ public class User
     /// User reviews
     /// </summary>
     [ValidateNever]
+    [NotMapped]
     public virtual IEnumerable<Review>? Reviews { get; }
     /// <summary>
     /// User reviews
@@ -70,6 +71,28 @@ public class User
     /// </summary>
     [ValidateNever]
     public virtual IEnumerable<Order>? Orders { get; }
+}
+/// <summary>
+/// User object that is returned when requested
+/// </summary>
+public class UserResponseDto
+{
+    /// <summary>
+    /// Identifier
+    /// </summary>
+    public int Id { get; set; }
+    /// <summary>
+    /// Login
+    /// </summary>
+    public string? Login { get; set; }
+    /// <summary>
+    /// Email
+    /// </summary>
+    public string? Email { get; set; }
+    /// <summary>
+    /// Image Path
+    /// </summary>
+    public string? Image { get; set; }
 }
 /// <summary>
 /// User Data Transfer Object
