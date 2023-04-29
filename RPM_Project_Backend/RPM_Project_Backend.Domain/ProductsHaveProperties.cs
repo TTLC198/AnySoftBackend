@@ -16,13 +16,10 @@ public class ProductsHaveProperties
     [Column("pha_prp_id"), Required]
     public int PropertyId { get; set; }
 
-    [Column("pha_value"), Required, StringLength(50)]
-    public string? Value { get; set; }
-
     [ValidateNever]
-    [ForeignKey("pha_prp_id")]
-    public virtual Property? Property { get; set; }
+    [ForeignKey("PropertyId")]
+    public virtual Property? Property { get; }
     [ValidateNever]
-    [ForeignKey("pha_pro_id")]
-    public virtual Product? Product { get; set; }
+    [ForeignKey("ProductId")]
+    public virtual Product? Product { get; }
 }

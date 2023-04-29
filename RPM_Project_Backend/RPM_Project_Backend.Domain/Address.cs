@@ -28,6 +28,6 @@ public class Address
     [JsonIgnore]
     public virtual IEnumerable<Order>? Orders { get; }
     [ValidateNever]
-    [ForeignKey("ad_u_id")]
-    public virtual User? User { get; set; }
+    [ForeignKey("UserId")]
+    public virtual User? User { get; }
 }

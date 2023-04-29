@@ -23,10 +23,10 @@ public class Review
     public int ProductId { get; set; }
 
     [ValidateNever]
-    [ForeignKey("rew_pro_id")]
-    public virtual Product? Product { get; set; }
+    [ForeignKey("ProductId")]
+    public virtual Product? Product { get; }
 
     [ValidateNever]
-    [ForeignKey("rew_u_id")]
-    public virtual User? User { get; set; }
+    [ForeignKey("UserId")]
+    public virtual User? User { get; }
 }

@@ -58,10 +58,10 @@ public class ProductsController : ControllerBase
         _logger.LogDebug("Get list of products");
         
         var allProducts = _dbSet
-                .Include(p => p.Genres)
+                .Include(p => p.ProductsHaveGenres)
                 .Include(p => p.Reviews)
                 .Include(p => p.Seller)
-                .Include(p => p.Properties)
+                .Include(p => p.ProductsHaveProperties)
                 .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
                 .AsQueryable();
 
@@ -84,10 +84,10 @@ public class ProductsController : ControllerBase
                         .Where(product => product.Discount == productQuery.Discount);
                 if (productQuery.GenreId is not null)
                     allProducts = allProducts
-                        .Where(product => product.Genres.Any(g => g.Id == productQuery.GenreId));
+                        .Where(product => product.ProductsHaveGenres.Any(g => g.Id == productQuery.GenreId));
                 if (productQuery.PropertyId is not null)
                     allProducts = allProducts
-                        .Where(product => product.Properties.Any(p => p.Id == productQuery.PropertyId));
+                        .Where(product => product.ProductsHaveProperties.Any(p => p.Id == productQuery.PropertyId));
             }
             catch (Exception e)
             {

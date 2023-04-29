@@ -17,6 +17,6 @@ public class Qiwi
     public int PaymentId { get; set; }
     
     [ValidateNever]
-    [ForeignKey("qiwi_pay_id")]
-    public virtual Payment? Payment { get; set; }
+    [ForeignKey("PaymentId")]
+    public virtual Payment? Payment { get; }
 }

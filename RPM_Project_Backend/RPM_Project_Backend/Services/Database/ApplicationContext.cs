@@ -7,29 +7,47 @@ public class ApplicationContext : DbContext
 {
     public ApplicationContext()
     {
-        Database.EnsureCreated();   // создаем базу данных при первом обращении
+        Database.EnsureCreated();
     }
 
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options)
     {
-        Database.EnsureCreated();   // создаем базу данных при первом обращении
+        Database.EnsureCreated();
     }
 
-    /*protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Order>()
-            .Has(c => c.Stage)
-            .WithMany()
-            .WillCascadeOnDelete(false);
-
-        modelBuilder.Entity<User>()
-            .HasRequired(s => s.Stage)
-            .WithMany()
-            .WillCascadeOnDelete(false);
+        modelBuilder
+            .Entity<Order>()
+            .HasOne(o => o.User)
+            .WithMany(o => o.Orders)
+            .OnDelete(DeleteBehavior.NoAction);
         
-        base.OnModelCreating(modelBuilder);
-    }*/
+        modelBuilder
+            .Entity<Review>()
+            .HasOne(o => o.User)
+            .WithMany(o => o.Reviews)
+            .OnDelete(DeleteBehavior.NoAction);
+        
+        modelBuilder
+            .Entity<CartsHaveProduct>()
+            .HasOne(o => o.ShoppingCart)
+            .WithMany(o => o.CartsHaveProducts)
+            .OnDelete(DeleteBehavior.NoAction);
+        
+        modelBuilder
+            .Entity<OrdersHaveProduct>()
+            .HasOne(o => o.Order)
+            .WithMany(o => o.OrdersHaveProducts)
+            .OnDelete(DeleteBehavior.NoAction);
+        
+        modelBuilder
+            .Entity<Transaction>()
+            .HasOne(o => o.Payment)
+            .WithMany(o => o.Transactions)
+            .OnDelete(DeleteBehavior.NoAction);
+    }
 
     public virtual DbSet<Image> Images { get; set; }
 
@@ -54,6 +72,8 @@ public class ApplicationContext : DbContext
     public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
     public virtual DbSet<ProductsHaveProperties> ProductsHaveProperties { get; set; }
+    
+    public virtual DbSet<ProductsHaveGenres> ProductsHaveGenres { get; set; }
 
     public virtual DbSet<Qiwi> Qiwis { get; set; }
 

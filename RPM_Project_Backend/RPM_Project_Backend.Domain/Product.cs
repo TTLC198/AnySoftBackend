@@ -44,14 +44,8 @@ public class Product
     /// Product Seller
     /// </summary>
     [ValidateNever]
-    [ForeignKey("pro_s_id")]
+    [ForeignKey("SellerId")]
     public virtual User? Seller { get; set; }
-
-    /// <summary>
-    /// Product Genres 
-    /// </summary>
-    [ValidateNever]
-    public virtual IEnumerable<Genre>? Genres { get; set; }
 
     /// <summary>
     /// Product attributes
@@ -60,11 +54,23 @@ public class Product
     public virtual IEnumerable<ProductsHaveProperties>? ProductsHaveProperties { get; }
     
     /// <summary>
-    /// Product properties
+    /// Product genres
     /// </summary>
     [ValidateNever]
-    public virtual IEnumerable<Property>? Properties { get; }
+    public virtual IEnumerable<ProductsHaveGenres>? ProductsHaveGenres { get; }
     
+    /// <summary>
+    /// Product in orders
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<OrdersHaveProduct>? OrdersHaveProducts { get; }
+    
+    /// <summary>
+    /// Product in shopping carts
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<CartsHaveProduct>? CartsHaveProduct { get; }
+
     /// <summary>
     /// Product images
     /// </summary>

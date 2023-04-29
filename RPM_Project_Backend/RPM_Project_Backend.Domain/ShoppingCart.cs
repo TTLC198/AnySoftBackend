@@ -7,13 +7,16 @@ namespace RPM_Project_Backend.Domain;
 public class ShoppingCart
 {
     [Key]
-    [Column("pl_id"), Required]
+    [Column("sc_id"), Required]
     public int Id { get; set; }
 
-    [Column("pl_u_id"), Required]
+    [Column("sc_u_id"), Required]
     public int UserId { get; set; }
 
     [ValidateNever]
-    [ForeignKey("pl_u_id")]
-    public virtual User? User { get; set; }
+    [ForeignKey("UserId")]
+    public virtual User? User { get; }
+    
+    [ValidateNever]
+    public virtual IEnumerable<CartsHaveProduct>? CartsHaveProducts { get; }
 }

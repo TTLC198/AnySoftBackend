@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
@@ -37,12 +38,38 @@ public class User
     /// <summary>
     /// Role Object
     /// </summary>
-    [ForeignKey("u_role_id")]
+    [ForeignKey("RoleId")]
     public virtual Role? Role { get; set; }
+    /// <summary>
+    /// Product images
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<Image>? Images { get; }
     /// <summary>
     /// User addresses
     /// </summary>
-    public virtual ICollection<Address> Addresses { get; } = new List<Address>();
+    [ValidateNever]
+    public virtual IEnumerable<Address>? Addresses { get; }
+    /// <summary>
+    /// User payments
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<Payment>? Payments { get; }
+    /// <summary>
+    /// User reviews
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<Review>? Reviews { get; }
+    /// <summary>
+    /// User reviews
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<ShoppingCart>? ShoppingCarts { get; }
+    /// <summary>
+    /// User orders
+    /// </summary>
+    [ValidateNever]
+    public virtual IEnumerable<Order>? Orders { get; }
 }
 /// <summary>
 /// User Data Transfer Object

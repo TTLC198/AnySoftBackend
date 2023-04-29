@@ -17,9 +17,9 @@ public class OrdersHaveProduct
     public int Quantity { get; set; }
     
     [ValidateNever]
-    [ForeignKey("ohp_or_id")]
-    public virtual Order? Order { get; set; }
+    [ForeignKey("OrderId")]
+    public virtual Order? Order { get; }
     [ValidateNever]
-    [ForeignKey("ohp_pro_id")]
-    public virtual Product? Product { get; set; }
+    [ForeignKey("ProductId")]
+    public virtual Product? Product { get; }
 }

@@ -10,8 +10,6 @@ public class Order
     [Key]
     [Column("or_id"), Required]
     public int Id { get; set; }
-    [Column("or_number"), Required]
-    public int Number { get; set; }
     [Column("or_status"), Required, StringLength(50)]
     public string? Status { get; set; }
     [Column("or_ad_id"), Required]
@@ -24,13 +22,13 @@ public class Order
     public DateTime Time { get; set; }
 
     [ValidateNever]
-    [ForeignKey("or_ad_id")]
-    public virtual Address? Address { get; set; }
+    [ForeignKey("AddressId")]
+    public virtual Address? Address { get; }
     [ValidateNever]
-    [ForeignKey("or_u_id")]
-    public virtual User? User { get; set; }
-
+    [ForeignKey("UserId")]
+    public virtual User? User { get; }
+    [ValidateNever]
     public virtual IEnumerable<OrdersHaveProduct>? OrdersHaveProducts { get; }
-
+    [ValidateNever]
     public virtual IEnumerable<Transaction>? Transactions { get; }
 }

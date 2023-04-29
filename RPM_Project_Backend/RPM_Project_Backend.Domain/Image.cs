@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace RPM_Project_Backend.Domain;
 
 [Index(nameof(Id), IsUnique = true)]
+[Index(nameof(ImagePath), IsUnique = true)]
 public class Image
 {
     [Key]
@@ -26,6 +28,14 @@ public class Image
 
     [Column("img_ts"), Required]
     public DateTime Ts { get; set; }
+    
+    [ValidateNever]
+    [ForeignKey("UserId")]
+    public virtual User? User { get; }
+    
+    [ValidateNever]
+    [ForeignKey("ProductId")]
+    public virtual Product? Product { get; }
 }
 
 public class ImageDto

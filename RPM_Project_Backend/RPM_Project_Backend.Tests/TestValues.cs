@@ -88,7 +88,6 @@ public static partial class TestValues
             Name = "First product",
             Rating = 5,
             SellerId = 3,
-            Genres = Genres,
             Seller = Users.First(u => u.Id == 3)
         },
         new ()
@@ -99,7 +98,6 @@ public static partial class TestValues
             Name = "Second product",
             Rating = 3.2,
             SellerId = 3,
-            Genres = Genres,
             Seller = Users.First(u => u.Id == 3)
         },
         new ()
@@ -110,7 +108,6 @@ public static partial class TestValues
             Name = "Third product",
             Rating = 4.6,
             SellerId = 3,
-            Genres = Genres,
             Seller = Users.First(u => u.Id == 3)
         },
     };
@@ -123,7 +120,6 @@ public static partial class TestValues
         Name = "Single product",
         Rating = 4.2,
         SellerId = 2,
-        Genres = Genres,
         Seller = Users.First(u => u.Id == 3)
     };
 }

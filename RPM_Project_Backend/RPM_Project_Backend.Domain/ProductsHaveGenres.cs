@@ -7,22 +7,19 @@ namespace RPM_Project_Backend.Domain;
 public class ProductsHaveGenres
 {
     [Key]
-    [Column("pha_id"), Required]
+    [Column("phg_id"), Required]
     public int Id { get; set; }
 
-    [Column("pha_pro_id"), Required]
+    [Column("phg_pro_id"), Required]
     public int ProductId { get; set; }
 
-    [Column("pha_gen_id"), Required]
+    [Column("phg_gen_id"), Required]
     public int GenreId { get; set; }
 
-    [Column("pha_value"), Required, StringLength(50)]
-    public string? Value { get; set; }
-
     [ValidateNever]
-    [ForeignKey("pha_gen_id")]
-    public virtual Genre? Genre { get; set; }
+    [ForeignKey("ProductId")]
+    public virtual Product? Product { get; }
     [ValidateNever]
-    [ForeignKey("pha_pro_id")]
-    public virtual Product? Product { get; set; }
+    [ForeignKey("GenreId")]
+    public virtual Genre? Genre { get; }
 }
