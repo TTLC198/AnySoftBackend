@@ -9,12 +9,12 @@ namespace RPM_Project_Backend.Domain;
 public class Property
 {
     [Key]
-    [Column("atr_id"), Required]
+    [Column("prp_id"), Required]
     public int Id { get; set; }
-    [Column("atr_name"), Required, StringLength(50)]
+    [Column("prp_name"), Required, StringLength(50)]
     public string? Name { get; set; }
-    [Column("atr_type"), Required, StringLength(50)]
-    public string? Type { get; set; }
+    [Column("prp_icon"), Required, StringLength(50)]
+    public string? Icon { get; set; }
 
     [ValidateNever]
     public virtual IEnumerable<ProductsHaveProperties>? ProductsHaveProperties { get; }
