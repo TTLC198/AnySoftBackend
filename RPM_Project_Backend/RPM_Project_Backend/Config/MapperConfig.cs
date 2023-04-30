@@ -10,5 +10,9 @@ public static class MapperConfig
             .AddAutoMapper(typeof(UserMappingProfile));
         services
             .AddAutoMapper(typeof(ProductMappingProfile));
+        services
+            .AddAutoMapper(typeof(ReviewMappingProfile));
+        services
+            .AddAutoMapper(typeof(GenreMappingProfile));
     }
 }
