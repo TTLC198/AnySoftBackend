@@ -219,7 +219,7 @@ public class ReviewsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Product>> Delete(long id)
+    public async Task<ActionResult> Delete(int id)
     {
         if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
@@ -227,12 +227,12 @@ public class ReviewsController : ControllerBase
         var review = await _context.Reviews.FirstOrDefaultAsync(r => r.Id == id);
 
         if (review is null)
-            return NotFound(new ErrorModel("Product not found"));
+            return NotFound(new ErrorModel("Review not found"));
 
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{review.UserId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        _logger.LogDebug("Delete existing product with id = {id}", id);
+        _logger.LogDebug("Delete existing review with id = {id}", id);
 
         _context.Reviews.Remove(review);
 

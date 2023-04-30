@@ -160,7 +160,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ProductResponseDto), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ProductResponseDto>> Get(long id)
+    public async Task<ActionResult<ProductResponseDto>> Get(int id)
     {
         if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));

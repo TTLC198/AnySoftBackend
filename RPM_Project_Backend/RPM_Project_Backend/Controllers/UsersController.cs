@@ -60,7 +60,6 @@ public class UsersController : ControllerBase
 
         IQueryable<User> allUsers = 
             _dbSet
-                .Include(u => u.Addresses)
                 .Include(u => u.Role)
                 .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
@@ -127,7 +126,6 @@ public class UsersController : ControllerBase
         _logger.LogDebug("Get user with id = {Id}", id);
         
         var user = await _dbSet
-            .Include(u => u.Addresses)
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Id == id);
 
