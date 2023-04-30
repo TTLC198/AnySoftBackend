@@ -250,7 +250,7 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<Product>> Post(ProductDto productDto)
     {
         if (productDto is null)
-            return BadRequest();
+            return BadRequest(new ErrorModel("The input data is empty"));
 
         _logger.LogDebug("Create new product with name = {id}", productDto.Name);
 
@@ -267,12 +267,12 @@ public class ProductsController : ControllerBase
         product.SellerId = sellerId;
         product.Rating = 5;
 
-        await _dbSet.AddAsync(product);
+        var createdProduct = await _dbSet.AddAsync(product);
 
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(500, new ErrorModel("Some error has occurred")),
-            _ => Ok(await _dbSet.FirstAsync(p => p.Name == productDto.Name && p.SellerId == sellerId))
+            _ => Ok(createdProduct.Entity)
         };
     }
 
@@ -294,10 +294,10 @@ public class ProductsController : ControllerBase
     /// 
     /// </remarks>
     /// <param name="product"></param>
-    /// <response code="200">Return created user</response>
+    /// <response code="200">Return created product</response>
     /// <response code="400">The input data is empty</response>
     /// <response code="401">Unauthorized</response>
-    /// <response code="404">User not found</response>
+    /// <response code="404">Product not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPut]
     [Authorize(Roles = "seller")]
