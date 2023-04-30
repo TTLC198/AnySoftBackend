@@ -20,10 +20,7 @@ public class Order
     public double FinalCost { get; set; }
     [Column("or_time"), Required]
     public DateTime Time { get; set; }
-
-    [ValidateNever]
-    [ForeignKey("AddressId")]
-    public virtual Address? Address { get; }
+    
     [ValidateNever]
     [ForeignKey("UserId")]
     public virtual User? User { get; }

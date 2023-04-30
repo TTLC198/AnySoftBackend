@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.EntityFrameworkCore;
 
 namespace RPM_Project_Backend.Domain;
 
 /// <summary>
 /// User Object
 /// </summary>
+[Index(nameof(Id), IsUnique = true)]
 public class User
 {
     /// <summary>
@@ -46,11 +48,6 @@ public class User
     [ValidateNever]
     public virtual IEnumerable<Image>? Images { get; }
     /// <summary>
-    /// User addresses
-    /// </summary>
-    [ValidateNever]
-    public virtual IEnumerable<Address>? Addresses { get; }
-    /// <summary>
     /// User payments
     /// </summary>
     [ValidateNever]
@@ -80,7 +77,7 @@ public class UserResponseDto
     /// <summary>
     /// Identifier
     /// </summary>
-    public int Id { get; set; }
+    public int? Id { get; set; }
     /// <summary>
     /// Login
     /// </summary>
