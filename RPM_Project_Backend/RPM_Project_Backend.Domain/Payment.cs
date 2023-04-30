@@ -12,18 +12,18 @@ public class Payment
     public int Id { get; set; }
     [Column("pay_user_id"), Required]
     public int UserId { get; set; }
-    [Column("pay_method"), Required, StringLength(50)]
-    public string? Method { get; set; }
+    [Column("pay_number"), Required, StringLength(24)] 
+    public string? Number { get; set; }
+    [Column("pay_expiration_date"), Required]
+    public DateTime ExpirationDate { get; set; }
+    [Column("pay_cvc"), Required, StringLength(4)] 
+    public string? Cvc { get; set; }
     [Column("pay_is_active"), Required]
     public bool IsActive { get; set; }
     
     [ValidateNever]
-    public virtual IEnumerable<BankCard>? BankCards { get; }
-    [ValidateNever]
     [ForeignKey("UserId")]
     public virtual User? User { get; }
-    [ValidateNever]
-    public virtual IEnumerable<Qiwi>? Qiwis { get; }
     [ValidateNever]
     public virtual IEnumerable<Transaction>? Transactions { get; }
 }

@@ -51,11 +51,7 @@ public class ApplicationContext : DbContext
 
     public virtual DbSet<Image> Images { get; set; }
 
-    public virtual DbSet<Address> Addresses { get; set; }
-
     public virtual DbSet<Property> Properties { get; set; }
-
-    public virtual DbSet<BankCard> BankCards { get; set; }
 
     public virtual DbSet<Genre> Genres { get; set; }
     
@@ -74,8 +70,6 @@ public class ApplicationContext : DbContext
     public virtual DbSet<ProductsHaveProperties> ProductsHaveProperties { get; set; }
     
     public virtual DbSet<ProductsHaveGenres> ProductsHaveGenres { get; set; }
-
-    public virtual DbSet<Qiwi> Qiwis { get; set; }
 
     public virtual DbSet<Review> Reviews { get; set; }
 
