@@ -56,3 +56,22 @@ public class ReviewResponseDto
     /// </summary>
     public UserResponseDto? User { get; set; }
 }
+
+/// <summary>
+/// Review Data Transfer Object
+/// </summary>
+public class ReviewDto
+{
+    /// <summary>
+    /// Review Text
+    /// </summary>
+    public string? Text { get; set; }
+    /// <summary>
+    /// Review Grade
+    /// </summary>
+    public double Grade { get; set; }
+    /// <summary>
+    /// Review Product Id
+    /// </summary>
+    public int ProductId { get; set; }
+}
