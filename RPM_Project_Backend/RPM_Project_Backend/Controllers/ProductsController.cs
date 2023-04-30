@@ -126,7 +126,7 @@ public class ProductsController : ControllerBase
                         {
                             Id = p.Seller.Id,
                             Login = p.Seller.Login,
-                            Image = ImageUriHelper.GetImagePathAsUri(p.Seller.Images.First().ImagePath)
+                            Image = ImageUriHelper.GetImagePathAsUri(p.Seller.Images.FirstOrDefault().ImagePath)
                         },
                         Images = p.Images
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
@@ -160,14 +160,14 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ProductResponseDto), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Product>> Get(long id)
+    public async Task<ActionResult<ProductResponseDto>> Get(long id)
     {
         if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
 
         _logger.LogDebug("Get product with id = {id}", id);
 
-        var product = await _context.Products
+        var products = _context.Products
             .Include(p => p.ProductsHaveGenres)
             .ThenInclude(phg => phg.Genre)
             .Include(p => p.Reviews)
@@ -176,46 +176,49 @@ public class ProductsController : ControllerBase
             .Include(p => p.Seller)
             .Include(p => p.ProductsHaveProperties)
             .ThenInclude(php => php.Property)
-            .Select(p => new ProductResponseDto()
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Cost = p.Cost,
-                Discount = p.Discount,
-                Rating = p.Rating,
-                Seller = new UserResponseDto()
-                {
-                    Id = p.Seller.Id,
-                    Login = p.Seller.Login,
-                    Image = p.Seller.Images.First().ImagePath
-                },
-                Images = p.Images
-                    .Select(i => i.ImagePath)
-                    .ToList(),
-                Reviews = p.Reviews
-                    .Select(r => new ReviewResponseDto()
-                    {
-                        Text = r.Text,
-                        Grade = r.Grade,
-                        Ts = r.Ts,
-                        User = new UserResponseDto()
-                        {
-                            Login = r.User.Login,
-                            Image = r.User.Images.First().ImagePath
-                        }
-                    }),
-                Properties = p.ProductsHaveProperties
-                    .Select(php => php.Property)
-                    .ToList(),
-                Genres = p.ProductsHaveGenres
-                    .Select(phg => phg.Genre)
-                    .ToList()
-            }).FirstOrDefaultAsync(p => p.Id == id);
+            .AsQueryable();
 
-        return product switch
+        return await products.AnyAsync(p => p.Id == id) switch
         {
-            null => NotFound(new ErrorModel("Product not found")),
-            _ => Ok(product)
+            false => NotFound(new ErrorModel("Product not found")),
+            _ => Ok(
+                products
+                    .Select(p => new ProductResponseDto()
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Cost = p.Cost,
+                        Discount = p.Discount,
+                        Rating = p.Rating,
+                        Seller = new UserResponseDto()
+                        {
+                            Id = p.Seller.Id,
+                            Login = p.Seller.Login,
+                            Image = ImageUriHelper.GetImagePathAsUri(p.Seller.Images.FirstOrDefault().ImagePath)
+                        },
+                        Images = p.Images
+                            .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
+                            .ToList(),
+                        Reviews = p.Reviews
+                            .Select(r => new ReviewResponseDto()
+                            {
+                                Text = r.Text,
+                                Grade = r.Grade,
+                                Ts = r.Ts,
+                                User = new UserResponseDto()
+                                {
+                                    Login = r.User.Login,
+                                    Image = ImageUriHelper.GetImagePathAsUri(r.User.Images.FirstOrDefault().ImagePath)
+                                }
+                            }),
+                        Properties = p.ProductsHaveProperties
+                            .Select(php => php.Property)
+                            .ToList(),
+                        Genres = p.ProductsHaveGenres
+                            .Select(phg => phg.Genre)
+                            .ToList()
+                    })
+                    .FirstOrDefault(p => p.Id == id))
         };
     }
 

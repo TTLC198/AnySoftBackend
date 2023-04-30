@@ -1,15 +1,17 @@
-﻿using System.Text.Json;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using RPM_Project_Backend.Controllers;
+using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Mappings;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Tests.Helpers;
 using Xunit;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace RPM_Project_Backend.Tests.Tests;
 
@@ -53,6 +55,27 @@ public class TestProductsController
         _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(user.Id, user.Role.Name);
         Assert.NotNull(_controller.User);
 
+        var products = _context.Products
+            .ToList()
+            .Select(p => new ProductResponseDto()
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Cost = p.Cost,
+                Discount = p.Discount,
+                Rating = p.Rating,
+                Seller = new UserResponseDto()
+                {
+                    Id = user.Id,
+                    Login = user.Login,
+                    Image = ""
+                },
+                Images = new List<string>(),
+                Reviews = null,
+                Properties = new List<Property>(),
+                Genres = new List<Genre>()
+            });
+
         // Act
         var result = await _controller.Get(new QueryParameters<ProductRequestDto>());
 
@@ -60,10 +83,10 @@ public class TestProductsController
         Assert.NotNull(result);
         
         var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as IEnumerable<Product>;
+        var valueResult = okResult!.Value as IEnumerable<ProductResponseDto>;
         
         Assert.NotNull(okResult!.Value);
-        Assert.Equal(_context.Products.ToList(), valueResult!.ToList());
+        Assert.Equal(JsonConvert.SerializeObject(products.ToList()), JsonConvert.SerializeObject(valueResult!.ToList()));
     }
     
     [Fact]
@@ -92,8 +115,27 @@ public class TestProductsController
         _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(user.Id, user.Role.Name);
         Assert.NotNull(_controller.User);
 
-        var selectedProducts = _context.Products.ToList().Where(
-            p => p.Name.Contains("First product"));
+        var selectedProducts = _context.Products
+            .ToList()
+            .Where(p => p.Name.Contains("First product"))
+            .Select(p => new ProductResponseDto()
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Cost = p.Cost,
+                Discount = p.Discount,
+                Rating = p.Rating,
+                Seller = new UserResponseDto()
+                {
+                    Id = user.Id,
+                    Login = user.Login,
+                    Image = ""
+                },
+                Images = new List<string>(),
+                Reviews = null,
+                Properties = new List<Property>(),
+                Genres = new List<Genre>()
+            });
         
         // Act
         var result = await _controller.Get(new QueryParameters<ProductRequestDto>()
@@ -108,10 +150,10 @@ public class TestProductsController
         Assert.NotNull(result);
         
         var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as IEnumerable<Product>;
+        var valueResult = okResult!.Value as IEnumerable<ProductResponseDto>;
         
         Assert.NotNull(okResult!.Value);
-        Assert.Equal(selectedProducts.ToList(), valueResult!.ToList());
+        Assert.Equal(JsonConvert.SerializeObject(selectedProducts.ToList()), JsonConvert.SerializeObject(valueResult!.ToList()));
     }
     
     [Fact]
@@ -143,16 +185,21 @@ public class TestProductsController
         Assert.NotNull(_controller.User);
 
         // Act
-        var result = await _controller.Get(id);
+        var result = await _controller.Get(product.Id);
 
         // Assert
         Assert.NotNull(result);
         
         var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as Product;
+        var valueResult = okResult!.Value as ProductResponseDto;
         
         Assert.NotNull(valueResult);
-        Assert.Equal(product, valueResult);
+        Assert.Equal(product.Id, valueResult.Id);
+        Assert.Equal(product.Name, valueResult.Name);
+        Assert.Equal(product.Cost, valueResult.Cost);
+        Assert.Equal(product.Discount, valueResult.Discount);
+        Assert.Equal(product.Rating, valueResult.Rating);
+        Assert.Equal(product.SellerId, valueResult.Seller.Id);
     }
     
     [Fact]
