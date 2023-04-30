@@ -60,9 +60,6 @@ public class ProductsController : ControllerBase
         var allProducts = _context.Products
             .Include(p => p.ProductsHaveGenres)
             .ThenInclude(phg => phg.Genre)
-            .Include(p => p.Reviews)
-            .ThenInclude(r => r.User)
-            .ThenInclude(u => u.Images)
             .Include(p => p.Seller)
             .Include(p => p.ProductsHaveProperties)
             .ThenInclude(php => php.Property)
@@ -129,23 +126,11 @@ public class ProductsController : ControllerBase
                         {
                             Id = p.Seller.Id,
                             Login = p.Seller.Login,
-                            Image = p.Seller.Images.First().ImagePath
+                            Image = ImageUriHelper.GetImagePathAsUri(p.Seller.Images.First().ImagePath)
                         },
                         Images = p.Images
-                            .Select(i => i.ImagePath)
+                            .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                             .ToList(),
-                        Reviews = p.Reviews
-                            .Select(r => new ReviewResponseDto()
-                            {
-                                Text = r.Text,
-                                Grade = r.Grade,
-                                Ts = r.Ts,
-                                User = new UserResponseDto()
-                                {
-                                    Login = r.User.Login,
-                                    Image = r.User.Images.First().ImagePath
-                                }
-                            }),
                         Properties = p.ProductsHaveProperties
                             .Select(php => php.Property)
                             .ToList(),
