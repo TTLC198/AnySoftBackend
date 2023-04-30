@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace RPM_Project_Backend.Domain;
 
-[Index(nameof(Name), IsUnique = true)]
+[Index(nameof(Id), IsUnique = true)]
 public class Property
 {
     [Key]
