@@ -40,6 +40,10 @@ public class Review
 public class ReviewResponseDto
 {
     /// <summary>
+    /// Identifier
+    /// </summary>
+    public int Id { get; set; }
+    /// <summary>
     /// Review Text
     /// </summary>
     public string? Text { get; set; }
@@ -52,9 +56,32 @@ public class ReviewResponseDto
     /// </summary>
     public DateTime Ts { get; set; }
     /// <summary>
+    /// Review Product Id
+    /// </summary>
+    public int ProductId { get; set; }
+    /// <summary>
     /// Review User entity
     /// </summary>
     public UserResponseDto? User { get; set; }
+}
+
+/// <summary>
+/// Review object to edit
+/// </summary>
+public class ReviewEditDto
+{
+    /// <summary>
+    /// Identifier
+    /// </summary>
+    public int Id { get; set; }
+    /// <summary>
+    /// Review Text
+    /// </summary>
+    public string? Text { get; set; }
+    /// <summary>
+    /// Review Grade
+    /// </summary>
+    public double Grade { get; set; }
 }
 
 /// <summary>

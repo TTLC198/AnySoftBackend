@@ -44,25 +44,28 @@ public class ReviewsController : ControllerBase
     /// <response code="200">Return reviews list</response>
     /// <response code="404">Reviews not found</response>
     /// <response code="500">Oops! Server internal error</response>
-    [HttpGet("{productId:int}")]
+    [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<ReviewResponseDto>), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<IEnumerable<ReviewResponseDto>>> Get(
-        long productId,
+        [FromQuery] int? productId,
         [FromQuery] QueryParameters<object> queryParameters)
     {
-        if (productId <= 0)
-            return BadRequest(new ErrorModel("The input data is empty"));
-
-        _logger.LogDebug("Get list of reviews with product id = {productId}", productId);
+        _logger.LogDebug("Get list of reviews with product id = {productId}", productId ?? 0);
 
         var reviews = _context.Reviews
             .Include(r => r.User)
             .OrderByDescending(r => r.Ts)
-            .Where(r => r.ProductId == productId)
             .AsQueryable();
+
+        if (productId is not null and <= 0)
+            return BadRequest(new ErrorModel("The input data is empty"));
+
+        if (productId is not null)
+            reviews = reviews
+                .Where(r => r.ProductId == productId);
 
         var paginationMetadata = new
         {
@@ -83,9 +86,11 @@ public class ReviewsController : ControllerBase
                     .Take(queryParameters.PageCount)
                     .Select(r => new ReviewResponseDto()
                     {
+                        Id = r.Id,
                         Text = r.Text,
                         Grade = r.Grade,
                         Ts = r.Ts,
+                        ProductId = r.ProductId,
                         User = new UserResponseDto()
                         {
                             Id = r.User.Id,
@@ -163,7 +168,7 @@ public class ReviewsController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <param name="review"></param>
+    /// <param name="reviewEditDto"></param>
     /// <response code="200">Return created review</response>
     /// <response code="400">The input data is empty</response>
     /// <response code="401">Unauthorized</response>
@@ -176,8 +181,17 @@ public class ReviewsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Review>> Put([FromBody] Review review)
+    public async Task<ActionResult<Review>> Put([FromBody] ReviewEditDto reviewEditDto)
     {
+        if (reviewEditDto is null)
+            return BadRequest(new ErrorModel("The input data is empty"));
+        
+        var review = await _context.Reviews
+            .FirstOrDefaultAsync(r => r.Id == reviewEditDto.Id);
+        
+        if (review is null)
+            return BadRequest("Review with entered id does not exist");
+        
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{review.UserId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
