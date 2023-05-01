@@ -14,5 +14,9 @@ public static class MapperConfig
             .AddAutoMapper(typeof(ReviewMappingProfile));
         services
             .AddAutoMapper(typeof(GenreMappingProfile));
+        services
+            .AddAutoMapper(typeof(PropertyMappingProfile));
+        services
+            .AddAutoMapper(typeof(PaymentMappingProfile));
     }
 }

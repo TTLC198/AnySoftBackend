@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
-
 public class Payment
 {
     [Key]
@@ -26,4 +25,22 @@ public class Payment
     public virtual User? User { get; }
     [ValidateNever]
     public virtual IEnumerable<Transaction>? Transactions { get; }
+}
+/// <summary>
+/// Payment Data Transfer Object
+/// </summary>
+public class PaymentDto
+{
+    /// <summary>
+    /// Bank Card Number
+    /// </summary>
+    public string? Number { get; set; }
+    /// <summary>
+    /// Bank Card Expiration Date
+    /// </summary>
+    public DateTime ExpirationDate { get; set; }
+    /// <summary>
+    /// Bank Card Security Code
+    /// </summary>
+    public string? Cvc { get; set; }
 }
