@@ -48,14 +48,11 @@ public class GenresController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Genre>), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<IEnumerable<ReviewResponseDto>>> Get(
+    public async Task<ActionResult<IEnumerable<Genre>>> Get(
         [FromQuery] int? productId,
         [FromQuery] QueryParameters<object> queryParameters)
     {
         _logger.LogDebug("Get list of genres");
-        
-        if (productId is not null and <= 0)
-            return BadRequest(new ErrorModel("The input data is empty"));
 
         var genres = productId is not null
             ? _context.Genres
@@ -112,7 +109,7 @@ public class GenresController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Product>> Post(GenreDto genreDto)
+    public async Task<ActionResult<Genre>> Post(GenreDto genreDto)
     {
         if (genreDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
