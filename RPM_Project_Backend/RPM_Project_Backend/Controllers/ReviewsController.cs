@@ -202,6 +202,8 @@ public class ReviewsController : ControllerBase
 
         _logger.LogDebug("Update existing review with id = {id}", review.Id);
 
+        review.Text = reviewEditDto.Text;
+        review.Grade = reviewEditDto.Grade;
         review.Ts = DateTime.UtcNow;
 
         _context.Entry(review).State = EntityState.Modified;
