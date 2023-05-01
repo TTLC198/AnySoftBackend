@@ -32,7 +32,7 @@ public class GenresController : ControllerBase
     }
     
     /// <summary>
-    /// Get all genres list
+    /// Get genres list
     /// </summary>
     /// <remarks>
     /// Example request
@@ -49,13 +49,23 @@ public class GenresController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<IEnumerable<ReviewResponseDto>>> Get(
+        [FromQuery] int? productId,
         [FromQuery] QueryParameters<object> queryParameters)
     {
         _logger.LogDebug("Get list of genres");
+        
+        if (productId is not null and <= 0)
+            return BadRequest(new ErrorModel("The input data is empty"));
 
-        var genres = _context.Genres
-            .OrderByDescending(g => g.Id)
-            .AsQueryable();
+        var genres = productId is not null
+            ? _context.Genres
+                .Include(g => g.ProductsHaveGenres)
+                .OrderByDescending(g => g.Id)
+                .Where(g => g.ProductsHaveGenres.Any(phg => phg.ProductId == productId))
+                .AsQueryable()
+            : _context.Genres
+                .OrderByDescending(g => g.Id)
+                .AsQueryable();
 
         var paginationMetadata = new
         {
@@ -78,61 +88,7 @@ public class GenresController : ControllerBase
             )
         };
     }
-    
-    /// <summary>
-    /// Get genres list by product id
-    /// </summary>
-    /// <remarks>
-    /// Example request
-    /// 
-    /// GET api/genres/1
-    /// 
-    /// </remarks>
-    /// <response code="200">Return genres list</response>
-    /// <response code="404">Genres not found</response>
-    /// <response code="500">Oops! Server internal error</response>
-    [HttpGet("{productId:int}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(IEnumerable<Genre>), (int) HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<IEnumerable<ReviewResponseDto>>> Get(
-        int productId,
-        [FromQuery] QueryParameters<object> queryParameters)
-    {
-        if (productId <= 0)
-            return BadRequest(new ErrorModel("The input data is empty"));
 
-        _logger.LogDebug("Get list of genres with product id = {productId}", productId);
-
-        var genres = _context.Genres
-            .Include(g => g.ProductsHaveGenres)
-            .OrderByDescending(g => g.Id)
-            .Where(g => g.ProductsHaveGenres.Any(phg => phg.ProductId == productId))
-            .AsQueryable();
-
-        var paginationMetadata = new
-        {
-            totalCount = genres.Count(),
-            pageSize = queryParameters.PageCount,
-            currentPage = queryParameters.Page,
-            totalPages = queryParameters.GetTotalPages(genres.Count())
-        };
-
-        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
-
-        return await genres.CountAsync() switch
-        {
-            0 => NotFound(new ErrorModel("Reviews not found")),
-            _ => Ok(
-                genres
-                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
-                    .Take(queryParameters.PageCount)
-                    .ToList()
-            )
-        };
-    }
-    
     /// <summary>
     /// Create new genre or add genre to product
     /// </summary>

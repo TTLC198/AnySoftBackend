@@ -55,17 +55,19 @@ public class ReviewsController : ControllerBase
     {
         _logger.LogDebug("Get list of reviews with product id = {productId}", productId ?? 0);
 
-        var reviews = _context.Reviews
-            .Include(r => r.User)
-            .OrderByDescending(r => r.Ts)
-            .AsQueryable();
-
         if (productId is not null and <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        if (productId is not null)
-            reviews = reviews
-                .Where(r => r.ProductId == productId);
+        var reviews = productId is not null
+            ? _context.Reviews
+                .Include(r => r.User)
+                .OrderByDescending(r => r.Ts)
+                .Where(r => r.ProductId == productId)
+                .AsQueryable()
+            : _context.Reviews
+                .Include(r => r.User)
+                .OrderByDescending(r => r.Ts)
+                .AsQueryable();
 
         var paginationMetadata = new
         {
@@ -101,7 +103,7 @@ public class ReviewsController : ControllerBase
             )
         };
     }
-    
+
     /// <summary>
     /// Create new review
     /// </summary>
@@ -135,7 +137,7 @@ public class ReviewsController : ControllerBase
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == reviewDto.ProductId);
-        
+
         if (product is null)
             return BadRequest("Product with entered id does not exist");
 
@@ -153,7 +155,7 @@ public class ReviewsController : ControllerBase
             _ => Ok(createdReview.Entity)
         };
     }
-    
+
     /// <summary>
     /// Update single review
     /// </summary>
@@ -185,13 +187,13 @@ public class ReviewsController : ControllerBase
     {
         if (reviewEditDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
-        
+
         var review = await _context.Reviews
             .FirstOrDefaultAsync(r => r.Id == reviewEditDto.Id);
-        
+
         if (review is null)
             return BadRequest("Review with entered id does not exist");
-        
+
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{review.UserId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
@@ -199,9 +201,9 @@ public class ReviewsController : ControllerBase
             return NotFound(new ErrorModel("Review not found"));
 
         _logger.LogDebug("Update existing review with id = {id}", review.Id);
-        
+
         review.Ts = DateTime.UtcNow;
-        
+
         _context.Entry(review).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
@@ -210,7 +212,7 @@ public class ReviewsController : ControllerBase
             _ => Ok(review)
         };
     }
-    
+
     /// <summary>
     /// Delete single review
     /// </summary>
