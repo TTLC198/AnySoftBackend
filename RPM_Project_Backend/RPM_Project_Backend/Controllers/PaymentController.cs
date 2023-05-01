@@ -79,7 +79,7 @@ public class PaymentController : ControllerBase
     }
     
     /// <summary>
-    /// Get payments list
+    /// Get ALL payments list
     /// </summary>
     /// <remarks>
     /// Example request
@@ -220,7 +220,7 @@ public class PaymentController : ControllerBase
             return Unauthorized(new ErrorModel("Access is denied"));
 
         if (!_context.Payments.Any(p => p.Id == payment.Id))
-            return NotFound(new ErrorModel("Review not found"));
+            return NotFound(new ErrorModel("Payment not found"));
 
         _logger.LogDebug("Update existing payment with id = {id}", payment.Id);
 
