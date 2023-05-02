@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
@@ -55,7 +56,7 @@ public class AccountController : ControllerBase
     [HttpPost]
     [AllowAnonymous]
     [Route("login")]
-    [ProducesResponseType(typeof(JwtResponseModel), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(SecurityToken), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
@@ -88,12 +89,7 @@ public class AccountController : ControllerBase
         return result switch
         {
             PasswordVerificationResult.Success or PasswordVerificationResult.SuccessRehashNeeded => Ok(
-                new JwtResponseModel()
-                {
-                    UserId = user.Id,
-                    Token = new JwtSecurityTokenHandler().WriteToken(token),
-                    Expiration = token.ValidTo
-                }
+                new JwtSecurityTokenHandler().WriteToken(token)
             ),
             _ => BadRequest(new ErrorModel("User with the same login or email and password does not exist"))
         };
