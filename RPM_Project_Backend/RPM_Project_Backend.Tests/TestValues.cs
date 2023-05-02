@@ -62,22 +62,6 @@ public static partial class TestValues
 
 public static partial class TestValues
 {
-    public static IReadOnlyList<Genre> Genres = new List<Genre>()
-    {
-        new ()
-        {
-            Id = 1, Name = "root category"
-        },
-        new ()
-        {
-            Id = 2, Name = "simple category"
-        },
-        new ()
-        {
-            Id = 3, Name = "category"
-        },
-    };
-    
     public static IReadOnlyList<Product> Products = new List<Product>()
     {
         new ()
@@ -145,5 +129,153 @@ public static partial class TestValues
     public static Image SingleImage = new()
     {
         Id = 4,
+    };
+}
+
+public static partial class TestValues
+{
+    public static IReadOnlyList<Review> Reviews = new List<Review>()
+    {
+        new ()
+        {
+            Id = 1,
+            Grade = 5.5,
+            Text = "Some Review 1",
+            ProductId = 1,
+            Ts = DateTime.UtcNow,
+            UserId = 1
+        },
+        new ()
+        {
+            Id = 2,
+            Grade = 9.5,
+            Text = "Some Review 2",
+            ProductId = 2,
+            Ts = DateTime.UtcNow,
+            UserId = 2
+        },
+        new ()
+        {
+            Id = 3,
+            Grade = 2.5,
+            Text = "Some Review 3",
+            ProductId = 3,
+            Ts = DateTime.UtcNow,
+            UserId = 3
+        }
+    };
+    
+    public static Review SingleReview = new ()
+    {
+        Id = 4,
+        Grade = 10,
+        Text = "Some Review 4",
+        ProductId = 3,
+        Ts = DateTime.UtcNow,
+        UserId = 3
+    };
+}
+
+public static partial class TestValues
+{
+    public static IReadOnlyList<Genre> Genres = new List<Genre>()
+    {
+        new ()
+        {
+            Id = 1,
+            Name = "Some Genre Name 1"
+        },
+        new ()
+        {
+            Id = 2,
+            Name = "Some Genre Name 2"
+        },
+        new ()
+        {
+            Id = 3,
+            Name = "Some Genre Name 3"
+        },
+    };
+
+    public static Genre SingleGenre = new()
+    {
+        Id = 4,
+        Name = "Some Genre Name 4"
+    };
+}
+
+public static partial class TestValues
+{
+    public static IReadOnlyList<Property> Properties = new List<Property>()
+    {
+        new ()
+        {
+            Id = 1,
+            Name = "Some Property Name 1",
+            Icon = "mdi-icon-1"
+        },
+        new ()
+        {
+            Id = 2,
+            Name = "Some Property Name 2",
+            Icon = "mdi-icon-2"
+        },
+        new ()
+        {
+            Id = 3,
+            Name = "Some Property Name 3",
+            Icon = "mdi-icon-3"
+        }
+    };
+
+    public static Property SingleProperty = new()
+    {
+        Id = 4,
+        Name = "Some Property Name 4",
+        Icon = "mdi-icon-4"
+    };
+}
+
+public static partial class TestValues
+{
+    public static IReadOnlyList<Payment> Payments = new List<Payment>()
+    {
+        new ()
+        {
+            Id = 1,
+            UserId = 1,
+            IsActive = true,
+            Number = "1234567812345678",
+            Cvc = "123",
+            ExpirationDate = new DateTime(2024, 05, 0)
+        },
+        new ()
+        {
+            Id = 2,
+            UserId = 2,
+            IsActive = true,
+            Number = "1234567812345678",
+            Cvc = "456",
+            ExpirationDate = new DateTime(2024, 06, 0)
+        },
+        new ()
+        {
+            Id = 3,
+            UserId = 3,
+            IsActive = true,
+            Number = "1234567812345678",
+            Cvc = "789",
+            ExpirationDate = new DateTime(2024, 07, 0)
+        }
+    };
+
+    public static Payment SinglePayment = new()
+    {
+        Id = 4,
+        UserId = 1,
+        IsActive = true,
+        Number = "1234567812345678",
+        Cvc = "023",
+        ExpirationDate = new DateTime(2024, 04, 0)
     };
 }
