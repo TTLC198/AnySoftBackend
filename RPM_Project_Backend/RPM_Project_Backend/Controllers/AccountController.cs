@@ -49,14 +49,14 @@ public class AccountController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <response code="200">Return Jwt Bearer token</response>
+    /// <response code="200">Return Jwt Bearer token as string</response>
     /// <response code="400">Input data is empty</response>
     /// <response code="404">User not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [AllowAnonymous]
     [Route("login")]
-    [ProducesResponseType(typeof(SecurityToken), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(string), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
