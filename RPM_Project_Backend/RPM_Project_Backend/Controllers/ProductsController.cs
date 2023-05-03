@@ -93,12 +93,16 @@ public class ProductsController : ControllerBase
                             productQuery.Discount.Min <= product.Discount &&
                             product.Discount <= productQuery.Discount.Max)
                         .ToList();
+                if (productQuery.PublicationDate is {Min: not null} and {Max: not null})
+                    products = products
+                        .Where(product =>
+                            productQuery.PublicationDate.Min <= product.Ts && product.Ts <= productQuery.PublicationDate.Max)
+                        .ToList();
                 if (productQuery.Genres is {Count: > 0})
                     products = products
                         .Where(product => productQuery.Genres
                             .All(g => product.ProductsHaveGenres!.Any(phg => phg.GenreId == g)))
                         .ToList();
-                
                 if (productQuery.Properties is {Count: > 0})
                     products = products
                         .Where(product => productQuery.Properties

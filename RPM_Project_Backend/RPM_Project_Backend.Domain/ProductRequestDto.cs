@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using RPM_Project_Backend.Helpers;
 
 namespace RPM_Project_Backend.Domain;
 
@@ -7,11 +9,13 @@ public class ProductRequestDto
     [ValidateNever]
     public string? Name { get; set; }
     [ValidateNever]
-    public MinMaxObject? Rating { get; set; }
+    public MinMaxFloatObject? Rating { get; set; }
     [ValidateNever]
-    public MinMaxObject? Cost { get; set; }
+    public MinMaxFloatObject? Cost { get; set; }
     [ValidateNever]
-    public MinMaxObject? Discount { get; set; }
+    public MinMaxFloatObject? Discount { get; set; }
+    [ValidateNever]
+    public MinMaxDateTimeObject? PublicationDate { get; set; }
     [ValidateNever]
     public List<int>? Genres { get; set; }
     [ValidateNever]
@@ -22,12 +26,22 @@ public class ProductRequestDto
     public SortOrder? Order { get; set; }
 }
 
-public class MinMaxObject
+public class MinMaxFloatObject
 {
     [ValidateNever]
     public float? Min { get; set; }
     [ValidateNever]
     public float? Max { get; set; }
+}
+
+public class MinMaxDateTimeObject
+{
+    [ValidateNever]
+    [JsonConverter(typeof(JsonDateTimeConverter))]
+    public DateTime? Min { get; set; }
+    [ValidateNever]
+    [JsonConverter(typeof(JsonDateTimeConverter))]
+    public DateTime? Max { get; set; }
 }
 
 public class SortOrder
