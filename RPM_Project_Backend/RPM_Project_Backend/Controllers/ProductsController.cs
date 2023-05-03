@@ -61,6 +61,8 @@ public class ProductsController : ControllerBase
             .Include(p => p.ProductsHaveGenres)
             .ThenInclude(phg => phg.Genre)
             .Include(p => p.Seller)
+            .ThenInclude(s => s.Images)
+            .Include(p => p.Images)
             .Include(p => p.ProductsHaveProperties)
             .ThenInclude(php => php.Property)
             .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
