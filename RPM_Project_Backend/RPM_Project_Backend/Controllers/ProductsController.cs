@@ -119,9 +119,11 @@ public class ProductsController : ControllerBase
                     {
                         Id = p.Id,
                         Name = p.Name,
+                        Description = p.Description,
                         Cost = p.Cost,
                         Discount = p.Discount,
                         Rating = p.Rating,
+                        Ts = p.Ts,
                         Seller = new UserResponseDto()
                         {
                             Id = p.Seller.Id,
@@ -187,9 +189,11 @@ public class ProductsController : ControllerBase
                     {
                         Id = p.Id,
                         Name = p.Name,
+                        Description = p.Description,
                         Cost = p.Cost,
                         Discount = p.Discount,
                         Rating = p.Rating,
+                        Ts = p.Ts,
                         Seller = new UserResponseDto()
                         {
                             Id = p.Seller.Id,
@@ -264,6 +268,7 @@ public class ProductsController : ControllerBase
 
         var product = _mapper.Map<Product>(productDto);
 
+        product.Ts = DateTime.UtcNow;
         product.SellerId = sellerId;
         product.Rating = 5;
 

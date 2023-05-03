@@ -14,6 +14,10 @@ public class ProductResponseDto
     /// </summary>
     public string? Name { get; set; }
     /// <summary>
+    /// Description
+    /// </summary>
+    public string? Description { get; set; }
+    /// <summary>
     /// Product Cost
     /// </summary>
     public int Cost { get; set; }
@@ -25,6 +29,10 @@ public class ProductResponseDto
     /// Product Rating (0 to 5)
     /// </summary>
     public double Rating { get; set; }
+    /// <summary>
+    /// Product creation date
+    /// </summary>
+    public DateTime Ts { get; set; }
 
     /// <summary>
     /// Product Seller

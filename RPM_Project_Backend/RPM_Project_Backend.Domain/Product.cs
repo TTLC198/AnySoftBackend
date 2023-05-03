@@ -20,6 +20,11 @@ public class Product
     [Column("pro_name"), Required, StringLength(128)]
     public string? Name { get; set; }
     /// <summary>
+    /// Description
+    /// </summary>
+    [Column("pro_description"), Required, StringLength(256)]
+    public string? Description { get; set; }
+    /// <summary>
     /// Product Cost
     /// </summary>
     [Column("pro_cost"), Required]
@@ -34,6 +39,11 @@ public class Product
     /// </summary>
     [Column("pro_rating")]
     public double Rating { get; set; }
+    /// <summary>
+    /// Product creation date
+    /// </summary>
+    [Column("pro_ts"), Required]
+    public DateTime Ts { get; set; }
     /// <summary>
     /// Product Seller Identifier
     /// </summary>
@@ -93,6 +103,11 @@ public class ProductDto
     /// </summary>
     [Required(AllowEmptyStrings = false, ErrorMessage = "Name is required!")]
     public string? Name { get; set; }
+    /// <summary>
+    /// Product Description
+    /// </summary>
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Description is required!")]
+    public string? Description { get; set; }
     /// <summary>
     /// Product Cost
     /// </summary>
