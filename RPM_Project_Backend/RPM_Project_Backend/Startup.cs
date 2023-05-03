@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Config;
+using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Services.Database;
 
 namespace RPM_Project_Backend;
@@ -28,8 +29,10 @@ public class Startup
         services.AddControllers(options => options.AllowEmptyInputInBodyModelBinding = true);
         services.AddControllers().AddJsonOptions(opt =>
         {
+            opt.JsonSerializerOptions.Converters.Add(new JsonDateTimeConverter());
             opt.JsonSerializerOptions.DefaultIgnoreCondition =
                 JsonIgnoreCondition.WhenWritingNull;
+            opt.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
             opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
         // Use Swagger
