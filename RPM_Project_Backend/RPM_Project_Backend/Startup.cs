@@ -19,7 +19,7 @@ public class Startup
     {
         services.AddCors(options =>
         {
-            options.AddPolicy(name: "MyPolicy", policy => policy.WithOrigins("http://localhost:3000").AllowCredentials());
+            options.AddPolicy(name: "_MyPolicy", policy => policy.WithOrigins("http://localhost:3000").AllowCredentials().AllowAnyMethod());
         });
         
         var connection = Configuration.GetConnectionString("DefaultConnection")!;
@@ -65,12 +65,7 @@ public class Startup
         
         app.UseAuthentication();
         app.UseRouting();
-        app.UseCors(c =>
-        {
-            c.AllowAnyHeader();
-            c.AllowAnyMethod();
-            c.AllowAnyOrigin();
-        });
+        app.UseCors("_MyPolicy");
         app.UseAuthorization();
         app.UseEndpoints(endpoints =>
         {
