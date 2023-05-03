@@ -57,14 +57,14 @@ public class ProductsController : ControllerBase
     {
         _logger.LogDebug("Get list of products");
 
-        var allProducts = _context.Products
+        var products = _context.Products
             .Include(p => p.ProductsHaveGenres)
             .ThenInclude(phg => phg.Genre)
             .Include(p => p.Seller)
             .Include(p => p.ProductsHaveProperties)
             .ThenInclude(php => php.Property)
             .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
-            .AsQueryable();
+            .ToList();
 
         if (queryParameters.HasQuery())
         {
@@ -72,25 +72,36 @@ public class ProductsController : ControllerBase
             {
                 var productQuery = (ProductRequestDto) queryParameters.Object;
                 if (productQuery.Name is not null)
-                    allProducts = allProducts
-                        .Where(product => product.Name.Contains(productQuery.Name));
+                    products = products
+                        .Where(product => product.Name.Contains(productQuery.Name))
+                        .ToList();
                 if (productQuery.Rating is {Min: not null} and {Max: not null})
-                    allProducts = allProducts
+                    products = products
                         .Where(product =>
-                            productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max);
+                            productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max)
+                        .ToList();
                 if (productQuery.Cost is {Min: not null} and {Max: not null})
-                    allProducts = allProducts
+                    products = products
                         .Where(product =>
-                            productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max);
-                if (productQuery.Discount is not null)
-                    allProducts = allProducts
-                        .Where(product => product.Discount == productQuery.Discount);
-                if (productQuery.GenreId is not null)
-                    allProducts = allProducts
-                        .Where(product => product.ProductsHaveGenres.Any(g => g.Id == productQuery.GenreId));
-                if (productQuery.PropertyId is not null)
-                    allProducts = allProducts
-                        .Where(product => product.ProductsHaveProperties.Any(p => p.Id == productQuery.PropertyId));
+                            productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max)
+                        .ToList();
+                if (productQuery.Discount is {Min: not null} and {Max: not null})
+                    products = products
+                        .Where(product =>
+                            productQuery.Discount.Min <= product.Discount &&
+                            product.Discount <= productQuery.Discount.Max)
+                        .ToList();
+                if (productQuery.Genres is {Count: > 0})
+                    products = products
+                        .Where(product => productQuery.Genres
+                            .All(g => product.ProductsHaveGenres!.Any(phg => phg.GenreId == g)))
+                        .ToList();
+                
+                if (productQuery.Properties is {Count: > 0})
+                    products = products
+                        .Where(product => productQuery.Properties
+                            .All(p => product.ProductsHaveProperties!.Any(php => php.PropertyId == p)))
+                        .ToList();
             }
             catch (Exception e)
             {
@@ -100,19 +111,19 @@ public class ProductsController : ControllerBase
 
         var paginationMetadata = new
         {
-            totalCount = allProducts.Count(),
+            totalCount = products.Count(),
             pageSize = queryParameters.PageCount,
             currentPage = queryParameters.Page,
-            totalPages = queryParameters.GetTotalPages(allProducts.Count())
+            totalPages = queryParameters.GetTotalPages(products.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
-        return await allProducts.CountAsync() switch
+        return products.Count() switch
         {
             0 => NotFound(new ErrorModel("Products not found")),
             _ => Ok(
-                allProducts
+                products
                     .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
                     .Take(queryParameters.PageCount)
                     .Select(p => new ProductResponseDto()
@@ -126,17 +137,18 @@ public class ProductsController : ControllerBase
                         Ts = p.Ts,
                         Seller = new UserResponseDto()
                         {
-                            Id = p.Seller.Id,
+                            Id = p.Seller!.Id,
                             Login = p.Seller.Login,
-                            Image = ImageUriHelper.GetImagePathAsUri(p.Seller.Images.FirstOrDefault().ImagePath)
+                            Image = p.Seller.Images is null ? "" : ImageUriHelper.GetImagePathAsUri(
+                                (p.Seller.Images.FirstOrDefault() ?? new Image()).ImagePath)
                         },
-                        Images = p.Images
+                        Images = (p.Images ?? new List<Image>())
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                             .ToList(),
-                        Properties = p.ProductsHaveProperties
+                        Properties = (p.ProductsHaveProperties ?? new List<ProductsHaveProperties>())
                             .Select(php => php.Property)
                             .ToList(),
-                        Genres = p.ProductsHaveGenres
+                        Genres = (p.ProductsHaveGenres ?? new List<ProductsHaveGenres>())
                             .Select(phg => phg.Genre)
                             .ToList()
                     })

@@ -11,11 +11,11 @@ public class ProductRequestDto
     [ValidateNever]
     public MinMaxObject? Cost { get; set; }
     [ValidateNever]
-    public int? Discount { get; set; }
+    public MinMaxObject? Discount { get; set; }
     [ValidateNever]
-    public int? GenreId { get; set; }
+    public List<int>? Genres { get; set; }
     [ValidateNever]
-    public int? PropertyId { get; set; }
+    public List<int>? Properties { get; set; }
     [ValidateNever]
     public Dictionary<int, List<string>>? Attributes { get; set; }
     [ValidateNever]
