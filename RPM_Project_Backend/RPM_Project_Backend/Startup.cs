@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Config;
 using RPM_Project_Backend.Helpers;
@@ -32,6 +33,7 @@ public class Startup
             opt.JsonSerializerOptions.Converters.Add(new JsonDateTimeConverter());
             opt.JsonSerializerOptions.DefaultIgnoreCondition =
                 JsonIgnoreCondition.WhenWritingNull;
+            opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             opt.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
             opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });

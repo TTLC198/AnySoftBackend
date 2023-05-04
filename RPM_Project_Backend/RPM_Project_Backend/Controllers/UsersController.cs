@@ -61,6 +61,9 @@ public class UsersController : ControllerBase
         IQueryable<User> allUsers = 
             _dbSet
                 .Include(u => u.Role)
+                .Include(u => u.Images)
+                .Include(u => u.Orders)
+                .Include(u => u.Payments)
                 .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
         if (queryParameters.HasQuery())
@@ -117,16 +120,19 @@ public class UsersController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet("{id:int}")]
     [Authorize]
-    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(UserResponseDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<User>> Get(int id)
+    public async Task<ActionResult<UserResponseDto>> Get(int id)
     {
         _logger.LogDebug("Get user with id = {Id}", id);
         
         var user = await _dbSet
             .Include(u => u.Role)
+            .Include(u => u.Images)
+            .Include(u => u.Orders)
+            .Include(u => u.Payments)
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
@@ -138,7 +144,13 @@ public class UsersController : ControllerBase
         if (!(userRoleClaim.Value == "admin" || userIdClaim.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        return Ok(user);
+        return Ok(new UserResponseDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Login = user.Login,
+            Image = ImageUriHelper.GetImagePathAsUri((user.Images!.FirstOrDefault() ?? new Image()).ImagePath)
+        });
     }
 
     /// <summary>
