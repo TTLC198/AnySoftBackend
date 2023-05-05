@@ -73,7 +73,7 @@ public class AccountController : ControllerBase
             .FirstOrDefaultAsync();
 
         if (user is null)
-            return NotFound("User with the same login or email does not exist");
+            return NotFound(new ErrorModel("User with the same login or email does not exist"));
 
         var hasher = new PasswordHasher<User>();
         var result = hasher.VerifyHashedPassword(user, user.Password, userDto.Password);
