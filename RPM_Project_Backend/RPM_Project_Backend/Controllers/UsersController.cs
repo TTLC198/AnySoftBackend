@@ -174,7 +174,7 @@ public class UsersController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(UserResponseDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Post([FromBody]UserDto userFields)
@@ -194,17 +194,20 @@ public class UsersController : ControllerBase
         user.Password = hasher.HashPassword(user, user.Password);
         user.RoleId = 2; // Client by default
 
-        await _dbSet.AddAsync(user);
+        var createdUser = await _dbSet.AddAsync(user);
 
         switch (await _context.SaveChangesAsync())
         {
             case 0:
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
             default:
-                var createdUser = await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
-                return createdUser is null
-                    ? StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"))
-                    : StatusCode(StatusCodes.Status201Created, createdUser);
+                return StatusCode(StatusCodes.Status201Created, new UserResponseDto
+                {
+                    Id = createdUser.Entity.Id,
+                    Email = createdUser.Entity.Email,
+                    Login = createdUser.Entity.Login,
+                    Image = ImageUriHelper.GetImagePathAsUri((createdUser.Entity.Images!.FirstOrDefault() ?? new Image()).ImagePath)
+                });
         }
     }
 
