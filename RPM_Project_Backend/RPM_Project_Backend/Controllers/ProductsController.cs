@@ -75,7 +75,7 @@ public class ProductsController : ControllerBase
                 var productQuery = (ProductRequestDto) queryParameters.Object;
                 if (productQuery.Name is not null)
                     products = products
-                        .Where(product => product.Name.Contains(productQuery.Name))
+                        .Where(product => product.Name.ToLower().Contains(productQuery.Name.ToLower()))
                         .ToList();
                 if (productQuery.Rating is {Min: not null} and {Max: not null})
                     products = products
