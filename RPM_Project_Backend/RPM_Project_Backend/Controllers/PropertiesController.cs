@@ -68,20 +68,27 @@ public class PropertiesController : ControllerBase
         var paginationMetadata = new
         {
             totalCount = properties.Count(),
-            pageSize = queryParameters.PageCount,
-            currentPage = queryParameters.Page,
+            pageSize = properties.Count() < queryParameters.PageCount
+                ? properties.Count()
+                : queryParameters.PageCount,
+            currentPage = queryParameters.GetTotalPages(properties.Count()) < queryParameters.Page
+                ? (int)queryParameters.GetTotalPages(properties.Count())
+                : queryParameters.Page,
             totalPages = queryParameters.GetTotalPages(properties.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+        
+        if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
+            return NotFound(new ErrorModel("Properties not found"));
 
         return await properties.CountAsync() switch
         {
             0 => NotFound(new ErrorModel("Properties not found")),
             _ => Ok(
                 properties
-                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
-                    .Take(queryParameters.PageCount)
+                    .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
+                    .Take(paginationMetadata.pageSize)
                     .ToList()
             )
         };

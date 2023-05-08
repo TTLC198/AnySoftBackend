@@ -96,7 +96,8 @@ public class ProductsController : ControllerBase
                 if (productQuery.PublicationDate is {Min: not null} and {Max: not null})
                     products = products
                         .Where(product =>
-                            productQuery.PublicationDate.Min <= product.Ts && product.Ts <= productQuery.PublicationDate.Max)
+                            productQuery.PublicationDate.Min <= product.Ts &&
+                            product.Ts <= productQuery.PublicationDate.Max)
                         .ToList();
                 if (productQuery.Genres is {Count: > 0})
                     products = products
@@ -117,22 +118,29 @@ public class ProductsController : ControllerBase
 
         var paginationMetadata = new
         {
-            totalCount = products.Count(),
-            pageSize = queryParameters.PageCount,
-            currentPage = queryParameters.Page,
-            totalPages = queryParameters.GetTotalPages(products.Count())
+            totalCount = products.Count,
+            pageSize = products.Count < queryParameters.PageCount
+                ? products.Count
+                : queryParameters.PageCount,
+            currentPage = queryParameters.GetTotalPages(products.Count) < queryParameters.Page
+                ? (int)queryParameters.GetTotalPages(products.Count)
+                : queryParameters.Page,
+            totalPages = queryParameters.GetTotalPages(products.Count)
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
+        if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
+            return NotFound(new ErrorModel("Products not found"));
 
         return products.Count() switch
         {
             0 => NotFound(new ErrorModel("Products not found")),
             _ => Ok(
                 products
-                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
-                    .Take(queryParameters.PageCount)
-                    .Select(p => new ProductResponseDto()
+                    .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
+                    .Take(paginationMetadata.pageSize)
+                    .Select(p => new ProductResponseDto
                     {
                         Id = p.Id,
                         Name = p.Name,
@@ -145,8 +153,10 @@ public class ProductsController : ControllerBase
                         {
                             Id = p.Seller!.Id,
                             Login = p.Seller.Login,
-                            Image = p.Seller.Images is null ? "" : ImageUriHelper.GetImagePathAsUri(
-                                (p.Seller.Images.FirstOrDefault() ?? new Image()).ImagePath)
+                            Image = p.Seller.Images is null
+                                ? ""
+                                : ImageUriHelper.GetImagePathAsUri(
+                                    (p.Seller.Images.FirstOrDefault() ?? new Image()).ImagePath)
                         },
                         Images = (p.Images ?? new List<Image>())
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))

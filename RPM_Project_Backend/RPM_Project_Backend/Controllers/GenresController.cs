@@ -67,20 +67,27 @@ public class GenresController : ControllerBase
         var paginationMetadata = new
         {
             totalCount = genres.Count(),
-            pageSize = queryParameters.PageCount,
-            currentPage = queryParameters.Page,
+            pageSize = genres.Count() < queryParameters.PageCount
+                ? genres.Count()
+                : queryParameters.PageCount,
+            currentPage = queryParameters.GetTotalPages(genres.Count()) < queryParameters.Page
+                ? (int)queryParameters.GetTotalPages(genres.Count())
+                : queryParameters.Page,
             totalPages = queryParameters.GetTotalPages(genres.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+        
+        if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
+            return NotFound(new ErrorModel("Genres not found"));
 
         return await genres.CountAsync() switch
         {
             0 => NotFound(new ErrorModel("Genres not found")),
             _ => Ok(
                 genres
-                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
-                    .Take(queryParameters.PageCount)
+                    .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
+                    .Take(paginationMetadata.pageSize)
                     .ToList()
             )
         };

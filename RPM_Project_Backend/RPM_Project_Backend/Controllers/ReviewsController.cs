@@ -72,20 +72,27 @@ public class ReviewsController : ControllerBase
         var paginationMetadata = new
         {
             totalCount = reviews.Count(),
-            pageSize = queryParameters.PageCount,
-            currentPage = queryParameters.Page,
+            pageSize = reviews.Count() < queryParameters.PageCount
+                ? reviews.Count()
+                : queryParameters.PageCount,
+            currentPage = queryParameters.GetTotalPages(reviews.Count()) < queryParameters.Page
+                ? (int)queryParameters.GetTotalPages(reviews.Count())
+                : queryParameters.Page,
             totalPages = queryParameters.GetTotalPages(reviews.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+        
+        if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
+            return NotFound(new ErrorModel("Reviews not found"));
 
         return await reviews.CountAsync() switch
         {
             0 => NotFound(new ErrorModel("Reviews not found")),
             _ => Ok(
                 reviews
-                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
-                    .Take(queryParameters.PageCount)
+                    .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
+                    .Take(paginationMetadata.pageSize)
                     .Select(r => new ReviewResponseDto()
                     {
                         Id = r.Id,

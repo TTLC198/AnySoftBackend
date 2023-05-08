@@ -87,20 +87,27 @@ public class UsersController : ControllerBase
         var paginationMetadata = new
         {
             totalCount = allUsers.Count(),
-            pageSize = queryParameters.PageCount,
-            currentPage = queryParameters.Page,
+            pageSize = allUsers.Count() < queryParameters.PageCount
+                ? allUsers.Count()
+                : queryParameters.PageCount,
+            currentPage = queryParameters.GetTotalPages(allUsers.Count()) < queryParameters.Page
+                ? (int)queryParameters.GetTotalPages(allUsers.Count())
+                : queryParameters.Page,
             totalPages = queryParameters.GetTotalPages(allUsers.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+        
+        if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
+            return NotFound(new ErrorModel("Users not found"));
 
         return await allUsers.CountAsync() switch
         {
-            0 => NotFound(new ErrorModel("User not found")),
+            0 => NotFound(new ErrorModel("Users not found")),
             _ => Ok(
                 allUsers
-                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
-                    .Take(queryParameters.PageCount)
+                    .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
+                    .Take(paginationMetadata.pageSize)
             )
         };
     }
