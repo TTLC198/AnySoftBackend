@@ -4,21 +4,21 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
-public class CartsHaveProducts
+public class UsersHaveProducts
 {
     [Key]
     [Column("chp_id"), Required]
     public int Id { get; set; }
     [Column("chp_pl_id"), Required]
-    public int ShoppingCartId { get; set; }
+    public int UserId { get; set; }
     [Column("chp_pro_id"), Required]
     public int ProductId { get; set; }
     [Column("chp_quantity"), Required]
     public int Quantity { get; set; }
     
     [ValidateNever]
-    [ForeignKey("ShoppingCartId")]
-    public virtual ShoppingCart? ShoppingCart { get; }
+    [ForeignKey("UserId")]
+    public virtual User? User { get; }
     [ValidateNever]
     [ForeignKey("ProductId")]
     public virtual Product? Product { get; }
