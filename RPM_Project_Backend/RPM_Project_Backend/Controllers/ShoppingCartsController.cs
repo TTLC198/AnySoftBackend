@@ -134,12 +134,8 @@ public class ShoppingCartsController : ControllerBase
     /// Example request
     /// 
     /// POST api/cart/order&#xA;&#xD;
-    ///     {
-    ///         "paymentId": 1
-    ///     }
     /// 
     /// </remarks>
-    /// <param name="paymentId"></param>
     /// <response code="200">Return created shopping cart</response>
     /// <response code="400">There are no products with this ID</response>
     /// <response code="500">Oops! Server internal error</response>
@@ -149,21 +145,11 @@ public class ShoppingCartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShoppingCartResponseDto>> Buy(
-        [FromBody]int paymentId)
+    public async Task<ActionResult<ShoppingCartResponseDto>> Buy()
     {
-        if (paymentId <= 0)
-            return BadRequest(new ErrorModel("The input data is empty"));
-        
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         if (!await _context.UsersHaveProducts.AnyAsync(p => p.UserId == userId))
             return NotFound(new ErrorModel("User's cart is empty"));
-
-        var payment = await _context.Payments
-            .FirstOrDefaultAsync(p => p.Id == paymentId && p.UserId == userId);
-        
-        if (payment is null)
-            return BadRequest(new ErrorModel("The selected payment property does not exist"));
 
         var userHaveProducts = _context.UsersHaveProducts
             .Include(c => c.Product)
