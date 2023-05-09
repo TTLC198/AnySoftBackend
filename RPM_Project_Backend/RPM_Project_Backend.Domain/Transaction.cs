@@ -16,9 +16,6 @@ public class Transaction
     [Column("tr_order_id"), Required]
     public int OrderId { get; set; }
 
-    [Column("tr_time"), Required]
-    public DateTime Time { get; set; }
-
     [ValidateNever]
     [ForeignKey("OrderId")]
     public virtual Order? Order { get; }
