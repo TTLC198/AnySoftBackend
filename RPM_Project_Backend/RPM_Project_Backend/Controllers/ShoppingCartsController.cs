@@ -166,7 +166,7 @@ public class ShoppingCartsController : ControllerBase
         var usersHaveProducts = new List<UsersHaveProducts>();
         foreach (var productId in shoppingCartDto.ProductIds)
         {
-            var existedItem = await _context.UsersHaveProducts.FirstOrDefaultAsync(c => c.ProductId == productId);
+            var existedItem = await _context.UsersHaveProducts.FirstOrDefaultAsync(c => c.ProductId == productId && c.UserId == userId);
             if (existedItem is not null)
                 return BadRequest(new ErrorModel("The product is already in the cart"));
             usersHaveProducts.Add(new UsersHaveProducts()
