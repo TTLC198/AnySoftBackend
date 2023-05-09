@@ -164,9 +164,11 @@ public class OrdersController : ControllerBase
         if (payment is null) 
             return NotFound(new ErrorModel("Payment method not found"));
         if (payment.IsActive == false)
-            return NotFound(new ErrorModel("Payment method is not active"));
+            return BadRequest(new ErrorModel("Payment method is not active"));
         if (order is null) 
             return NotFound(new ErrorModel("Order not found"));
+        if (order.Status == "Paid")
+            return BadRequest(new ErrorModel("You have already made a purchase"));
 
         var transaction = new Transaction
         {
