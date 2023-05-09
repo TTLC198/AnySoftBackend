@@ -13,9 +13,7 @@ public class OrdersHaveProduct
     public int ProductId { get; set; }
     [Column("ohp_or_id"), Required]
     public int OrderId { get; set; }
-    [Column("ohp_quantity"), Required]
-    public int Quantity { get; set; }
-    
+
     [ValidateNever]
     [ForeignKey("OrderId")]
     public virtual Order? Order { get; }
