@@ -8,5 +8,17 @@ public static class MapperConfig
     {
         services
             .AddAutoMapper(typeof(UserMappingProfile));
+        services
+            .AddAutoMapper(typeof(ProductMappingProfile));
+        services
+            .AddAutoMapper(typeof(ReviewMappingProfile));
+        services
+            .AddAutoMapper(typeof(GenreMappingProfile));
+        services
+            .AddAutoMapper(typeof(PropertyMappingProfile));
+        services
+            .AddAutoMapper(typeof(PaymentMappingProfile));
+        services
+            .AddAutoMapper(typeof(OrderMappingProfile));
     }
 }

@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using RPM_PR_LIB;
 using RPM_Project_Backend.Services.Database;
 
 namespace RPM_Project_Backend.Config;
@@ -31,8 +30,11 @@ public static class JwtConfig
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
+                    ValidateLifetime = true,
                     RequireExpirationTime = true,
                     ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                    
                     ValidAudience = configuration["JwtConfiguration:Audience"],
                     ValidIssuer = configuration["JwtConfiguration:Issuer"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(

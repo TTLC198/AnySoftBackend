@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RPM_PR_LIB;
+using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
@@ -68,7 +68,7 @@ public class ImagesController : ControllerBase
     }
     
     /// <summary>
-    /// Get single image by filename
+    /// Get single image by path
     /// </summary>
     /// <remarks>
     /// Example request
@@ -76,23 +76,30 @@ public class ImagesController : ControllerBase
     /// GET api/image/4
     ///
     /// </remarks>
-    /// <param name="filename"></param>
+    /// <param name="path"></param>
     /// <response code="200">Return image as file</response>
     /// <response code="404">Image not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [AllowAnonymous]
-    [HttpGet("{filename}")]
+    [HttpGet("{*path}")]
     [ProducesResponseType(typeof(Image), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Image>> Get(string filename)
+    public async Task<ActionResult<Image>> Get([FromRoute]string path)
     {
-        if (filename is null or {Length: 0})
+        if (path is null or {Length: 0})
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        _logger.LogDebug("Get image with filename = {filename}", filename);
-        
-        var image = await _dbSet.FirstOrDefaultAsync(i => i.ImagePath.Contains(filename));
+        _logger.LogDebug("Get image with filename = {filename}", path);
+
+        var image = _dbSet
+            .Select(i => new
+            {
+                i.ImagePath,
+                i.ContentType
+            })
+            .ToList()
+            .FirstOrDefault(i => string.Join(@"/", i.ImagePath.Split('\\').SkipWhile(s => s != "wwwroot").Skip(1)) == path);
         
         if (image is null)
             return NotFound(new ErrorModel("Image not found"));
@@ -132,7 +139,7 @@ public class ImagesController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Image>> Upload([FromForm]ImageDto imageDto)
     {
-        if (imageDto is null or {ResourceId: <= 0} or {Type: <= 0} or {Image: null})
+        if (imageDto is null or {UserId: <= 0} or {ProductId: <= 0} or {Image: null})
             return BadRequest(new ErrorModel("Input data is empty"));
         
         var uniqueFileName = FileNameHelper.GetUniqueFileName(imageDto.Image.FileName);
@@ -145,10 +152,9 @@ public class ImagesController : ControllerBase
         
         var image = new Image
         {
-            ResourceId = imageDto.ResourceId,
-            Type = imageDto.Type,
+            UserId = imageDto.UserId,
+            ProductId = imageDto.ProductId,
             ContentType = imageDto.Image.ContentType,
-            Description = imageDto.Description,
             Ts = DateTime.Now,
             ImagePath = filePath
         };

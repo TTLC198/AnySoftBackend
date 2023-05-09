@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using RPM_PR_LIB;
+using RPM_Project_Backend.Domain;
 
 namespace RPM_Project_Backend.Mappings;
 

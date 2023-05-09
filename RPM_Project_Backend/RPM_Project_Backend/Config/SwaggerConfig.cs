@@ -16,7 +16,7 @@ public static class SwaggerConfig
             });
 
             c.IncludeXmlComments(Path.Combine($"{System.AppDomain.CurrentDomain.BaseDirectory}", "RPM_Project_Backend.xml"));
-            c.IncludeXmlComments(Path.Combine($"{System.AppDomain.CurrentDomain.BaseDirectory}", "RPM_PR_LIB.xml"));
+            c.IncludeXmlComments(Path.Combine($"{System.AppDomain.CurrentDomain.BaseDirectory}", "RPM_Project_Backend.Domain.xml"));
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {

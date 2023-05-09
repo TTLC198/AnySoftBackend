@@ -1,0 +1,68 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+namespace RPM_Project_Backend.Domain;
+
+public class Payment
+{
+    [Key]
+    [Column("pay_id"), Required]
+    public int Id { get; set; }
+    [Column("pay_user_id"), Required]
+    public int UserId { get; set; }
+    [Column("pay_number"), Required, StringLength(24)] 
+    public string? Number { get; set; }
+    [Column("pay_expiration_date"), Required]
+    public DateTime ExpirationDate { get; set; }
+    [Column("pay_cvc"), Required, StringLength(4)] 
+    public string? Cvc { get; set; }
+    [Column("pay_is_active"), Required]
+    public bool IsActive { get; set; }
+    
+    [ValidateNever]
+    [ForeignKey("UserId")]
+    public virtual User? User { get; }
+    [ValidateNever]
+    public virtual IEnumerable<Transaction>? Transactions { get; }
+}
+/// <summary>
+/// Payment Data Transfer Object
+/// </summary>
+public class PaymentDto
+{
+    /// <summary>
+    /// Bank Card Number
+    /// </summary>
+    public string? Number { get; set; }
+    /// <summary>
+    /// Bank Card Expiration Date
+    /// </summary>
+    public DateTime ExpirationDate { get; set; }
+    /// <summary>
+    /// Bank Card Security Code
+    /// </summary>
+    public string? Cvc { get; set; }
+}
+/// <summary>
+/// Payment Edit Object
+/// </summary>
+public class PaymentEditDto
+{
+    /// <summary>
+    /// Identifier
+    /// </summary>
+    public int Id { get; set; }
+    /// <summary>
+    /// Bank Card Number
+    /// </summary>
+    public string? Number { get; set; }
+    /// <summary>
+    /// Bank Card Expiration Date
+    /// </summary>
+    public DateTime ExpirationDate { get; set; }
+    /// <summary>
+    /// Bank Card Security Code
+    /// </summary>
+    public string? Cvc { get; set; }
+}

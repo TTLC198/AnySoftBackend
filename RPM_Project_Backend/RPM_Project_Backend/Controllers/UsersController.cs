@@ -2,14 +2,13 @@
 using System.Linq.Dynamic.Core;
 using System.Net;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RPM_PR_LIB;
+using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
@@ -34,7 +33,7 @@ public class UsersController : ControllerBase
         _logger = logger;
         _context = context;
         _mapper = mapper;
-        _dbSet = _context.Set<User>();
+        _dbSet = _context.Users;
     }
     /// <summary>
     /// Get users list
@@ -61,8 +60,10 @@ public class UsersController : ControllerBase
 
         IQueryable<User> allUsers = 
             _dbSet
-                .Include(u => u.Addresses)
                 .Include(u => u.Role)
+                .Include(u => u.Images)
+                .Include(u => u.Orders)
+                .Include(u => u.Payments)
                 .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
         if (queryParameters.HasQuery())
@@ -79,27 +80,34 @@ public class UsersController : ControllerBase
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
-                return StatusCode(500, new ErrorModel("Some error has occurred"));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
             }
         }
 
         var paginationMetadata = new
         {
             totalCount = allUsers.Count(),
-            pageSize = queryParameters.PageCount,
-            currentPage = queryParameters.Page,
+            pageSize = allUsers.Count() < queryParameters.PageCount
+                ? allUsers.Count()
+                : queryParameters.PageCount,
+            currentPage = queryParameters.GetTotalPages(allUsers.Count()) < queryParameters.Page
+                ? (int)queryParameters.GetTotalPages(allUsers.Count())
+                : queryParameters.Page,
             totalPages = queryParameters.GetTotalPages(allUsers.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+        
+        if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
+            return NotFound(new ErrorModel("Users not found"));
 
         return await allUsers.CountAsync() switch
         {
-            0 => NotFound(new ErrorModel("User not found")),
+            0 => NotFound(new ErrorModel("Users not found")),
             _ => Ok(
                 allUsers
-                    .Skip(queryParameters.PageCount * (queryParameters.Page - 1))
-                    .Take(queryParameters.PageCount)
+                    .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
+                    .Take(paginationMetadata.pageSize)
             )
         };
     }
@@ -119,17 +127,19 @@ public class UsersController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet("{id:int}")]
     [Authorize]
-    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(UserResponseDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<User>> Get(int id)
+    public async Task<ActionResult<UserResponseDto>> Get(int id)
     {
-        _logger.LogDebug("Get user with id = {id}", id);
+        _logger.LogDebug("Get user with id = {Id}", id);
         
         var user = await _dbSet
-            .Include(u => u.Addresses)
             .Include(u => u.Role)
+            .Include(u => u.Images)
+            .Include(u => u.Orders)
+            .Include(u => u.Payments)
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
@@ -141,7 +151,13 @@ public class UsersController : ControllerBase
         if (!(userRoleClaim.Value == "admin" || userIdClaim.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        return Ok(user);
+        return Ok(new UserResponseDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Login = user.Login,
+            Image = ImageUriHelper.GetImagePathAsUri((user.Images!.FirstOrDefault() ?? new Image()).ImagePath)
+        });
     }
 
     /// <summary>
@@ -160,12 +176,12 @@ public class UsersController : ControllerBase
     /// 
     /// </remarks>
     /// <param name="userFields"></param>
-    /// <response code="200">Return created user</response>
+    /// <response code="201">Return created user</response>
     /// <response code="400">Same user found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(User), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(UserResponseDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<User>> Post([FromBody]UserDto userFields)
@@ -173,11 +189,11 @@ public class UsersController : ControllerBase
         if (userFields is null)
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        _logger.LogDebug("Create new user with login = {login}", userFields.Login);
+        _logger.LogDebug("Create new user with login = {Login}", userFields.Login);
 
         var existedUser = await _dbSet.FirstOrDefaultAsync(u => u.Email == userFields.Email || u.Login == userFields.Login);
         if (existedUser is not null)
-            return BadRequest("User with the same login or email already exists");
+            return BadRequest(new ErrorModel("User with the same login or email already exists"));
 
         var hasher = new PasswordHasher<User>();
         var user = _mapper.Map<User>(userFields);
@@ -185,12 +201,16 @@ public class UsersController : ControllerBase
         user.Password = hasher.HashPassword(user, user.Password);
         user.RoleId = 2; // Client by default
 
-        await _dbSet.AddAsync(user);
+        var createdUser = await _dbSet.AddAsync(user);
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
-            _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
+            0 => StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred")),
+            _ => StatusCode(StatusCodes.Status201Created,
+                new UserResponseDto
+                {
+                    Id = createdUser.Entity.Id, Email = createdUser.Entity.Email, Login = createdUser.Entity.Login
+                })
         };
     }
 
@@ -234,14 +254,19 @@ public class UsersController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{userFields.Id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
         
-        _logger.LogDebug("Update existing user with id = {id}", userFields.Id);
+        _logger.LogDebug("Update existing user with id = {Id}", userFields.Id);
         _context.Entry(userFields).State = EntityState.Modified;
 
-        return await _context.SaveChangesAsync() switch
+        switch (await _context.SaveChangesAsync())
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
-            _ => Ok(await _dbSet.FirstAsync(u => u.Login == userFields.Login && u.Email == userFields.Password))
-        };
+            case 0:
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
+            default:
+                var createdUser = await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
+                return createdUser is null 
+                    ? StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred")) 
+                    : Ok(createdUser);
+        }
     }
 
     /// <summary>
@@ -287,7 +312,7 @@ public class UsersController : ControllerBase
         if (user is null) 
             return NotFound(new ErrorModel("User not found"));
         
-        _logger.LogDebug("Update existing user with id = {id}", id);
+        _logger.LogDebug("Update existing user with id = {Id}", id);
         
         userPatch.ApplyTo(user, ModelState);
         
@@ -298,7 +323,7 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(StatusCodes.Status500InternalServerError,new ErrorModel("Some error has occurred")),
             _ => Ok(user)
         };
     }
@@ -329,12 +354,12 @@ public class UsersController : ControllerBase
         if (id <= 0) 
             return BadRequest(new ErrorModel("The input data is empty"));
         
-        _logger.LogDebug("Delete existing user with id = {id}", id);
+        _logger.LogDebug("Delete existing user with id = {Id}", id);
         
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
         
-        var toDelete = await _dbSet.FindAsync(id);
+        var toDelete = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
         
         if (toDelete is null) 
             return NotFound(new ErrorModel("User not found"));
@@ -343,7 +368,7 @@ public class UsersController : ControllerBase
 
         return await _context.SaveChangesAsync() switch
         {
-            0 => StatusCode(500,new ErrorModel("Some error has occurred")),
+            0 => StatusCode(StatusCodes.Status500InternalServerError,new ErrorModel("Some error has occurred")),
             _ => NoContent()
         };
     }

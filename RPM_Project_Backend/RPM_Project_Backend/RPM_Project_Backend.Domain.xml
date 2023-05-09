@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RPM_Project_Backend.Domain</name>
+    </assembly>
+    <members>
+        <member name="T:RPM_Project_Backend.Domain.Product">
+            <summary>
+            Product Object
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Id">
+            <summary>
+            Identifier
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Name">
+            <summary>
+            Name
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Quantity">
+            <summary>
+            Product Quantity
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Cost">
+            <summary>
+            Product Cost
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Discount">
+            <summary>
+            Product cost
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.CategoryId">
+            <summary>
+            Product Category Identifier
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Rating">
+            <summary>
+            Product Rating (0 to 5)
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Category">
+            <summary>
+            Product Category 
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.SellerId">
+            <summary>
+            Product Seller Identifier
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Seller">
+            <summary>
+            Product Seller
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.ProductsHaveAttributes">
+            <summary>
+            Product attributes
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.Product.Reviews">
+            <summary>
+            Product reviews
+            </summary>
+        </member>
+        <member name="T:RPM_Project_Backend.Domain.ProductDto">
+            <summary>
+            Product Data Transfer Object
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.ProductDto.Name">
+            <summary>
+            Product Name
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.ProductDto.Cost">
+            <summary>
+            Product Cost
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.ProductDto.Discount">
+            <summary>
+            Discount
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.ProductDto.CategoryId">
+            <summary>
+            Category Identifier
+            </summary>
+        </member>
+        <member name="T:RPM_Project_Backend.Domain.User">
+            <summary>
+            User Object
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.User.Id">
+            <summary>
+            Identifier
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.User.Login">
+            <summary>
+            Login
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.User.Password">
+            <summary>
+            Password
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.User.Email">
+            <summary>
+            Email
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.User.RoleId">
+            <summary>
+            Role identifier
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.User.Role">
+            <summary>
+            Role Object
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.User.Addresses">
+            <summary>
+            User addresses
+            </summary>
+        </member>
+        <member name="T:RPM_Project_Backend.Domain.UserDto">
+            <summary>
+            User Data Transfer Object
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.UserDto.Login">
+            <summary>
+            Login
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.UserDto.Email">
+            <summary>
+            Email
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.UserDto.Password">
+            <summary>
+            Password
+            </summary>
+        </member>
+        <member name="P:RPM_Project_Backend.Domain.UserDto.IsValidated">
+            <summary>
+            Equals true if Email or Login exists
+            </summary>
+        </member>
+    </members>
+</doc>
