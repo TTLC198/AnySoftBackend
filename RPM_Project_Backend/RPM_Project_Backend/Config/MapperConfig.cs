@@ -18,5 +18,7 @@ public static class MapperConfig
             .AddAutoMapper(typeof(PropertyMappingProfile));
         services
             .AddAutoMapper(typeof(PaymentMappingProfile));
+        services
+            .AddAutoMapper(typeof(OrderMappingProfile));
     }
 }

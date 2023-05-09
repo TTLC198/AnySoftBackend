@@ -12,14 +12,12 @@ public class Order
     public int Id { get; set; }
     [Column("or_status"), Required, StringLength(128)]
     public string? Status { get; set; }
-    [Column("or_ad_id"), Required]
-    public int AddressId { get; set; }
     [Column("or_u_id"), Required]
     public int UserId { get; set; }
     [Column("or_f_cost"), Required]
     public double FinalCost { get; set; }
-    [Column("or_time"), Required]
-    public DateTime Time { get; set; }
+    [Column("or_ts"), Required]
+    public DateTime Ts { get; set; }
     
     [ValidateNever]
     [ForeignKey("UserId")]
@@ -29,3 +27,31 @@ public class Order
     [ValidateNever]
     public virtual IEnumerable<Transaction>? Transactions { get; }
 }
+
+/// <summary>
+/// Order Data Transfer Object
+/// </summary>
+public class OrderResponseDto
+{
+    /// <summary>
+    /// Order identifier
+    /// </summary>
+    public int Id { get; set; }
+    /// <summary>
+    /// Order Status
+    /// </summary>
+    public string? Status { get; set; }
+    /// <summary>
+    /// Order UserId
+    /// </summary>
+    public int UserId { get; set; }
+    /// <summary>
+    /// Order Final Cost
+    /// </summary>
+    public double FinalCost { get; set; }
+    /// <summary>
+    /// Order Creation Time
+    /// </summary>
+    public DateTime Ts { get; set; }
+}
+
