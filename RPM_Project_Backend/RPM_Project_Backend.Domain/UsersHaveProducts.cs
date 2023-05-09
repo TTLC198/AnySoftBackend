@@ -7,13 +7,13 @@ namespace RPM_Project_Backend.Domain;
 public class UsersHaveProducts
 {
     [Key]
-    [Column("chp_id"), Required]
+    [Column("uhp_id"), Required]
     public int Id { get; set; }
-    [Column("chp_pl_id"), Required]
+    [Column("uhp_pl_id"), Required]
     public int UserId { get; set; }
-    [Column("chp_pro_id"), Required]
+    [Column("uhp_pro_id"), Required]
     public int ProductId { get; set; }
-    [Column("chp_quantity"), Required]
+    [Column("uhp_quantity"), Required]
     public int Quantity { get; set; }
     
     [ValidateNever]
