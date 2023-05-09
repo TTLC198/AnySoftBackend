@@ -193,7 +193,7 @@ public class UsersController : ControllerBase
 
         var existedUser = await _dbSet.FirstOrDefaultAsync(u => u.Email == userFields.Email || u.Login == userFields.Login);
         if (existedUser is not null)
-            return BadRequest("User with the same login or email already exists");
+            return BadRequest(new ErrorModel("User with the same login or email already exists"));
 
         var hasher = new PasswordHasher<User>();
         var user = _mapper.Map<User>(userFields);
@@ -203,19 +203,15 @@ public class UsersController : ControllerBase
 
         var createdUser = await _dbSet.AddAsync(user);
 
-        switch (await _context.SaveChangesAsync())
+        return await _context.SaveChangesAsync() switch
         {
-            case 0:
-                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
-            default:
-                return StatusCode(StatusCodes.Status201Created, new UserResponseDto
+            0 => StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred")),
+            _ => StatusCode(StatusCodes.Status201Created,
+                new UserResponseDto
                 {
-                    Id = createdUser.Entity.Id,
-                    Email = createdUser.Entity.Email,
-                    Login = createdUser.Entity.Login,
-                    Image = ImageUriHelper.GetImagePathAsUri((createdUser.Entity.Images!.FirstOrDefault() ?? new Image()).ImagePath)
-                });
-        }
+                    Id = createdUser.Entity.Id, Email = createdUser.Entity.Email, Login = createdUser.Entity.Login
+                })
+        };
     }
 
     /// <summary>

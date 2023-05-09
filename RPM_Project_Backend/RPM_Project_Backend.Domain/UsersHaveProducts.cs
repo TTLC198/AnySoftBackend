@@ -9,12 +9,10 @@ public class UsersHaveProducts
     [Key]
     [Column("uhp_id"), Required]
     public int Id { get; set; }
-    [Column("uhp_pl_id"), Required]
+    [Column("uhp_u_id"), Required]
     public int UserId { get; set; }
     [Column("uhp_pro_id"), Required]
     public int ProductId { get; set; }
-    [Column("uhp_quantity"), Required]
-    public int Quantity { get; set; }
     
     [ValidateNever]
     [ForeignKey("UserId")]
