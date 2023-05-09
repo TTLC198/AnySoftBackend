@@ -128,6 +128,84 @@ public class ShoppingCartsController : ControllerBase
     }
     
     /// <summary>
+    /// Create new order
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// POST api/cart/order&#xA;&#xD;
+    ///     {
+    ///         "paymentId": 1
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="paymentId"></param>
+    /// <response code="200">Return created shopping cart</response>
+    /// <response code="400">There are no products with this ID</response>
+    /// <response code="500">Oops! Server internal error</response>
+    [HttpPost("order")]
+    [Authorize]
+    [ProducesResponseType(typeof(ShoppingCartResponseDto), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<ShoppingCartResponseDto>> Buy(
+        [FromBody]int paymentId)
+    {
+        if (paymentId <= 0)
+            return BadRequest(new ErrorModel("The input data is empty"));
+        
+        var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
+        if (!await _context.UsersHaveProducts.AnyAsync(p => p.UserId == userId))
+            return NotFound(new ErrorModel("User's cart is empty"));
+
+        var payment = await _context.Payments
+            .FirstOrDefaultAsync(p => p.Id == paymentId && p.UserId == userId);
+        
+        if (payment is null)
+            return BadRequest(new ErrorModel("The selected payment property does not exist"));
+
+        var userHaveProducts = _context.UsersHaveProducts
+            .Include(c => c.Product)
+            .Where(c => c.UserId == userId)
+            .ToList();
+
+        var order = new Order()
+        {   
+            Status = "new",
+            FinalCost = userHaveProducts
+                .Sum(c => c.Product.Cost * (1 - (c.Product.Discount ?? 0) * 0.01)),
+            Ts = DateTime.UtcNow
+        };
+
+        var createdOrder = await _context.Orders.AddAsync(order);
+
+        switch (await _context.SaveChangesAsync())
+        {
+            case 0:
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
+            default:
+                var ordersHaveProducts = userHaveProducts
+                        .Select(product => 
+                            new OrdersHaveProduct
+                            {
+                                OrderId = createdOrder.Entity.Id, 
+                                ProductId = product.ProductId
+                            }).ToList();
+
+                _context.UsersHaveProducts.RemoveRange(userHaveProducts);
+                await _context.OrdersHaveProducts.AddRangeAsync(ordersHaveProducts);
+                
+                return await _context.SaveChangesAsync() switch
+                {
+                    0 => StatusCode(StatusCodes.Status500InternalServerError,
+                        new ErrorModel("Some error has occurred")),
+                    _ => Ok(_mapper.Map<OrderResponseDto>(createdOrder))
+                };
+        }
+    }
+    
+    /// <summary>
     /// Create new shopping cart
     /// </summary>
     /// <remarks>
