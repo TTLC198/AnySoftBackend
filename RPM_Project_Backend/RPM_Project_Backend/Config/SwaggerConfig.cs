@@ -15,17 +15,17 @@ public static class SwaggerConfig
                 Contact = new OpenApiContact { Name = "Vadim Kh.", Email = "yorehacked@gmail.com" }
             });
 
-            c.IncludeXmlComments(Path.Combine($"{System.AppDomain.CurrentDomain.BaseDirectory}", "RPM_Project_Backend.xml"));
-            c.IncludeXmlComments(Path.Combine($"{System.AppDomain.CurrentDomain.BaseDirectory}", "RPM_Project_Backend.Domain.xml"));
+            c.IncludeXmlComments(Path.Combine($"{AppDomain.CurrentDomain.BaseDirectory}", "RPM_Project_Backend.xml"));
+            c.IncludeXmlComments(Path.Combine($"{AppDomain.CurrentDomain.BaseDirectory}", "RPM_Project_Backend.Domain.xml"));
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Description = "Input the JWT like: Bearer {your token}",
                 Name = "Authorization",
-                Scheme = "Bearer",
+                Scheme = "bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey
+                Type = SecuritySchemeType.Http
             });
 
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -39,7 +39,7 @@ public static class SwaggerConfig
                             Id = "Bearer"
                         }
                     },
-                    new string[] {}
+                    Array.Empty<string>()
                 }
             });
         });
