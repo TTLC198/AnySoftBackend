@@ -4,19 +4,24 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RPM_Project_Backend.Domain;
 
-public class ShoppingCart
+/// <summary>
+/// Shopping Cart Data Transfer Object
+/// </summary>
+public class ShoppingCartDto
 {
-    [Key]
-    [Column("sc_id"), Required]
-    public int Id { get; set; }
+    /// <summary>
+    /// Product IDs to add to the database
+    /// </summary>
+    public IEnumerable<int> ProductIds { get; set; }
+}
 
-    [Column("sc_u_id"), Required]
-    public int UserId { get; set; }
-
-    [ValidateNever]
-    [ForeignKey("UserId")]
-    public virtual User? User { get; }
-    
-    [ValidateNever]
-    public virtual IEnumerable<CartsHaveProducts>? CartsHaveProducts { get; }
+/// <summary>
+/// Shopping Cart Response model
+/// </summary>
+public class ShoppingCartResponseDto
+{
+    /// <summary>
+    /// Product IDs from the database
+    /// </summary>
+    public IEnumerable<ProductResponseDto> Products { get; set; }
 }

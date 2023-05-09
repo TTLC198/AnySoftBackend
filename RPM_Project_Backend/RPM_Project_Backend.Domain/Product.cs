@@ -79,7 +79,7 @@ public class Product
     /// Product in shopping carts
     /// </summary>
     [ValidateNever]
-    public virtual IEnumerable<CartsHaveProducts>? CartsHaveProducts { get; }
+    public virtual IEnumerable<UsersHaveProducts>? UsersHaveProducts { get; }
 
     /// <summary>
     /// Product images

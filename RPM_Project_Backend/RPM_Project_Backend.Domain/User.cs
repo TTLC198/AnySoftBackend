@@ -62,7 +62,7 @@ public class User
     /// User reviews
     /// </summary>
     [ValidateNever]
-    public virtual IEnumerable<ShoppingCart>? ShoppingCarts { get; }
+    public virtual IEnumerable<UsersHaveProducts>? UsersHaveProducts { get; }
     /// <summary>
     /// User orders
     /// </summary>

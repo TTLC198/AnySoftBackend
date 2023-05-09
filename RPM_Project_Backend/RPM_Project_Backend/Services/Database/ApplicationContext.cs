@@ -31,11 +31,11 @@ public class ApplicationContext : DbContext
             .OnDelete(DeleteBehavior.NoAction);
         
         modelBuilder
-            .Entity<CartsHaveProducts>()
-            .HasOne(o => o.ShoppingCart)
-            .WithMany(o => o.CartsHaveProducts)
+            .Entity<UsersHaveProducts>()
+            .HasOne(o => o.User)
+            .WithMany(o => o.UsersHaveProducts)
             .OnDelete(DeleteBehavior.NoAction);
-        
+
         modelBuilder
             .Entity<OrdersHaveProduct>()
             .HasOne(o => o.Order)
@@ -55,7 +55,7 @@ public class ApplicationContext : DbContext
 
     public virtual DbSet<Genre> Genres { get; set; }
     
-    public virtual DbSet<CartsHaveProducts> CartsHaveProducts { get; set; }
+    public virtual DbSet<UsersHaveProducts> UsersHaveProducts { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
 
@@ -64,8 +64,6 @@ public class ApplicationContext : DbContext
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
-
-    public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
     public virtual DbSet<ProductsHaveProperties> ProductsHaveProperties { get; set; }
     
