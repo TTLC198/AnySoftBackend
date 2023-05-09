@@ -145,22 +145,26 @@ public class ShoppingCartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShoppingCartResponseDto>> Buy()
+    public async Task<ActionResult<ShoppingCartResponseDto>> Order()
     {
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         if (!await _context.UsersHaveProducts.AnyAsync(p => p.UserId == userId))
             return NotFound(new ErrorModel("User's cart is empty"));
 
         var userHaveProducts = _context.UsersHaveProducts
-            .Include(c => c.Product)
             .Where(c => c.UserId == userId)
             .ToList();
 
+        var products = _context.Products
+            .ToList()
+            .Where(p => userHaveProducts.Any(uhp => uhp.ProductId == p.Id));
+
         var order = new Order()
         {   
+            UserId = userId,
             Status = "new",
-            FinalCost = userHaveProducts
-                .Sum(c => c.Product.Cost * (1 - (c.Product.Discount ?? 0) * 0.01)),
+            FinalCost = products
+                .Sum(p => p.Cost * (1 - (p.Discount ?? 0) * 0.01)),
             Ts = DateTime.UtcNow
         };
 
@@ -186,7 +190,7 @@ public class ShoppingCartsController : ControllerBase
                 {
                     0 => StatusCode(StatusCodes.Status500InternalServerError,
                         new ErrorModel("Some error has occurred")),
-                    _ => Ok(_mapper.Map<OrderResponseDto>(createdOrder))
+                    _ => Ok(_mapper.Map<OrderResponseDto>(createdOrder.Entity))
                 };
         }
     }

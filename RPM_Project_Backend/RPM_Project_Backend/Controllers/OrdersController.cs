@@ -132,34 +132,39 @@ public class OrdersController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// POST api/orders/1
+    /// POST api/orders/buy&#xA;&#xD;
+    ///     {
+    ///         "orderId": 1,
+    ///         "paymentId": 1
+    ///     }
     /// 
     /// </remarks>
     /// <response code="200">Return single order</response>
     /// <response code="404">Order not found</response>
     /// <response code="500">Oops! Server internal error</response>
-    [HttpPost("buy/{id:int}")]
+    [HttpPost("buy")]
     [Authorize]
     [ProducesResponseType(typeof(OrderResponseDto), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<OrderResponseDto>> Post(
-        int id,
-        [FromBody]int paymentId)
+    public async Task<ActionResult<OrderResponseDto>> Buy(
+        [FromBody]OrderPurchaseDto orderPurchaseDto)
     {
-        if (id <= 0 || paymentId <= 0)
+        if (orderPurchaseDto is null)
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        _logger.LogDebug("Get order with id = {id}", id);
+        _logger.LogDebug("Get order with id = {id}", orderPurchaseDto.OrderId);
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         var payment = await _context.Payments
-            .FirstOrDefaultAsync(p => p.Id == paymentId && p.UserId == userId);
+            .FirstOrDefaultAsync(p => p.Id == orderPurchaseDto.PaymentId && p.UserId == userId);
         var order = await _context.Orders
-            .FirstOrDefaultAsync(o => o.UserId == userId && o.Id == id);
+            .FirstOrDefaultAsync(o => o.UserId == userId && o.Id == orderPurchaseDto.OrderId);
         
         if (payment is null) 
             return NotFound(new ErrorModel("Payment method not found"));
+        if (payment.IsActive == false)
+            return NotFound(new ErrorModel("Payment method is not active"));
         if (order is null) 
             return NotFound(new ErrorModel("Order not found"));
 
@@ -197,7 +202,7 @@ public class OrdersController : ControllerBase
     /// <response code="404">Order not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [Authorize]
-    [HttpDelete]
+    [HttpDelete("{id:int}")]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.NoContent)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.Unauthorized)]
@@ -235,6 +240,8 @@ public class OrdersController : ControllerBase
 
         _context.OrdersHaveProducts.RemoveRange(ordersHaveProducts);
         await _context.UsersHaveProducts.AddRangeAsync(usersHaveProducts);
+
+        _context.Orders.Remove(order);
 
         return await _context.SaveChangesAsync() switch
         {
