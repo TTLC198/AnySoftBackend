@@ -16,7 +16,6 @@ namespace RPM_Project_Backend.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/genres")]
-[EnableCors("MyPolicy")]
 public class GenresController : ControllerBase
 {
     private readonly ILogger<GenresController> _logger;

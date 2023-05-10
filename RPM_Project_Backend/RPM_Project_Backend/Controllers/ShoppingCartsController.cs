@@ -17,7 +17,6 @@ namespace RPM_Project_Backend.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/cart")]
-[EnableCors("MyPolicy")]
 public class ShoppingCartsController : ControllerBase
 {
     private readonly ILogger<ShoppingCartsController> _logger;
