@@ -17,7 +17,6 @@ namespace RPM_Project_Backend.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/properties")]
-[EnableCors("MyPolicy")]
 public class PropertiesController : ControllerBase
 {
     private readonly ILogger<PropertiesController> _logger;

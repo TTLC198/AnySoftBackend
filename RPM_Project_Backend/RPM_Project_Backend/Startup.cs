@@ -21,7 +21,12 @@ public class Startup
     {
         services.AddCors(options =>
         {
-            options.AddPolicy(name: "_MyPolicy", policy => policy.WithOrigins("http://localhost:3000").AllowCredentials().AllowAnyMethod());
+            options.AddPolicy(name: "_MyPolicy", policy => policy
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .SetIsOriginAllowed((host) => true)
+                .AllowCredentials()
+            );
         });
         
         var connection = Configuration.GetConnectionString("DefaultConnection")!;
@@ -47,6 +52,7 @@ public class Startup
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        app.UseCors("_MyPolicy");
         // Use Swagger
         app.UseSwaggerUI(c => {
             c.RoutePrefix = "swagger/ui";
@@ -70,7 +76,6 @@ public class Startup
         
         app.UseAuthentication();
         app.UseRouting();
-        app.UseCors("_MyPolicy");
         app.UseAuthorization();
         app.UseEndpoints(endpoints =>
         {
