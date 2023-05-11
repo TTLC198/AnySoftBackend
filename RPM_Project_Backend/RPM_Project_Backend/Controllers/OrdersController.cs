@@ -57,6 +57,9 @@ public class OrdersController : ControllerBase
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
 
         var orders = _context.Orders
+            .Include(o => o.OrdersHaveProducts)
+            .ThenInclude(ohp => ohp.Product)
+            .ThenInclude(p => p.Images)
             .Where(o => o.UserId == userId && o.UserId == userId)
             .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
@@ -84,7 +87,25 @@ public class OrdersController : ControllerBase
                 orders
                     .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
                     .Take(paginationMetadata.pageSize)
-                    .Select(o => _mapper.Map<OrderResponseDto>(o))
+                    .Select(o => new OrderResponseDto()
+                    {
+                        Id = o.Id,
+                        FinalCost = o.FinalCost,
+                        Status = o.Status,
+                        Ts = o.Ts,
+                        UserId = o.UserId,
+                        PurchasedProducts = o.OrdersHaveProducts
+                            .Select(ohp => new ProductResponseDto()
+                            {
+                                Id = ohp.Product.Id,
+                                Name = ohp.Product.Name,
+                                Description = ohp.Product.Description,
+                                Images = (ohp.Product.Images ?? new List<Image>())
+                                    .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
+                                    .ToList(),
+                            })
+                            .ToList()
+                    })
             )
         };
     }

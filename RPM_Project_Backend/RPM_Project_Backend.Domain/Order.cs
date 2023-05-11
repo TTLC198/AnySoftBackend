@@ -53,6 +53,10 @@ public class OrderResponseDto
     /// Order Creation Time
     /// </summary>
     public DateTime Ts { get; set; }
+    /// <summary>
+    /// Purchased Products
+    /// </summary>
+    public List<ProductResponseDto> PurchasedProducts { get; set; }
 }
 
 /// <summary>
