@@ -19,7 +19,6 @@ namespace RPM_Project_Backend.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/users")]
-[EnableCors("MyPolicy")]
 public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;

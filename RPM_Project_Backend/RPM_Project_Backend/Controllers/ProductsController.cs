@@ -18,7 +18,6 @@ namespace RPM_Project_Backend.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/products")]
-[EnableCors("MyPolicy")]
 public class ProductsController : ControllerBase
 {
     private readonly ILogger<ProductsController> _logger;
@@ -192,7 +191,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<ProductResponseDto>> Get(int id)
     {
-        if (id <= 0)
+        if (id < 0)
             return BadRequest(new ErrorModel("The input data is empty"));
 
         _logger.LogDebug("Get product with id = {id}", id);

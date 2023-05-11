@@ -16,7 +16,6 @@ namespace RPM_Project_Backend.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/payment")]
-[EnableCors("MyPolicy")]
 public class PaymentController : ControllerBase
 {
     private readonly ILogger<PaymentController> _logger;

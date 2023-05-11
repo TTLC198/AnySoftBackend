@@ -17,7 +17,6 @@ namespace RPM_Project_Backend.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/reviews")]
-[EnableCors("MyPolicy")]
 public class ReviewsController : ControllerBase
 {
     private readonly ILogger<ReviewsController> _logger;
