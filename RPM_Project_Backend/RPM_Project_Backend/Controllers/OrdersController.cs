@@ -57,11 +57,14 @@ public class OrdersController : ControllerBase
 
         var orders = _context.Orders
             .Include(o => o.OrdersHaveProducts)
-            .ThenInclude(ohp => ohp.Product)
-            .ThenInclude(p => p.Images)
             .Where(o => o.UserId == userId && o.UserId == userId)
             .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
+        var products = _context.Products
+            .Include(p => p.Images)
+            .Where(p => orders.Any(o => o.OrdersHaveProducts.Any(ohp => ohp.ProductId == p.Id)))
+            .ToList();
+        
         var paginationMetadata = new
         {
             totalCount = orders.Count(),
@@ -93,13 +96,13 @@ public class OrdersController : ControllerBase
                         Status = o.Status,
                         Ts = o.Ts,
                         UserId = o.UserId,
-                        PurchasedProducts = o.OrdersHaveProducts
-                            .Select(ohp => new ProductResponseDto()
+                        PurchasedProducts = products
+                            .Select(p => new ProductResponseDto()
                             {
-                                Id = ohp.Product.Id,
-                                Name = ohp.Product.Name,
-                                Description = ohp.Product.Description,
-                                Images = (ohp.Product.Images ?? new List<Image>())
+                                Id = p.Id,
+                                Name = p.Name,
+                                Description = p.Description,
+                                Images = (p.Images ?? new List<Image>())
                                     .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                                     .ToList(),
                             })
