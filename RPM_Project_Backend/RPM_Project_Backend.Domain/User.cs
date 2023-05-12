@@ -90,6 +90,14 @@ public class UserResponseDto
     /// Image Path
     /// </summary>
     public string? Image { get; set; }
+    /// <summary>
+    /// User Product IDs in Shopping Cart
+    /// </summary>
+    public List<int>? ProductsIds { get; set; }
+    /// <summary>
+    /// User orders
+    /// </summary>
+    public List<OrderResponseDto>? Orders { get; set; }
 }
 /// <summary>
 /// User Data Transfer Object

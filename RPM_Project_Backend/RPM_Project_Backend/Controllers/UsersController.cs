@@ -137,6 +137,7 @@ public class UsersController : ControllerBase
         var user = await _dbSet
             .Include(u => u.Role)
             .Include(u => u.Images)
+            .Include(u => u.UsersHaveProducts)
             .Include(u => u.Orders)
             .Include(u => u.Payments)
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -155,7 +156,13 @@ public class UsersController : ControllerBase
             Id = user.Id,
             Email = user.Email,
             Login = user.Login,
-            Image = ImageUriHelper.GetImagePathAsUri((user.Images!.FirstOrDefault() ?? new Image()).ImagePath)
+            Image = ImageUriHelper.GetImagePathAsUri((user.Images!.FirstOrDefault() ?? new Image()).ImagePath),
+            Orders = (user.Orders ?? new List<Order>())
+                .Select(o => _mapper.Map<OrderResponseDto>(o))
+                .ToList(),
+            ProductsIds = (user.UsersHaveProducts ?? new List<UsersHaveProducts>())
+                .Select(uhp => uhp.ProductId)
+                .ToList()
         });
     }
 
