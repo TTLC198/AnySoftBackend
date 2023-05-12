@@ -160,7 +160,7 @@ public class UsersController : ControllerBase
             Orders = (user.Orders ?? new List<Order>())
                 .Select(o => _mapper.Map<OrderResponseDto>(o))
                 .ToList(),
-            ProductsIds = (user.UsersHaveProducts ?? new List<UsersHaveProducts>())
+            ShoppingCart = (user.UsersHaveProducts ?? new List<UsersHaveProducts>())
                 .Select(uhp => uhp.ProductId)
                 .ToList()
         });
