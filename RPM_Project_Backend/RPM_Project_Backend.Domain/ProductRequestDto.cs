@@ -7,22 +7,31 @@ namespace RPM_Project_Backend.Domain;
 public class ProductRequestDto
 {
     [ValidateNever]
+    [JsonPropertyName("name")]
     public string? Name { get; set; }
     [ValidateNever]
+    [JsonPropertyName("rating")]
     public MinMaxFloatObject? Rating { get; set; }
     [ValidateNever]
+    [JsonPropertyName("cost")]
     public MinMaxFloatObject? Cost { get; set; }
     [ValidateNever]
+    [JsonPropertyName("discount")]
     public MinMaxFloatObject? Discount { get; set; }
     [ValidateNever]
+    [JsonPropertyName("publicationDate")]
     public MinMaxDateTimeObject? PublicationDate { get; set; }
     [ValidateNever]
+    [JsonPropertyName("genres")]
     public List<int>? Genres { get; set; }
     [ValidateNever]
+    [JsonPropertyName("properties")]
     public List<int>? Properties { get; set; }
     [ValidateNever]
+    [JsonPropertyName("attributes")]
     public Dictionary<int, List<string>>? Attributes { get; set; }
     [ValidateNever]
+    [JsonPropertyName("order")]
     public SortOrder? Order { get; set; }
 }
 
