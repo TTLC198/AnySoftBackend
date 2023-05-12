@@ -93,7 +93,7 @@ public class UserResponseDto
     /// <summary>
     /// User Product IDs in Shopping Cart
     /// </summary>
-    public List<int>? ProductsIds { get; set; }
+    public List<int>? ShoppingCart { get; set; }
     /// <summary>
     /// User orders
     /// </summary>
