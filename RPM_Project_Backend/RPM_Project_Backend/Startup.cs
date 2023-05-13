@@ -26,6 +26,7 @@ public class Startup
                 .AllowAnyMethod()
                 .SetIsOriginAllowed((host) => true)
                 .AllowCredentials()
+                .WithExposedHeaders("X-Pagination") // if you want to add any additional headers - place them here, parameter is string[]
             );
         });
         
