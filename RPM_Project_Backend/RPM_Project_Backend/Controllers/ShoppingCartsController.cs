@@ -229,10 +229,10 @@ public class ShoppingCartsController : ControllerBase
         if (!await _context.Products.AnyAsync(p => shoppingCartDto.ProductIds.Any(c => c == p.Id)))
             return NotFound(new ErrorModel("There are no products with this ID"));
         
-        if (!await _context.OrdersHaveProducts
+        if (await _context.OrdersHaveProducts
                 .Include(ohp => ohp.Order)
                 .AnyAsync(ohp => shoppingCartDto.ProductIds.Any(c => c == ohp.ProductId) && ohp.Order.UserId == userId))
-            return NotFound(new ErrorModel("The user has already purchased this product"));
+            return BadRequest(new ErrorModel("The user has already purchased this product"));
 
         _logger.LogDebug("Create new shopping cart with user id = {userId}", userId);
 
