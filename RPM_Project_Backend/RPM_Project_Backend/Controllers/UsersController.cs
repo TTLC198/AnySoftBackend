@@ -292,7 +292,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<User>> Put([FromBody] User userFields)
+    public async Task<ActionResult<User>> Put([FromBody] UserEditDto userFields)
     {
         if (userFields is null)
             return BadRequest(new ErrorModel("Input data is empty"));
@@ -304,7 +304,21 @@ public class UsersController : ControllerBase
             return Unauthorized(new ErrorModel("Access is denied"));
 
         _logger.LogDebug("Update existing user with id = {Id}", userFields.Id);
-        _context.Entry(userFields).State = EntityState.Modified;
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userFields.Id);
+        
+        if (user is null)
+            return BadRequest(new ErrorModel("User does not exist"));
+
+        var hasher = new PasswordHasher<User>();
+        
+        user.Login = userFields.Login;
+        user.Email = userFields.Email;
+        if (userFields.Password is not null)
+            user.Password = hasher.HashPassword(user, userFields.Password);
+        
+        _context.Entry(user).State = EntityState.Modified;
 
         switch (await _context.SaveChangesAsync())
         {
