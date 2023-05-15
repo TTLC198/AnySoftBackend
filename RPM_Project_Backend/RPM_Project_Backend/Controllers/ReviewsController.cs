@@ -75,13 +75,13 @@ public class ReviewsController : ControllerBase
                 ? reviews.Count()
                 : queryParameters.PageCount,
             currentPage = queryParameters.GetTotalPages(reviews.Count()) < queryParameters.Page
-                ? (int)queryParameters.GetTotalPages(reviews.Count())
+                ? (int) queryParameters.GetTotalPages(reviews.Count())
                 : queryParameters.Page,
             totalPages = queryParameters.GetTotalPages(reviews.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
-        
+
         if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
             return NotFound(new ErrorModel("Reviews not found"));
 
@@ -158,7 +158,21 @@ public class ReviewsController : ControllerBase
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(500, new ErrorModel("Some error has occurred")),
-            _ => Ok(createdReview.Entity)
+            _ => Ok
+            (new ReviewResponseDto()
+                {
+                    Id = createdReview.Entity.Id,
+                    Text = createdReview.Entity.Text,
+                    Grade = createdReview.Entity.Grade,
+                    Ts = createdReview.Entity.Ts,
+                    ProductId = createdReview.Entity.ProductId,
+                    User = new UserResponseDto()
+                    {
+                        Id = createdReview.Entity.User.Id,
+                        Login = createdReview.Entity.User.Login,
+                        Image = ImageUriHelper.GetImagePathAsUri(createdReview.Entity.User.Images.FirstOrDefault().ImagePath)
+                    }
+                })
         };
     }
 
