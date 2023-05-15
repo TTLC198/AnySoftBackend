@@ -140,11 +140,11 @@ public class ShoppingCartsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost("order")]
     [Authorize]
-    [ProducesResponseType(typeof(ShoppingCartResponseDto), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(OrderResponseDto), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShoppingCartResponseDto>> Order()
+    public async Task<ActionResult<OrderResponseDto>> Order()
     {
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         if (!await _context.UsersHaveProducts.AnyAsync(p => p.UserId == userId))
