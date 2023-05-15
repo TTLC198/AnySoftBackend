@@ -56,7 +56,7 @@ public class OrderResponseDto
     /// <summary>
     /// Purchased Products
     /// </summary>
-    public List<ProductResponseDto> PurchasedProducts { get; set; }
+    public List<int> PurchasedProductsIds { get; set; }
 }
 
 /// <summary>

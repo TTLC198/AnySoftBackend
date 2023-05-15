@@ -30,7 +30,7 @@ public class OrdersController : ControllerBase
         _context = context;
         _mapper = mapper;
     }
-    
+
     /// <summary>
     /// Get orders list
     /// </summary>
@@ -48,7 +48,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> Get(
+    public async Task<ActionResult<IEnumerable<OrderResponseDto>>> Get(
         [FromQuery] QueryParameters<object> queryParameters)
     {
         _logger.LogDebug("Get list of orders");
@@ -57,14 +57,9 @@ public class OrdersController : ControllerBase
 
         var orders = _context.Orders
             .Include(o => o.OrdersHaveProducts)
-            .Where(o => o.UserId == userId && o.UserId == userId)
+            .Where(o => o.UserId == userId)
             .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending());
 
-        var products = _context.Products
-            .Include(p => p.Images)
-            .Where(p => orders.Any(o => o.OrdersHaveProducts.Any(ohp => ohp.ProductId == p.Id)))
-            .ToList();
-        
         var paginationMetadata = new
         {
             totalCount = orders.Count(),
@@ -72,13 +67,13 @@ public class OrdersController : ControllerBase
                 ? orders.Count()
                 : queryParameters.PageCount,
             currentPage = queryParameters.GetTotalPages(orders.Count()) < queryParameters.Page
-                ? (int)queryParameters.GetTotalPages(orders.Count())
+                ? (int) queryParameters.GetTotalPages(orders.Count())
                 : queryParameters.Page,
             totalPages = queryParameters.GetTotalPages(orders.Count())
         };
 
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
-        
+
         if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
             return NotFound(new ErrorModel("Orders not found"));
 
@@ -96,22 +91,15 @@ public class OrdersController : ControllerBase
                         Status = o.Status,
                         Ts = o.Ts,
                         UserId = o.UserId,
-                        PurchasedProducts = products
-                            .Select(p => new ProductResponseDto()
-                            {
-                                Id = p.Id,
-                                Name = p.Name,
-                                Description = p.Description,
-                                Images = (p.Images ?? new List<Image>())
-                                    .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
-                                    .ToList(),
-                            })
+                        PurchasedProductsIds = o.OrdersHaveProducts
+                            .Select(ohp => ohp.ProductId)
                             .ToList()
-                    })
+                    }
+            )
             )
         };
     }
-    
+
     /// <summary>
     /// Get single order
     /// </summary>
@@ -134,7 +122,7 @@ public class OrdersController : ControllerBase
     {
         if (id <= 0)
             return BadRequest(new ErrorModel("Input data is empty"));
-        
+
         _logger.LogDebug("Get order with id = {id}", id);
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
@@ -148,7 +136,7 @@ public class OrdersController : ControllerBase
             _ => Ok(_mapper.Map<OrderResponseDto>(order))
         };
     }
-    
+
     /// <summary>
     /// Purchase single order
     /// </summary>
@@ -171,11 +159,11 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<OrderResponseDto>> Buy(
-        [FromBody]OrderPurchaseDto orderPurchaseDto)
+        [FromBody] OrderPurchaseDto orderPurchaseDto)
     {
         if (orderPurchaseDto is null)
             return BadRequest(new ErrorModel("Input data is empty"));
-        
+
         _logger.LogDebug("Get order with id = {id}", orderPurchaseDto.OrderId);
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
@@ -183,12 +171,12 @@ public class OrdersController : ControllerBase
             .FirstOrDefaultAsync(p => p.Id == orderPurchaseDto.PaymentId && p.UserId == userId);
         var order = await _context.Orders
             .FirstOrDefaultAsync(o => o.UserId == userId && o.Id == orderPurchaseDto.OrderId);
-        
-        if (payment is null) 
+
+        if (payment is null)
             return NotFound(new ErrorModel("Payment method not found"));
         if (payment.IsActive == false)
             return BadRequest(new ErrorModel("Payment method is not active"));
-        if (order is null) 
+        if (order is null)
             return NotFound(new ErrorModel("Order not found"));
         if (order.Status == "Paid")
             return BadRequest(new ErrorModel("You have already made a purchase"));
@@ -210,7 +198,7 @@ public class OrdersController : ControllerBase
             _ => Ok(_mapper.Map<OrderResponseDto>(order))
         };
     }
-    
+
     /// <summary>
     /// Delete order
     /// </summary>
@@ -238,28 +226,28 @@ public class OrdersController : ControllerBase
     {
         if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
-        
+
         var order = await _context.Orders
             .FirstOrDefaultAsync(p => p.Id == id);
-        
-        if (order is null) 
+
+        if (order is null)
             return NotFound(new ErrorModel("Order not found"));
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
-        
+
         if (userId != order.UserId)
             return Unauthorized(new ErrorModel("Access is denied"));
 
         _logger.LogDebug("Remove order with id = {id}", id);
-        
+
         var ordersHaveProducts = _context.OrdersHaveProducts
             .Where(ohp => ohp.OrderId == order.Id);
 
         var usersHaveProducts = ordersHaveProducts
-            .Select(product => 
+            .Select(product =>
                 new UsersHaveProducts()
                 {
-                    UserId = userId, 
+                    UserId = userId,
                     ProductId = product.ProductId
                 }).ToList();
 
