@@ -158,21 +158,14 @@ public class ReviewsController : ControllerBase
         return await _context.SaveChangesAsync() switch
         {
             0 => StatusCode(500, new ErrorModel("Some error has occurred")),
-            _ => Ok
-            (new ReviewResponseDto()
-                {
-                    Id = createdReview.Entity.Id,
-                    Text = createdReview.Entity.Text,
-                    Grade = createdReview.Entity.Grade,
-                    Ts = createdReview.Entity.Ts,
-                    ProductId = createdReview.Entity.ProductId,
-                    User = new UserResponseDto()
-                    {
-                        Id = createdReview.Entity.User.Id,
-                        Login = createdReview.Entity.User.Login,
-                        Image = ImageUriHelper.GetImagePathAsUri(createdReview.Entity.User.Images.FirstOrDefault().ImagePath)
-                    }
-                })
+            _ => Ok(new ReviewResponseDto()
+            {
+                Id = createdReview.Entity.Id,
+                Text = createdReview.Entity.Text,
+                Grade = createdReview.Entity.Grade,
+                Ts = createdReview.Entity.Ts,
+                ProductId = createdReview.Entity.ProductId
+            })
         };
     }
 
