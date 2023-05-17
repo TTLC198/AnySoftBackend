@@ -8,7 +8,7 @@ public class Payment
 {
     [Key]
     [Column("pay_id"), Required]
-    public int Id { get; set; }
+    public int? Id { get; set; }
     [Column("pay_user_id"), Required]
     public int UserId { get; set; }
     [Column("pay_number"), Required, StringLength(24)] 

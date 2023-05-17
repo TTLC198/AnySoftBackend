@@ -60,6 +60,10 @@ public class ReviewResponseDto
     /// </summary>
     public int ProductId { get; set; }
     /// <summary>
+    /// Review check is own
+    /// </summary>
+    public bool IsOwn { get; set; }
+    /// <summary>
     /// Review User entity
     /// </summary>
     public UserResponseDto? User { get; set; }
