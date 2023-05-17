@@ -233,11 +233,14 @@ public class ProductsController : ControllerBase
                         Reviews = p.Reviews
                             .Select(r => new ReviewResponseDto()
                             {
+                                Id = r.Id,
                                 Text = r.Text,
                                 Grade = r.Grade,
                                 Ts = r.Ts,
+                                ProductId = r.ProductId,
                                 User = new UserResponseDto()
                                 {
+                                    Id = r.User.Id,
                                     Login = r.User.Login,
                                     Image = ImageUriHelper.GetImagePathAsUri(r.User.Images.FirstOrDefault().ImagePath)
                                 }
