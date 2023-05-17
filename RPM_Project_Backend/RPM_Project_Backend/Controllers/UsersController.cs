@@ -175,6 +175,7 @@ public class UsersController : ControllerBase
             Image = ImageUriHelper.GetImagePathAsUri((user.Images!.FirstOrDefault() ?? new Image()).ImagePath),
             Orders = (user.Orders ?? new List<Order>())
                 .Select(o => _mapper.Map<OrderResponseDto>(o))
+                .OrderBy(order => order.Id)
                 .ToList(),
             ShoppingCart = productsInCart
                 .Select(p => new ProductResponseDto
@@ -204,7 +205,9 @@ public class UsersController : ControllerBase
                     Genres = (p.ProductsHaveGenres ?? new List<ProductsHaveGenres>())
                         .Select(phg => phg.Genre)
                         .ToList()
-                }).ToList()
+                })
+                .OrderBy(product => product.Id)
+                .ToList()
         });
     }
 
