@@ -30,8 +30,10 @@ public class GenresController : ControllerBase
         _mapper = mapper;
     }
     
+    
+    
     /// <summary>
-    /// Get genres list
+    /// Get genres list by product id
     /// </summary>
     /// <remarks>
     /// Example request
