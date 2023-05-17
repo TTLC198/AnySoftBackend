@@ -184,7 +184,7 @@ public class OrdersController : ControllerBase
         var transaction = new Transaction
         {
             OrderId = order.Id,
-            PaymentId = payment.Id
+            PaymentId = payment.Id.Value
         };
 
         await _context.Transactions.AddAsync(transaction);
