@@ -262,4 +262,65 @@ public class OrdersController : ControllerBase
             _ => NoContent()
         };
     }
+
+    /// <summary>
+    /// Delete product from order
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// DELETE api/orders/1
+    /// 
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <param name="productId"></param>
+    /// <response code="204">Delete product from order</response>
+    /// <response code="400">The input data is empty</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">Order not found</response>
+    /// <response code="500">Oops! Server internal error</response>
+    [Authorize]
+    [HttpDelete("product/{id:int}")]
+    [ProducesResponseType(typeof(void), (int) HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult> DeleteProduct(
+        int id,
+        [FromQuery] int productId)
+    {
+        if (id <= 0 || productId <= 0)
+            return BadRequest(new ErrorModel("The input data is empty"));
+
+        var order = await _context.Orders
+            .Include(o => o.OrdersHaveProducts)
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (order is null)
+            return NotFound(new ErrorModel("Order not found"));
+        
+        if (order.OrdersHaveProducts is null)
+            return NotFound(new ErrorModel("Order products not found"));
+
+        var productInOrder = order.OrdersHaveProducts.FirstOrDefault(p => p.ProductId == productId);
+        
+        if (productInOrder is null)
+            return NotFound(new ErrorModel("Product not found"));
+
+        var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
+
+        if (userId != order.UserId)
+            return Unauthorized(new ErrorModel("Access is denied"));
+
+        _logger.LogDebug("Remove order with id = {id}", id);
+        
+        _context.OrdersHaveProducts.Remove(productInOrder);
+
+        return await _context.SaveChangesAsync() switch
+        {
+            0 => StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred")),
+            _ => NoContent()
+        };
+    }
 }
