@@ -72,6 +72,11 @@ public class ProductsController : ControllerBase
             try
             {
                 var productQuery = (ProductRequestDto) queryParameters.Object;
+                if (productQuery.Ids is {Count: > 0})
+                    products = products
+                        .Where(product => productQuery.Ids
+                            .Contains(product.Id))
+                        .ToList();
                 if (productQuery.Name is not null)
                     products = products
                         .Where(product => product.Name.ToLower().Contains(productQuery.Name.ToLower()))

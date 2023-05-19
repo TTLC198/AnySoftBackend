@@ -7,6 +7,10 @@ namespace RPM_Project_Backend.Domain;
 public class ProductRequestDto
 {
     [ValidateNever]
+    [JsonPropertyName("ids")]
+    public List<int>? Ids { get; set; }
+    
+    [ValidateNever]
     [JsonPropertyName("name")]
     public string? Name { get; set; }
     [ValidateNever]
