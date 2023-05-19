@@ -249,7 +249,6 @@ public class ImagesController : ControllerBase
     /// <response code="400">Input data is empty</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpDelete("delete/{filename}")]
-    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
@@ -260,10 +259,24 @@ public class ImagesController : ControllerBase
         
         _logger.LogDebug("Delete image with filename = {filename}", filename);
         
-        var image = await _dbSet.FirstOrDefaultAsync(i => i.ImagePath.Contains(filename));
+        var image = await _dbSet
+            .FirstOrDefaultAsync(i => i.ImagePath.Contains(filename));
         
         if (image is null)
             return NotFound(new ErrorModel("Image not found"));
+        
+        var userIdClaim = User.Claims.SingleOrDefault(cl => cl.Type == "id") ??
+                          throw new InvalidOperationException("Invalid auth. Null id claims");
+        var userRoleClaim = User.Claims.SingleOrDefault(cl => cl.Type.Contains("role")) ??
+                            throw new InvalidOperationException("Invalid auth. Null role claims");
+
+        if (image.UserId is not null)
+            if (userIdClaim.Value != $"{image.UserId}" && userRoleClaim.Value != "admin")
+                return Unauthorized(new ErrorModel("Access is denied"));
+        
+        if (image.ProductId is not null)
+            if (userIdClaim.Value != $"{_context.Products.FirstOrDefault(p => p.Id == image.ProductId)?.SellerId}" && userRoleClaim.Value != "admin")
+                return Unauthorized(new ErrorModel("Access is denied"));
 
         if (System.IO.File.Exists(image.ImagePath))
         {
