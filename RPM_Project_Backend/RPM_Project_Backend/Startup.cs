@@ -73,7 +73,7 @@ public class Startup
             app.UseDeveloperExceptionPage();
         }
 
-        //app.UseHttpsRedirection(); TODO
+        app.UseHttpsRedirection();
         
         app.UseAuthentication();
         app.UseRouting();
