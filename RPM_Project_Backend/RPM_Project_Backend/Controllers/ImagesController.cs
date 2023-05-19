@@ -184,56 +184,6 @@ public class ImagesController : ControllerBase
             _ => Ok(image)
         };
     }
-    
-    /// <summary>
-    /// Delete single image by id
-    /// </summary>
-    /// <remarks>
-    /// Example request
-    ///
-    /// DELETE /resources/images/delete/2
-    /// 
-    /// </remarks>
-    /// <param name="id"></param>
-    /// <response code="204">Deleted successful</response>
-    /// <response code="400">Input data is empty</response>
-    /// <response code="500">Oops! Server internal error</response>
-    [HttpDelete("delete/{id:int}")]
-    [Authorize(Roles = "admin")]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult> Delete(int id)
-    {
-        if (id <= 0)
-            return BadRequest(new ErrorModel("Input data is empty"));
-        
-        _logger.LogDebug("Delete image with id = {id}", id);
-
-        var image = await _dbSet.FirstOrDefaultAsync(i => i.Id == id);
-        
-        if (image is null)
-            return NotFound(new ErrorModel("Image not found"));
-        
-        if (System.IO.File.Exists(image.ImagePath))
-        {
-            System.IO.File.Delete(image.ImagePath);
-        }
-        else
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ErrorModel("Some error has occurred"));
-        }
-        
-        _dbSet.Remove(image);
-
-        return await _context.SaveChangesAsync() switch
-        {
-            0 => StatusCode(StatusCodes.Status500InternalServerError,
-                new ErrorModel("Some error has occurred")),
-            _ => NoContent()
-        };
-    }
 
     /// <summary>
     /// Delete single image by filename
