@@ -184,56 +184,6 @@ public class ImagesController : ControllerBase
             _ => Ok(image)
         };
     }
-    
-    /// <summary>
-    /// Delete single image by id
-    /// </summary>
-    /// <remarks>
-    /// Example request
-    ///
-    /// DELETE /resources/images/delete/2
-    /// 
-    /// </remarks>
-    /// <param name="id"></param>
-    /// <response code="204">Deleted successful</response>
-    /// <response code="400">Input data is empty</response>
-    /// <response code="500">Oops! Server internal error</response>
-    [HttpDelete("delete/{id:int}")]
-    [Authorize(Roles = "admin")]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult> Delete(int id)
-    {
-        if (id <= 0)
-            return BadRequest(new ErrorModel("Input data is empty"));
-        
-        _logger.LogDebug("Delete image with id = {id}", id);
-
-        var image = await _dbSet.FirstOrDefaultAsync(i => i.Id == id);
-        
-        if (image is null)
-            return NotFound(new ErrorModel("Image not found"));
-        
-        if (System.IO.File.Exists(image.ImagePath))
-        {
-            System.IO.File.Delete(image.ImagePath);
-        }
-        else
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ErrorModel("Some error has occurred"));
-        }
-        
-        _dbSet.Remove(image);
-
-        return await _context.SaveChangesAsync() switch
-        {
-            0 => StatusCode(StatusCodes.Status500InternalServerError,
-                new ErrorModel("Some error has occurred")),
-            _ => NoContent()
-        };
-    }
 
     /// <summary>
     /// Delete single image by filename
@@ -249,7 +199,6 @@ public class ImagesController : ControllerBase
     /// <response code="400">Input data is empty</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpDelete("delete/{filename}")]
-    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
@@ -260,10 +209,24 @@ public class ImagesController : ControllerBase
         
         _logger.LogDebug("Delete image with filename = {filename}", filename);
         
-        var image = await _dbSet.FirstOrDefaultAsync(i => i.ImagePath.Contains(filename));
+        var image = await _dbSet
+            .FirstOrDefaultAsync(i => i.ImagePath.Contains(filename));
         
         if (image is null)
             return NotFound(new ErrorModel("Image not found"));
+        
+        var userIdClaim = User.Claims.SingleOrDefault(cl => cl.Type == "id") ??
+                          throw new InvalidOperationException("Invalid auth. Null id claims");
+        var userRoleClaim = User.Claims.SingleOrDefault(cl => cl.Type.Contains("role")) ??
+                            throw new InvalidOperationException("Invalid auth. Null role claims");
+
+        if (image.UserId is not null)
+            if (userIdClaim.Value != $"{image.UserId}" && userRoleClaim.Value != "admin")
+                return Unauthorized(new ErrorModel("Access is denied"));
+        
+        if (image.ProductId is not null)
+            if (userIdClaim.Value != $"{_context.Products.FirstOrDefault(p => p.Id == image.ProductId)?.SellerId}" && userRoleClaim.Value != "admin")
+                return Unauthorized(new ErrorModel("Access is denied"));
 
         if (System.IO.File.Exists(image.ImagePath))
         {
