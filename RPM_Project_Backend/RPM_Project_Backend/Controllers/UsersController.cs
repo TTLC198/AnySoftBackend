@@ -141,6 +141,7 @@ public class UsersController : ControllerBase
             .Include(u => u.Images)
             .Include(u => u.UsersHaveProducts)
             .Include(u => u.Orders)
+            .ThenInclude(o => o.OrdersHaveProducts)
             .Include(u => u.Payments)
             .FirstOrDefaultAsync(u => u.Id == id);
         
@@ -174,7 +175,17 @@ public class UsersController : ControllerBase
             Login = user.Login,
             Image = ImageUriHelper.GetImagePathAsUri((user.Images!.FirstOrDefault() ?? new Image()).ImagePath),
             Orders = (user.Orders ?? new List<Order>())
-                .Select(o => _mapper.Map<OrderResponseDto>(o))
+                .Select(o => new OrderResponseDto()
+                        {
+                            Id = o.Id,
+                            FinalCost = o.FinalCost,
+                            Status = o.Status,
+                            Ts = o.Ts,
+                            UserId = o.UserId,
+                            PurchasedProductsIds = o.OrdersHaveProducts
+                                .Select(ohp => ohp.ProductId)
+                                .ToList()
+                        })
                 .OrderBy(order => order.Id)
                 .ToList(),
             ShoppingCart = productsInCart
