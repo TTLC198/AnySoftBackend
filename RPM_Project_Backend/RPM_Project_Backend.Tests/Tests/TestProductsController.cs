@@ -63,6 +63,7 @@ public class TestProductsController
                 Name = p.Name,
                 Cost = p.Cost,
                 Discount = p.Discount,
+                Description = p.Description,
                 Rating = p.Rating,
                 Seller = new UserResponseDto()
                 {
@@ -73,7 +74,8 @@ public class TestProductsController
                 Images = new List<string>(),
                 Reviews = null,
                 Properties = new List<Property>(),
-                Genres = new List<Genre>()
+                Genres = new List<Genre>(),
+                Ts = p.Ts
             });
 
         // Act
@@ -124,6 +126,7 @@ public class TestProductsController
                 Name = p.Name,
                 Cost = p.Cost,
                 Discount = p.Discount,
+                Description = p.Description,
                 Rating = p.Rating,
                 Seller = new UserResponseDto()
                 {
@@ -134,7 +137,8 @@ public class TestProductsController
                 Images = new List<string>(),
                 Reviews = null,
                 Properties = new List<Property>(),
-                Genres = new List<Genre>()
+                Genres = new List<Genre>(),
+                Ts = p.Ts
             });
         
         // Act
