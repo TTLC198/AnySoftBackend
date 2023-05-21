@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using RPM_Project_Backend.Controllers;
+using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Mappings;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Tests.Helpers;
@@ -31,20 +33,20 @@ public class TestReviewsController
     }
 
     [Fact]
-    public async Task GetUsers_EmptyQuery_ShouldReturnSameUsersList()
+    public async Task GetReviews_EmptyQuery_ShouldReturnSameReviewsList()
     {
         // Arrange
         //Setup DB context
         _context = _fixture.ApplicationContext;
 
         //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
+        var logger = new Logger<ReviewsController>(new LoggerFactory());
         
         //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ReviewMappingProfile>());
         _mapper = config.CreateMapper();
         
-        _controller = new UsersController(
+        _controller = new ReviewsController(
             logger,
             _context,
             _mapper
@@ -53,153 +55,148 @@ public class TestReviewsController
         _controller.ControllerContext.HttpContext = new DefaultHttpContext();
         _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(_random.Next(1, 3), "admin");
         Assert.NotNull(_controller.User);
-
-        // Act
-        var result = await _controller.Get(new QueryParameters<User>());
-
-        // Assert
-        Assert.NotNull(result);
-        
-        var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as IEnumerable<User>;
-        
-        Assert.NotNull(okResult!.Value);
-        Assert.Equal(_context.Users.ToList(), valueResult!.ToList());
-    }
-    
-    [Fact]
-    public async Task GetUsers_WithQuery_ShouldReturnSameUsersList()
-    {
-        // Arrange
-        //Setup DB context
-        _context = _fixture.ApplicationContext;
-
-        //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
-        
-        //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
-        _mapper = config.CreateMapper();
-        
-        _controller = new UsersController(
-            logger,
-            _context,
-            _mapper
-        );
-        // Setup JWT claims
-        _controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(_random.Next(1, 3), "admin");
-        Assert.NotNull(_controller.User);
-
-        // Act
-        var result = await _controller.Get(new QueryParameters<User>()
-        {
-            Query = JsonSerializer.Serialize(new User()
+        var reviewResponseDtos = _context.Reviews
+            .Include(r => r.User)
+            .OrderByDescending(r => r.Ts)
+            .AsQueryable()
+            .Select(r => new ReviewResponseDto()
             {
-                Login = "ex1"
-            })
-        });
+                Id = r.Id,
+                Text = r.Text,
+                Grade = r.Grade,
+                Ts = r.Ts,
+                ProductId = r.ProductId,
+                User = new UserResponseDto()
+                {
+                    Id = r.User.Id,
+                    Login = r.User.Login,
+                    Image = ImageUriHelper.GetImagePathAsUri(r.User.Images.FirstOrDefault().ImagePath)
+                }
+            });
+
+        // Act
+        var result = await _controller.Get( null, new QueryParameters<object>());
 
         // Assert
         Assert.NotNull(result);
         
         var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as IEnumerable<User>;
+        var valueResult = okResult!.Value as IEnumerable<ReviewResponseDto>;
         
         Assert.NotNull(okResult!.Value);
-        Assert.NotEqual(_context.Users.ToList(), valueResult!.ToList());
+        Assert.Equal(JsonConvert.SerializeObject(reviewResponseDtos.ToList()), JsonConvert.SerializeObject(valueResult!.ToList()));
     }
     
     [Fact]
-    public async Task GetUser_ShouldReturnSameUser()
+    public async Task GetReviewsByProductID_EmptyQuery_ShouldReturnSameReviewsList()
+    {
+        // Arrange
+        var id = _random.Next(1, 3);
+        var product = TestValues.Products.First(u => u.Id == id);
+        
+        //Setup DB context
+        _context = _fixture.ApplicationContext;
+
+        //Setup logger
+        var logger = new Logger<ReviewsController>(new LoggerFactory());
+        
+        //Setup AutoMapper config
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ReviewMappingProfile>());
+        _mapper = config.CreateMapper();
+        
+        _controller = new ReviewsController(
+            logger,
+            _context,
+            _mapper
+        );
+        // Setup JWT claims
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(_random.Next(1, 3), "admin");
+        Assert.NotNull(_controller.User);
+        var reviewResponseDtos = _context.Reviews
+            .Include(r => r.User)
+            .OrderByDescending(r => r.Ts)
+            .AsQueryable()
+            .Where(r => r.ProductId == id)
+            .Select(r => new ReviewResponseDto()
+            {
+                Id = r.Id,
+                Text = r.Text,
+                Grade = r.Grade,
+                Ts = r.Ts,
+                ProductId = r.ProductId,
+                User = new UserResponseDto()
+                {
+                    Id = r.User.Id,
+                    Login = r.User.Login,
+                    Image = ImageUriHelper.GetImagePathAsUri(r.User.Images.FirstOrDefault().ImagePath)
+                }
+            });
+
+        // Act
+        var result = await _controller.Get(id , new QueryParameters<object>());
+
+        // Assert
+        Assert.NotNull(result);
+        
+        var okResult = result.Result as OkObjectResult;
+        var valueResult = okResult!.Value as IEnumerable<ReviewResponseDto>;
+        
+        Assert.NotNull(okResult!.Value);
+        Assert.Equal(JsonConvert.SerializeObject(reviewResponseDtos.ToList()), JsonConvert.SerializeObject(valueResult!.ToList()));
+    }
+    
+    [Theory]
+    [InlineData("", 0, 0)]
+    [InlineData("", 2, 0)]
+    [InlineData("example text", 2, 1)]
+    [InlineData("", 2, 1)]
+    [InlineData("exampleMail", 0, 1)]
+    public async Task PostReviewTheory_ShouldReturnSameReview(string text, int grade, int productId)
     {
         // Arrange
         var id = _random.Next(1, 3);
         var user = TestValues.Users.First(u => u.Id == id);
+        var reviewDto = new ReviewDto()
+        {
+            Text = text,
+            Grade = grade,
+            ProductId = productId
+        };
         
         //Setup DB context
         _context = _fixture.ApplicationContext;
 
         //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
+        var logger = new Logger<ReviewsController>(new LoggerFactory());
         
         //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ReviewMappingProfile>());
         _mapper = config.CreateMapper();
         
-        _controller = new UsersController(
+        _controller = new ReviewsController(
             logger,
             _context,
             _mapper
         );
+        
         // Setup JWT claims
         _controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(user.Id, user.Role.Name);
+        _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(id, user.Role.Name);
         Assert.NotNull(_controller.User);
 
         // Act
-        var result = await _controller.Get(id);
-
-        // Assert
-        Assert.NotNull(result);
-        
-        var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as User;
-        
-        Assert.NotNull(valueResult);
-        Assert.Equal(user, valueResult);
-    }
-    
-    [Theory]
-    [InlineData("", "", "")]
-    [InlineData("", "", "examplePassword")]
-    [InlineData("exampleMail", "", "")]
-    [InlineData("", "exampleLogin", "examplePassword")]
-    [InlineData("exampleMail", "", "examplePassword")]
-    public async Task PostUserTheory_ShouldReturnSameUser(string email, string login, string password)
-    {
-        // Arrange
-        var userDto = new UserDto()
-        {
-            Email = email,
-            Login = login,
-            Password = password
-        };
-        var hasher = new PasswordHasher<User>();
-        
-        //Setup DB context
-        _context = _fixture.ApplicationContext;
-
-        //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
-        
-        //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
-        _mapper = config.CreateMapper();
-        
-        _controller = new UsersController(
-            logger,
-            _context,
-            _mapper
-        );
-        
-        _controller.ControllerContext.HttpContext = new DefaultHttpContext();
-
-        // Act
-        var result = await _controller.Post(userDto);
-
-        // Assert
-        Assert.NotNull(result);
+        var result = await _controller.Post(reviewDto);
 
         var okResult = result.Result as ObjectResult;
         if (okResult is CreatedResult)
         {
-            var valueResult = okResult!.Value as User;
+            var valueResult = okResult!.Value as ReviewResponseDto;
             Assert.NotNull(valueResult);
-        
-            Assert.NotEqual(PasswordVerificationResult.Failed, hasher.VerifyHashedPassword(valueResult, valueResult.Password, userDto.Password));
-            Assert.Equal(userDto.Email, valueResult.Email);
-            Assert.Equal(userDto.Login, valueResult.Login);
+            
+            Assert.Equal(reviewDto.Text, valueResult.Text);
+            Assert.Equal(reviewDto.Grade, valueResult.Grade);
+            Assert.Equal(reviewDto.ProductId, valueResult.ProductId);
         }
         else if (okResult is BadRequestResult)
         {
@@ -214,67 +211,81 @@ public class TestReviewsController
     }
     
     [Fact]
-    public async Task PostUserFact_ShouldReturnSameUser()
+    public async Task PostReviewFact_ShouldReturnSameReview()
     {
         // Arrange
-        var user = TestValues.SingleUser;
-        var hasher = new PasswordHasher<User>();
+        var id = _random.Next(1, 3);
+        var user = TestValues.Users.First(u => u.Id == id);
+        var review = TestValues.SingleReview;
+        var reviewDto = new ReviewDto()
+        {
+            Text = review.Text,
+            Grade = review.Grade,
+            ProductId = review.ProductId
+        };
         
         //Setup DB context
         _context = _fixture.ApplicationContext;
 
         //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
+        var logger = new Logger<ReviewsController>(new LoggerFactory());
         
         //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ReviewMappingProfile>());
         _mapper = config.CreateMapper();
         
-        _controller = new UsersController(
+        _controller = new ReviewsController(
             logger,
             _context,
             _mapper
         );
         
+        // Setup JWT claims
         _controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        
-        var userFields = _mapper.Map<UserDto>(user);
-        
+        _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(id, user.Role.Name);
+        Assert.NotNull(_controller.User);
+
         // Act
-        var result = await _controller.Post(userFields);
+        var result = await _controller.Post(reviewDto);
 
         // Assert
         Assert.NotNull(result);
 
         var okResult = result.Result as ObjectResult;
-        var valueResult = okResult!.Value as User;
+        var valueResult = okResult!.Value as ReviewResponseDto;
 
         Assert.NotNull(valueResult);
         
-        Assert.NotEqual(PasswordVerificationResult.Failed, hasher.VerifyHashedPassword(user, valueResult.Password, user.Password));
-        Assert.Equal(user.Id, valueResult.Id);
-        Assert.Equal(user.Email, valueResult.Email);
-        Assert.Equal(user.Login, valueResult.Login);
+        Assert.Equal(review.Text, valueResult.Text);
+        Assert.Equal(review.Grade, valueResult.Grade);
+        Assert.Equal(review.ProductId, valueResult.ProductId);
     }
     
     [Fact]
-    public async Task PutUser_ShouldReturnModifiedUser()
+    public async Task PutReview_ShouldReturnModifiedReview()
     {
         // Arrange
         var id = _random.Next(1, 3);
         var user = TestValues.Users.First(u => u.Id == id);
+        var review = TestValues.Reviews.First(u => u.UserId == user.Id);
+        var reviewEditDto = new ReviewEditDto()
+        {
+            Id = review.Id,
+            Grade = review.Grade,
+            Text = review.Text
+        };
         
         //Setup DB context
         _context = _fixture.ApplicationContext;
 
         //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
+        var logger = new Logger<ReviewsController>(new LoggerFactory());
         
         //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ReviewMappingProfile>());
         _mapper = config.CreateMapper();
         
-        _controller = new UsersController(
+        _controller = new ReviewsController(
             logger,
             _context,
             _mapper
@@ -287,67 +298,19 @@ public class TestReviewsController
         
         // Modify USER
 
-        user.Email = "modifed@gmail.com";
+        reviewEditDto.Text = "modifed text";
 
         // Act
-        var result = await _controller.Put(user);
+        var result = await _controller.Put(reviewEditDto);
         
         // Assert
         Assert.NotNull(result);
         
         var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as User;
+        var valueResult = okResult!.Value as Review;
         
         Assert.NotNull(valueResult);
-        Assert.Equal(user, valueResult);
-    }
-
-    [Fact]
-    public async Task PatchUser_ShouldReturnModifiedUser()
-    {
-        // Arrange
-        var id = _random.Next(1, 3);
-        var user = TestValues.Users.First(u => u.Id == id);
-        
-        //Setup DB context
-        _context = _fixture.ApplicationContext;
-
-        //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
-        
-        //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
-        _mapper = config.CreateMapper();
-        
-        _controller = new UsersController(
-            logger,
-            _context,
-            _mapper
-        );
-        
-        // Setup JWT claims
-        _controller.ControllerContext.HttpContext = new DefaultHttpContext();
-        _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(id, user.Role.Name);
-        Assert.NotNull(_controller.User);
-        
-        // Setup Patch
-        
-        var userPatch = new JsonPatchDocument<User>();
-
-        userPatch.Add(u => u.Email, "somemodifiedmail@email.com");
-        user.Email = "somemodifiedmail@email.com";
-
-        // Act
-        var result = await _controller.Patch(userPatch, id);
-        
-        // Assert
-        Assert.NotNull(result);
-        
-        var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as User;
-        
-        Assert.NotNull(valueResult);
-        Assert.Equal(user, valueResult);
+        Assert.Equal(review, valueResult);
     }
 
     [Fact]
@@ -356,18 +319,19 @@ public class TestReviewsController
         // Arrange
         var id = _random.Next(1, 3);
         var user = TestValues.Users.First(u => u.Id == id);
+        var review = TestValues.Reviews.First(u => u.UserId == user.Id);
         
         //Setup DB context
         _context = _fixture.ApplicationContext;
 
         //Setup logger
-        var logger = new Logger<UsersController>(new LoggerFactory());
+        var logger = new Logger<ReviewsController>(new LoggerFactory());
         
         //Setup AutoMapper config
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ReviewMappingProfile>());
         _mapper = config.CreateMapper();
         
-        _controller = new UsersController(
+        _controller = new ReviewsController(
             logger,
             _context,
             _mapper
@@ -383,12 +347,11 @@ public class TestReviewsController
         
         // Assert
         Assert.NotNull(result);
-        
-        var okResult = result.Result as NoContentResult;
-        
-        Assert.Null(await _context.Users.FirstOrDefaultAsync(u => u.Id == id));
 
-        _context.Users.Add(user);
+        var temp = await _context.Reviews.FirstOrDefaultAsync(u => u.Id == id);
+        Assert.Null(await _context.Reviews.FirstOrDefaultAsync(u => u.Id == id));
+
+        _context.Reviews.Add(review);
         await _context.SaveChangesAsync();
     }
 }
