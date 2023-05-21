@@ -130,11 +130,11 @@ public class ReviewsController : ControllerBase
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [Authorize]
-    [ProducesResponseType(typeof(Review), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ReviewResponseDto), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Product>> Post(ReviewDto reviewDto)
+    public async Task<ActionResult<ReviewResponseDto>> Post(ReviewDto reviewDto)
     {
         if (reviewDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
