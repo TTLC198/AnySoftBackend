@@ -405,6 +405,7 @@ public class TestUsersController
         Assert.Null(await _context.Users.FirstOrDefaultAsync(u => u.Id == id));
 
         _context.Users.Add(user);
+        _context.Reviews.Add(TestValues.Reviews.First(r => r.UserId == user.Id));
         await _context.SaveChangesAsync();
     }
 }

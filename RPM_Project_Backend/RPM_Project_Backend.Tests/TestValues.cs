@@ -70,8 +70,10 @@ public static partial class TestValues
             Cost = 1000,
             Discount = 0,
             Name = "First product",
+            Description = "Some description",
             Rating = 5,
             SellerId = 3,
+            Ts = DateTime.UtcNow,
             Seller = Users.First(u => u.Id == 3)
         },
         new ()
@@ -80,8 +82,10 @@ public static partial class TestValues
             Cost = 2000,
             Discount = 20,
             Name = "Second product",
+            Description = "Some description",
             Rating = 3.2,
             SellerId = 3,
+            Ts = DateTime.UtcNow,
             Seller = Users.First(u => u.Id == 3)
         },
         new ()
@@ -90,8 +94,10 @@ public static partial class TestValues
             Cost = 3000,
             Discount = 10,
             Name = "Third product",
+            Description = "Some description",
             Rating = 4.6,
             SellerId = 3,
+            Ts = DateTime.UtcNow,
             Seller = Users.First(u => u.Id == 3)
         },
     };
@@ -102,8 +108,10 @@ public static partial class TestValues
         Cost = 4000,
         Discount = 20,
         Name = "Single product",
+        Description = "Some description",
         Rating = 4.2,
         SellerId = 2,
+        Ts = DateTime.UtcNow,
         Seller = Users.First(u => u.Id == 3)
     };
 }
@@ -152,7 +160,7 @@ public static partial class TestValues
             Text = "Some Review 2",
             ProductId = 2,
             Ts = DateTime.UtcNow,
-            UserId = 2
+            UserId = 1
         },
         new ()
         {
@@ -161,7 +169,7 @@ public static partial class TestValues
             Text = "Some Review 3",
             ProductId = 3,
             Ts = DateTime.UtcNow,
-            UserId = 3
+            UserId = 1
         }
     };
     
@@ -172,7 +180,7 @@ public static partial class TestValues
         Text = "Some Review 4",
         ProductId = 3,
         Ts = DateTime.UtcNow,
-        UserId = 3
+        UserId = 1
     };
 }
 
@@ -247,7 +255,7 @@ public static partial class TestValues
             IsActive = true,
             Number = "1234567812345678",
             Cvc = "123",
-            ExpirationDate = new DateTime(2024, 05, 0)
+            ExpirationDate = new DateTime(2024, 05, 1)
         },
         new ()
         {
@@ -256,7 +264,7 @@ public static partial class TestValues
             IsActive = true,
             Number = "1234567812345678",
             Cvc = "456",
-            ExpirationDate = new DateTime(2024, 06, 0)
+            ExpirationDate = new DateTime(2024, 06, 1)
         },
         new ()
         {
@@ -265,7 +273,7 @@ public static partial class TestValues
             IsActive = true,
             Number = "1234567812345678",
             Cvc = "789",
-            ExpirationDate = new DateTime(2024, 07, 0)
+            ExpirationDate = new DateTime(2024, 07, 1)
         }
     };
 
@@ -276,6 +284,6 @@ public static partial class TestValues
         IsActive = true,
         Number = "1234567812345678",
         Cvc = "023",
-        ExpirationDate = new DateTime(2024, 04, 0)
+        ExpirationDate = new DateTime(2024, 04, 1)
     };
 }
