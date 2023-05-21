@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Web.Http.Results;
+﻿using System.Web.Http.Results;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -7,12 +6,15 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using RPM_Project_Backend.Controllers;
+using RPM_Project_Backend.Helpers;
 using RPM_Project_Backend.Mappings;
 using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Tests.Helpers;
 using Xunit;
 using BadRequestResult = Microsoft.AspNetCore.Mvc.BadRequestResult;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace RPM_Project_Backend.Tests.Tests;
 
@@ -116,6 +118,15 @@ public class TestUsersController
         // Arrange
         var id = _random.Next(1, 3);
         var user = TestValues.Users.First(u => u.Id == id);
+        var userResponseDto = new UserResponseDto()
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Login = user.Login,
+            Orders = new List<OrderResponseDto>(),
+            ShoppingCart = new List<ProductResponseDto>(),
+            Image = ""
+        };
         
         //Setup DB context
         _context = _fixture.ApplicationContext;
@@ -144,10 +155,10 @@ public class TestUsersController
         Assert.NotNull(result);
         
         var okResult = result.Result as OkObjectResult;
-        var valueResult = okResult!.Value as User;
+        var valueResult = okResult!.Value as UserResponseDto;
         
         Assert.NotNull(valueResult);
-        Assert.Equal(user, valueResult);
+        Assert.Equal(JsonConvert.SerializeObject(userResponseDto), JsonConvert.SerializeObject(valueResult));
     }
     
     [Theory]
@@ -218,7 +229,6 @@ public class TestUsersController
     {
         // Arrange
         var user = TestValues.SingleUser;
-        var hasher = new PasswordHasher<User>();
         
         //Setup DB context
         _context = _fixture.ApplicationContext;
@@ -247,11 +257,10 @@ public class TestUsersController
         Assert.NotNull(result);
 
         var okResult = result.Result as ObjectResult;
-        var valueResult = okResult!.Value as User;
+        var valueResult = okResult!.Value as UserResponseDto;
 
         Assert.NotNull(valueResult);
         
-        Assert.NotEqual(PasswordVerificationResult.Failed, hasher.VerifyHashedPassword(user, valueResult.Password, user.Password));
         Assert.Equal(user.Id, valueResult.Id);
         Assert.Equal(user.Email, valueResult.Email);
         Assert.Equal(user.Login, valueResult.Login);
@@ -263,7 +272,14 @@ public class TestUsersController
         // Arrange
         var id = _random.Next(1, 3);
         var user = TestValues.Users.First(u => u.Id == id);
-        
+        var userEditDto = new UserEditDto()
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Login = user.Login,
+            Password = user.Password
+        };
+
         //Setup DB context
         _context = _fixture.ApplicationContext;
 
@@ -273,7 +289,7 @@ public class TestUsersController
         //Setup AutoMapper config
         var config = new MapperConfiguration(cfg => cfg.AddProfile<UserMappingProfile>());
         _mapper = config.CreateMapper();
-        
+
         _controller = new UsersController(
             logger,
             _context,
@@ -287,10 +303,10 @@ public class TestUsersController
         
         // Modify USER
 
-        user.Email = "modifed@gmail.com";
+        userEditDto.Email = "modifed@gmail.com";
 
         // Act
-        var result = await _controller.Put(user);
+        var result = await _controller.Put(userEditDto);
         
         // Assert
         Assert.NotNull(result);
