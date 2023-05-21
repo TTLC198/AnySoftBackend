@@ -272,7 +272,9 @@ public class UsersController : ControllerBase
             _ => StatusCode(StatusCodes.Status201Created,
                 new UserResponseDto
                 {
-                    Id = createdUser.Entity.Id, Email = createdUser.Entity.Email, Login = createdUser.Entity.Login
+                    Id = createdUser.Entity.Id,
+                    Email = createdUser.Entity.Email,
+                    Login = createdUser.Entity.Login
                 })
         };
     }
