@@ -136,12 +136,12 @@ public class PropertiesController : ControllerBase
                      && existedProperty.ProductsHaveProperties!.Any(phg => phg.ProductId == product.Id):
                 return BadRequest("Product with same property already exists");
             case not null when product is not null:
-                var productHaveGenre = new ProductsHaveGenres()
+                var productHaveProperties = new ProductsHaveProperties()
                 {
-                    GenreId = existedProperty.Id,
+                    PropertyId = existedProperty.Id,
                     ProductId = propertyDto.ProductId ?? throw new InvalidOperationException("Product id = null")
                 };
-                await _context.ProductsHaveGenres.AddAsync(productHaveGenre);
+                await _context.ProductsHaveProperties.AddAsync(productHaveProperties);
                 return await _context.SaveChangesAsync() switch
                 {
                     0 => StatusCode(500, new ErrorModel("Some error has occurred")),
