@@ -1,9 +1,7 @@
-﻿using System.Linq.Dynamic.Core;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Domain;
@@ -41,6 +39,7 @@ public class PropertiesController : ControllerBase
     /// 
     /// </remarks>
     /// <response code="200">Return properties list</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="404">Properties not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet]
@@ -107,12 +106,13 @@ public class PropertiesController : ControllerBase
     /// 
     /// </remarks>
     /// <param name="propertyDto"></param>
-    /// <response code="200">Return created genre</response>
-    /// <response code="400">Same genre found</response>
+    /// <response code="200">Return created property</response>
+    /// <response code="400">Same property found</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [Authorize]
-    [ProducesResponseType(typeof(Genre), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(Property), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
@@ -121,7 +121,7 @@ public class PropertiesController : ControllerBase
         if (propertyDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        _logger.LogDebug("Create new genre with product id = {productId}", propertyDto.ProductId ?? 0);
+        _logger.LogDebug("Create new property with product id = {ProductId}", propertyDto.ProductId ?? 0);
 
         var existedProperty = await _context.Properties
             .Include(g => g.ProductsHaveProperties)
@@ -134,7 +134,7 @@ public class PropertiesController : ControllerBase
             case not null
                 when product is not null
                      && existedProperty.ProductsHaveProperties!.Any(phg => phg.ProductId == product.Id):
-                return BadRequest("Product with same genre already exists");
+                return BadRequest("Product with same property already exists");
             case not null when product is not null:
                 var productHaveGenre = new ProductsHaveGenres()
                 {
@@ -208,9 +208,9 @@ public class PropertiesController : ControllerBase
         var property = await _context.Properties.FirstOrDefaultAsync(p => p.Id == id);
 
         if (property is null)
-            return NotFound(new ErrorModel("Genre not found"));
+            return NotFound(new ErrorModel("Property not found"));
 
-        _logger.LogDebug("Delete existing property with id = {id}", id);
+        _logger.LogDebug("Delete existing property with id = {Id}", id);
 
         _context.Properties.Remove(property);
 
@@ -268,7 +268,7 @@ public class PropertiesController : ControllerBase
         if (property.ProductsHaveProperties.All(php => php.ProductId != productId))
             return NotFound(new ErrorModel("Product with entered property not found"));
 
-        _logger.LogDebug("Delete genre product with id = {id}", id);
+        _logger.LogDebug("Delete property product with id = {Id}", id);
 
         var productHaveProperties = property.ProductsHaveProperties
             .FirstOrDefault(phg => phg.ProductId == productId && phg.PropertyId == id);

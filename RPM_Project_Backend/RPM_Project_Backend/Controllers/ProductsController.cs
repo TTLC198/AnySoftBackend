@@ -6,7 +6,6 @@ using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
 using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
@@ -22,7 +21,6 @@ public class ProductsController : ControllerBase
 {
     private readonly ILogger<ProductsController> _logger;
     private readonly ApplicationContext _context;
-    private readonly DbSet<Product> _dbSet;
     private readonly IMapper _mapper;
 
     /// <inheritdoc />
@@ -31,7 +29,6 @@ public class ProductsController : ControllerBase
         _logger = logger;
         _context = context;
         _mapper = mapper;
-        _dbSet = _context.Set<Product>();
     }
 
     /// <summary>
@@ -79,7 +76,7 @@ public class ProductsController : ControllerBase
                         .ToList();
                 if (productQuery.Name is not null)
                     products = products
-                        .Where(product => product.Name.ToLower().Contains(productQuery.Name.ToLower()))
+                        .Where(product => product.Name!.ToLower().Contains(productQuery.Name.ToLower()))
                         .ToList();
                 if (productQuery.Rating is {Min: not null} and {Max: not null})
                     products = products
@@ -110,7 +107,7 @@ public class ProductsController : ControllerBase
                         .ToList();
                 if (productQuery.Properties is {Count: > 0})
                     products = products
-                        .Where(product => productQuery.Properties
+                        .Where(product => productQuery.Properties!
                             .All(p => product.ProductsHaveProperties!.Any(php => php.PropertyId == p)))
                         .ToList();
             }
@@ -199,7 +196,7 @@ public class ProductsController : ControllerBase
         if (id < 0)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        _logger.LogDebug("Get product with id = {id}", id);
+        _logger.LogDebug("Get product with id = {Id}", id);
 
         var products = _context.Products
             .Include(p => p.ProductsHaveGenres)
@@ -279,6 +276,7 @@ public class ProductsController : ControllerBase
     /// <param name="productDto"></param>
     /// <response code="200">Return created product</response>
     /// <response code="400">Same product found</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [Authorize(Roles = "seller")]
@@ -290,12 +288,15 @@ public class ProductsController : ControllerBase
     {
         if (productDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
+        
+        if (!ModelState.IsValid)
+            return BadRequest(new ErrorModel("Model state is invalid"));
 
-        _logger.LogDebug("Create new product with name = {id}", productDto.Name);
+        _logger.LogDebug("Create new product with name = {Id}", productDto.Name);
 
         var sellerId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
 
-        var existedProduct = await _dbSet.FirstOrDefaultAsync(
+        var existedProduct = await _context.Products.FirstOrDefaultAsync(
             p => p.Name == productDto.Name
                  && p.SellerId == sellerId);
         if (existedProduct is not null)
@@ -307,7 +308,7 @@ public class ProductsController : ControllerBase
         product.SellerId = sellerId;
         product.Rating = 5;
 
-        var createdProduct = await _dbSet.AddAsync(product);
+        var createdProduct = await _context.Products.AddAsync(product);
 
         return await _context.SaveChangesAsync() switch
         {
@@ -353,12 +354,12 @@ public class ProductsController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{sellerId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        if (!_dbSet.Any(p => p.Id == product.Id))
+        if (!_context.Products.Any(p => p.Id == product.Id))
             return NotFound(new ErrorModel("Product not found"));
 
         product.SellerId = sellerId;
 
-        _logger.LogDebug("Update existing product with id = {id}", product.Id);
+        _logger.LogDebug("Update existing product with id = {Id}", product.Id);
         _context.Entry(product).State = EntityState.Modified;
 
         return await _context.SaveChangesAsync() switch
@@ -403,7 +404,7 @@ public class ProductsController : ControllerBase
         if (productPatch is null || id <= 0)
             return BadRequest(new ErrorModel("Input data is empty"));
 
-        var product = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
+        var product = await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
 
         if (product is null)
             return NotFound(new ErrorModel("Product not found"));
@@ -411,7 +412,7 @@ public class ProductsController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        _logger.LogDebug("Update existing product with id = {id}", id);
+        _logger.LogDebug("Update existing product with id = {Id}", id);
 
         productPatch.ApplyTo(product, ModelState);
 
@@ -454,7 +455,7 @@ public class ProductsController : ControllerBase
         if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        var product = await _dbSet.FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
 
         if (product is null)
             return NotFound(new ErrorModel("Product not found"));
@@ -462,9 +463,9 @@ public class ProductsController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{product.SellerId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        _logger.LogDebug("Delete existing product with id = {id}", id);
+        _logger.LogDebug("Delete existing product with id = {Id}", id);
 
-        _dbSet.Remove(product);
+        _context.Products.Remove(product);
 
         return await _context.SaveChangesAsync() switch
         {

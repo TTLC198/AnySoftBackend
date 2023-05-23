@@ -2,7 +2,6 @@
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Domain;
@@ -122,7 +121,7 @@ public class GenresController : ControllerBase
         if (genreDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        _logger.LogDebug("Create new genre with product id = {productId}", genreDto.ProductId ?? 0);
+        _logger.LogDebug("Create new genre with product id = {ProductId}", genreDto.ProductId ?? 0);
 
         var existedGenre = await _context.Genres
             .Include(g => g.ProductsHaveGenres)
@@ -211,7 +210,7 @@ public class GenresController : ControllerBase
         if (genre is null)
             return NotFound(new ErrorModel("Genre not found"));
 
-        _logger.LogDebug("Delete existing genre with id = {id}", id);
+        _logger.LogDebug("Delete existing genre with id = {Id}", id);
 
         _context.Genres.Remove(genre);
 
@@ -236,6 +235,7 @@ public class GenresController : ControllerBase
     /// <response code="204">Delete genre</response>
     /// <response code="400">The input data is empty</response>
     /// <response code="401">Unauthorized</response>
+    /// <response code="403">Unauthorized</response>
     /// <response code="404">Genre not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [Authorize(Roles = "seller")]
@@ -269,7 +269,7 @@ public class GenresController : ControllerBase
         if (genre.ProductsHaveGenres.All(phg => phg.ProductId != productId))
             return NotFound(new ErrorModel("Product with entered genre not found"));
         
-        _logger.LogDebug("Delete genre product with id = {id}", id);
+        _logger.LogDebug("Delete genre product with id = {Id}", id);
 
         var productHaveGenres = genre.ProductsHaveGenres
             .FirstOrDefault(phg => phg.ProductId == productId && phg.GenreId == id);

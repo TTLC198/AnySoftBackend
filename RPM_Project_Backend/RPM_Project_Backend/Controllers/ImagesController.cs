@@ -15,21 +15,16 @@ namespace RPM_Project_Backend.Controllers;
 [Route("resources/image")]
 public class ImagesController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<ImagesController> _logger;
     private readonly IWebHostEnvironment _environment;
     private readonly ApplicationContext _context;
-    private readonly DbSet<Image> _dbSet;
 
     /// <inheritdoc />
-    public ImagesController(
-        IConfiguration configuration, ILogger<ImagesController> logger, ApplicationContext context, IWebHostEnvironment environment)
+    public ImagesController(ILogger<ImagesController> logger, ApplicationContext context, IWebHostEnvironment environment)
     {
-        _configuration = configuration;
         _logger = logger;
         _context = context;
         _environment = environment;
-        _dbSet = _context.Set<Image>();
     }
 
     /// <summary>
@@ -43,6 +38,7 @@ public class ImagesController : ControllerBase
     /// </remarks>
     /// <param name="id"></param>
     /// <response code="200">Return image as file</response>
+    /// <response code="400">The input data is empty</response>
     /// <response code="404">Image not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [AllowAnonymous]
@@ -55,16 +51,16 @@ public class ImagesController : ControllerBase
         if (id <= 0)
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        _logger.LogDebug("Get image with id = {id}", id);
+        _logger.LogDebug("Get image with id = {Id}", id);
 
-        var image = await _dbSet.FirstOrDefaultAsync(i => i.Id == id);
+        var image = await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
         
         if (image is null)
             return NotFound(new ErrorModel("Image not found"));
         
-        var imageData = await System.IO.File.ReadAllBytesAsync(image.ImagePath);
+        var imageData = await System.IO.File.ReadAllBytesAsync(image.ImagePath!);
 
-        return File(imageData, image.ContentType);
+        return File(imageData, image.ContentType!);
     }
     
     /// <summary>
@@ -73,11 +69,12 @@ public class ImagesController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// GET api/image/4
+    /// GET api/image/some_path.png
     ///
     /// </remarks>
     /// <param name="path"></param>
     /// <response code="200">Return image as file</response>
+    /// <response code="400">The input data is empty</response>
     /// <response code="404">Image not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [AllowAnonymous]
@@ -90,9 +87,9 @@ public class ImagesController : ControllerBase
         if (path is null or {Length: 0})
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        _logger.LogDebug("Get image with filename = {filename}", path);
+        _logger.LogDebug("Get image with filename = {Filename}", path);
 
-        var image = _dbSet
+        var image = _context.Images
             .Select(i => new
             {
                 i.ImagePath,
@@ -127,6 +124,7 @@ public class ImagesController : ControllerBase
     /// </remarks>
     /// <param name="imageDto"></param>
     /// <response code="200">Return image as created object</response>
+    /// <response code="400">The input data is empty</response>
     /// <response code="400">Input data is empty</response>
     /// <response code="500">Oops! Server internal error</response>
     /// <exception cref="InvalidOperationException"></exception>
@@ -148,7 +146,7 @@ public class ImagesController : ControllerBase
             "images",
             uniqueFileName);
 
-        _logger.LogDebug("Upload image with path = {name}", filePath);
+        _logger.LogDebug("Upload image with path = {Name}", filePath);
         
         var image = new Image
         {
@@ -163,7 +161,7 @@ public class ImagesController : ControllerBase
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException("Directory name is null"));
             
-            _dbSet.Add(image);
+            _context.Images.Add(image);
         }
         catch (Exception e)
         {
@@ -207,9 +205,9 @@ public class ImagesController : ControllerBase
         if (filename is null or {Length: 0})
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        _logger.LogDebug("Delete image with filename = {filename}", filename);
+        _logger.LogDebug("Delete image with filename = {Filename}", filename);
         
-        var image = await _dbSet
+        var image = await _context.Images
             .FirstOrDefaultAsync(i => i.ImagePath.Contains(filename));
         
         if (image is null)
@@ -238,7 +236,7 @@ public class ImagesController : ControllerBase
                 new ErrorModel("Some error has occurred"));
         }
         
-        _dbSet.Remove(image);
+        _context.Images.Remove(image);
 
         return await _context.SaveChangesAsync() switch
         {

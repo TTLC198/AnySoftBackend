@@ -3,7 +3,6 @@ using System.Net;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Domain;
@@ -41,6 +40,7 @@ public class ShoppingCartsController : ControllerBase
     /// 
     /// </remarks>
     /// <response code="200">Return products list</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="404">Products not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet]
@@ -110,7 +110,7 @@ public class ShoppingCartsController : ControllerBase
                             Image = p.Seller.Images is not null
                                 ? ""
                                 : ImageUriHelper.GetImagePathAsUri(
-                                    (p.Seller.Images.FirstOrDefault() ?? new Image()).ImagePath)
+                                    (p.Seller.Images?.FirstOrDefault() ?? new Image()).ImagePath)
                         },
                         Images = (p.Images ?? new List<Image>())
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
@@ -161,7 +161,7 @@ public class ShoppingCartsController : ControllerBase
         var order = new Order()
         {   
             UserId = userId,
-            Status = "new",
+            Status = "New",
             FinalCost = products
                 .Sum(p => p.Cost * (1 - (p.Discount ?? 0) * 0.01)),
             Ts = DateTime.UtcNow
@@ -212,6 +212,7 @@ public class ShoppingCartsController : ControllerBase
     /// <param name="shoppingCartDto"></param>
     /// <response code="200">Return created shopping cart</response>
     /// <response code="400">There are no products with this ID</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [Authorize]
@@ -234,7 +235,7 @@ public class ShoppingCartsController : ControllerBase
                 .AnyAsync(ohp => shoppingCartDto.ProductIds.Any(c => c == ohp.ProductId) && ohp.Order.UserId == userId))
             return BadRequest(new ErrorModel("The user has already purchased this product"));
 
-        _logger.LogDebug("Create new shopping cart with user id = {userId}", userId);
+        _logger.LogDebug("Create new shopping cart with user id = {UserId}", userId);
 
         var usersHaveProducts = new List<UsersHaveProducts>();
         foreach (var productId in shoppingCartDto.ProductIds)
@@ -281,7 +282,7 @@ public class ShoppingCartsController : ControllerBase
                             Image = p.Seller.Images is not null
                                 ? ""
                                 : ImageUriHelper.GetImagePathAsUri(
-                                    (p.Seller.Images.FirstOrDefault() ?? new Image()).ImagePath)
+                                    (p.Seller.Images?.FirstOrDefault() ?? new Image()).ImagePath)
                         },
                         Images = (p.Images ?? new List<Image>())
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
@@ -336,7 +337,7 @@ public class ShoppingCartsController : ControllerBase
         if (product is null)
             return NotFound(new ErrorModel("Product not found"));
         
-        _logger.LogDebug("Remove product with id = {id} from shopping cart", productId);
+        _logger.LogDebug("Remove product with id = {Id} from shopping cart", productId);
 
         _context.UsersHaveProducts.Remove(usersHaveProducts);
 
