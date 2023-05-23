@@ -160,7 +160,7 @@ public class PaymentController : ControllerBase
                     p.Number == paymentDto.Number
                     && p.ExpirationDate == paymentDto.ExpirationDate
                     && p.Cvc == paymentDto.Cvc))
-            return BadRequest("Product with same genre already exists");
+            return BadRequest("Payment with same credentials already exists");
 
         var payment = _mapper.Map<Payment>(paymentDto);
 
@@ -364,7 +364,7 @@ public class PaymentController : ControllerBase
         if (payment is null)
             return NotFound(new ErrorModel("Payment not found"));
 
-        _logger.LogDebug("Delete existing genre with id = {id}", id);
+        _logger.LogDebug("Delete existing payment with id = {id}", id);
 
         _context.Payments.Remove(payment);
 

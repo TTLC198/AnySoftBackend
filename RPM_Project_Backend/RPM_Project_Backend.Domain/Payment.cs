@@ -15,6 +15,8 @@ public class Payment
     public string? Number { get; set; }
     [Column("pay_expiration_date"), Required]
     public DateTime ExpirationDate { get; set; }
+    [Column("pay_name"), Required]
+    public string CardName { get; set; }
     [Column("pay_cvc"), Required, StringLength(4)] 
     public string? Cvc { get; set; }
     [Column("pay_is_active"), Required]

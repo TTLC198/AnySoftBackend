@@ -28,7 +28,7 @@ public class ApplicationContext : DbContext
             .Entity<Review>()
             .HasOne(o => o.User)
             .WithMany(o => o.Reviews)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
         
         modelBuilder
             .Entity<UsersHaveProducts>()

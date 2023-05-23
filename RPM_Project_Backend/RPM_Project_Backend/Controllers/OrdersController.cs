@@ -224,7 +224,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult> Delete(
         int id)
     {
-        if (id <= 0)
+        if (id < 0)
             return BadRequest(new ErrorModel("The input data is empty"));
 
         var order = await _context.Orders

@@ -59,7 +59,7 @@ public class User
     [NotMapped]
     public virtual IEnumerable<Review>? Reviews { get; }
     /// <summary>
-    /// User reviews
+    /// User cart
     /// </summary>
     [ValidateNever]
     public virtual IEnumerable<UsersHaveProducts>? UsersHaveProducts { get; }
