@@ -4,7 +4,6 @@ using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +22,6 @@ public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;
     private readonly ApplicationContext _context;
-    private readonly DbSet<User> _dbSet;
     private readonly IMapper _mapper;
 
     /// <inheritdoc />
@@ -32,7 +30,6 @@ public class UsersController : ControllerBase
         _logger = logger;
         _context = context;
         _mapper = mapper;
-        _dbSet = _context.Users;
     }
 
     /// <summary>
@@ -59,7 +56,7 @@ public class UsersController : ControllerBase
         _logger.LogDebug("Get list of users");
 
         IQueryable<User> allUsers =
-            _dbSet
+            _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Images)
                 .Include(u => u.Orders)
@@ -136,7 +133,7 @@ public class UsersController : ControllerBase
     {
         _logger.LogDebug("Get user with id = {Id}", id);
 
-        var user = await _dbSet
+        var user = await _context.Users
             .Include(u => u.Role)
             .Include(u => u.Images)
             .Include(u => u.UsersHaveProducts)
@@ -165,7 +162,7 @@ public class UsersController : ControllerBase
             .Include(p => p.ProductsHaveProperties)
             .ThenInclude(php => php.Property)
             .ToList()
-            .Where(p => user.UsersHaveProducts
+            .Where(p => (user.UsersHaveProducts ?? Array.Empty<UsersHaveProducts>())
                 .Any(uhp => uhp.ProductId == p.Id));
 
         return Ok(new UserResponseDto
@@ -182,9 +179,9 @@ public class UsersController : ControllerBase
                             Status = o.Status,
                             Ts = o.Ts,
                             UserId = o.UserId,
-                            PurchasedProductsIds = o.OrdersHaveProducts
+                            PurchasedProductsIds = o.OrdersHaveProducts?
                                 .Select(ohp => ohp.ProductId)
-                                .ToList()
+                                .ToList()!
                         })
                 .OrderBy(order => order.Id)
                 .ToList(),
@@ -240,6 +237,7 @@ public class UsersController : ControllerBase
     /// <param name="userFields"></param>
     /// <response code="201">Return created user</response>
     /// <response code="400">Same user found</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [AllowAnonymous]
@@ -254,17 +252,17 @@ public class UsersController : ControllerBase
         _logger.LogDebug("Create new user with login = {Login}", userFields.Login);
 
         var existedUser =
-            await _dbSet.FirstOrDefaultAsync(u => u.Email == userFields.Email || u.Login == userFields.Login);
+            await _context.Users.FirstOrDefaultAsync(u => u.Email == userFields.Email || u.Login == userFields.Login);
         if (existedUser is not null)
             return BadRequest(new ErrorModel("User with the same login or email already exists"));
 
         var hasher = new PasswordHasher<User>();
         var user = _mapper.Map<User>(userFields);
 
-        user.Password = hasher.HashPassword(user, user.Password);
+        user.Password = hasher.HashPassword(user, user.Password ?? string.Empty);
         user.RoleId = 2; // Client by default
 
-        var createdUser = await _dbSet.AddAsync(user);
+        var createdUser = await _context.Users.AddAsync(user);
 
         return await _context.SaveChangesAsync() switch
         {
@@ -313,7 +311,7 @@ public class UsersController : ControllerBase
         if (userFields is null)
             return BadRequest(new ErrorModel("Input data is empty"));
 
-        if (!_dbSet.Any(u => u.Id == userFields.Id))
+        if (!_context.Users.Any(u => u.Id == userFields.Id))
             return NotFound(new ErrorModel("User not found"));
 
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{userFields.Id}"))
@@ -342,7 +340,7 @@ public class UsersController : ControllerBase
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"));
             default:
                 var createdUser =
-                    await _dbSet.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
+                    await _context.Users.FirstOrDefaultAsync(u => u.Login == userFields.Login && u.Email == userFields.Email);
                 return createdUser is null
                     ? StatusCode(StatusCodes.Status500InternalServerError, new ErrorModel("Some error has occurred"))
                     : Ok(createdUser);
@@ -387,7 +385,7 @@ public class UsersController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
             return NotFound(new ErrorModel("User not found"));
@@ -440,12 +438,12 @@ public class UsersController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{id}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        var toDelete = await _dbSet.FirstOrDefaultAsync(u => u.Id == id);
+        var toDelete = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
         if (toDelete is null)
             return NotFound(new ErrorModel("User not found"));
 
-        _dbSet.Remove(toDelete);
+        _context.Users.Remove(toDelete);
 
         return await _context.SaveChangesAsync() switch
         {

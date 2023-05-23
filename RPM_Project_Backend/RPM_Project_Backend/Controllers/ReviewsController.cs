@@ -1,9 +1,7 @@
-﻿using System.Linq.Dynamic.Core;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Domain;
@@ -37,10 +35,11 @@ public class ReviewsController : ControllerBase
     /// <remarks>
     /// Example request
     /// 
-    /// GET api/reviews/1
+    /// GET api/reviews
     /// 
     /// </remarks>
     /// <response code="200">Return reviews list</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="404">Reviews not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet]
@@ -52,7 +51,7 @@ public class ReviewsController : ControllerBase
         [FromQuery] int? productId,
         [FromQuery] QueryParameters<object> queryParameters)
     {
-        _logger.LogDebug("Get list of reviews with product id = {productId}", productId ?? 0);
+        _logger.LogDebug("Get list of reviews with product id = {ProductId}", productId ?? 0);
 
         if (productId is not null and <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
@@ -127,6 +126,7 @@ public class ReviewsController : ControllerBase
     /// <param name="reviewDto"></param>
     /// <response code="200">Return created review</response>
     /// <response code="400">Same review found</response>
+    /// <response code="401">Unauthorized</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost]
     [Authorize]
@@ -139,7 +139,7 @@ public class ReviewsController : ControllerBase
         if (reviewDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        _logger.LogDebug("Create new review with product id = {productId}", reviewDto.ProductId);
+        _logger.LogDebug("Create new review with product id = {ProductId}", reviewDto.ProductId);
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == reviewDto.ProductId);
@@ -213,7 +213,7 @@ public class ReviewsController : ControllerBase
         if (!_context.Reviews.Any(r => r.Id == review.Id))
             return NotFound(new ErrorModel("Review not found"));
 
-        _logger.LogDebug("Update existing review with id = {id}", review.Id);
+        _logger.LogDebug("Update existing review with id = {Id}", review.Id);
 
         review.Text = reviewEditDto.Text;
         review.Grade = reviewEditDto.Grade;
@@ -263,7 +263,7 @@ public class ReviewsController : ControllerBase
         if (!User.Claims.Any(cl => cl.Type == "id" && cl.Value == $"{review.UserId}"))
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        _logger.LogDebug("Delete existing review with id = {id}", id);
+        _logger.LogDebug("Delete existing review with id = {Id}", id);
 
         _context.Reviews.Remove(review);
 

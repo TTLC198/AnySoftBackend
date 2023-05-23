@@ -3,7 +3,6 @@ using System.Net;
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Domain;
@@ -110,6 +109,7 @@ public class OrdersController : ControllerBase
     /// 
     /// </remarks>
     /// <response code="200">Return single order</response>
+    /// <response code="400">The input data is empty</response>
     /// <response code="404">Order not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpGet("{id:int}")]
@@ -123,7 +123,7 @@ public class OrdersController : ControllerBase
         if (id <= 0)
             return BadRequest(new ErrorModel("Input data is empty"));
 
-        _logger.LogDebug("Get order with id = {id}", id);
+        _logger.LogDebug("Get order with id = {Id}", id);
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
 
@@ -151,6 +151,7 @@ public class OrdersController : ControllerBase
     /// 
     /// </remarks>
     /// <response code="200">Return single order</response>
+    /// <response code="400">The input data is empty</response>
     /// <response code="404">Order not found</response>
     /// <response code="500">Oops! Server internal error</response>
     [HttpPost("buy")]
@@ -164,7 +165,7 @@ public class OrdersController : ControllerBase
         if (orderPurchaseDto is null)
             return BadRequest(new ErrorModel("Input data is empty"));
 
-        _logger.LogDebug("Get order with id = {id}", orderPurchaseDto.OrderId);
+        _logger.LogDebug("Get order with id = {Id}", orderPurchaseDto.OrderId);
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         var payment = await _context.Payments
@@ -181,13 +182,17 @@ public class OrdersController : ControllerBase
         if (order.Status == "Paid")
             return BadRequest(new ErrorModel("You have already made a purchase"));
 
-        var transaction = new Transaction
+        if (payment.Id != null)
         {
-            OrderId = order.Id,
-            PaymentId = payment.Id.Value
-        };
+            var transaction = new Transaction
+            {
+                OrderId = order.Id,
+                PaymentId = (int)payment.Id
+            };
 
-        await _context.Transactions.AddAsync(transaction);
+            await _context.Transactions.AddAsync(transaction);
+        }
+
         order.Status = "Paid";
         _context.Entry(order).State = EntityState.Modified;
 
@@ -238,7 +243,7 @@ public class OrdersController : ControllerBase
         if (userId != order.UserId)
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        _logger.LogDebug("Remove order with id = {id}", id);
+        _logger.LogDebug("Remove order with id = {Id}", id);
 
         var ordersHaveProducts = _context.OrdersHaveProducts
             .Where(ohp => ohp.OrderId == order.Id);
@@ -313,7 +318,7 @@ public class OrdersController : ControllerBase
         if (userId != order.UserId)
             return Unauthorized(new ErrorModel("Access is denied"));
 
-        _logger.LogDebug("Remove order with id = {id}", id);
+        _logger.LogDebug("Remove order with id = {Id}", id);
         
         _context.OrdersHaveProducts.Remove(productInOrder);
 

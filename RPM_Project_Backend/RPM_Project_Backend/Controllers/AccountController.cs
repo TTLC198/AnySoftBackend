@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
@@ -23,7 +22,6 @@ public class AccountController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<AccountController> _logger;
     private readonly ApplicationContext _context;
-    private readonly DbSet<User> _dbSet;
 
     /// <inheritdoc />
     public AccountController(
@@ -32,7 +30,6 @@ public class AccountController : ControllerBase
         _configuration = configuration;
         _logger = logger;
         _context = context;
-        _dbSet = _context.Set<User>();
     }
 
     /// <summary>
@@ -65,9 +62,9 @@ public class AccountController : ControllerBase
         if (userDto is null or {Password: null})
             return BadRequest(new ErrorModel("Input data is empty"));
 
-        _logger.LogDebug("Login user with login = {login}", userDto.Login);
+        _logger.LogDebug("Login user with login = {Login}", userDto.Login);
 
-        var user = await _dbSet
+        var user = await _context.Users
             .Where(u => u.Email == userDto.Email || u.Login == userDto.Login)
             .Include(u => u.Role)
             .FirstOrDefaultAsync();
@@ -76,11 +73,11 @@ public class AccountController : ControllerBase
             return NotFound(new ErrorModel("User with the same login or email does not exist"));
 
         var hasher = new PasswordHasher<User>();
-        var result = hasher.VerifyHashedPassword(user, user.Password, userDto.Password);
+        var result = hasher.VerifyHashedPassword(user, user.Password!, userDto.Password);
         var authClaims = new List<Claim>
         {
             new("id", Strings.Trim($"{user.Id}")),
-            new("role", Strings.Trim(user.Role.Name)),
+            new("role", Strings.Trim(user.Role?.Name)),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
