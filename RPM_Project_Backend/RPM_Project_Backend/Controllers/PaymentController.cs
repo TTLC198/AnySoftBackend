@@ -129,6 +129,7 @@ public class PaymentController : ControllerBase
     /// POST api/payment&#xA;&#xD;
     ///     {
     ///         "number": "string",
+    ///         "cardName": "string",
     ///         "expirationDate": "2023-05-01T14:34:17.276Z",
     ///         "cvc": "string"
     ///     }
@@ -156,6 +157,7 @@ public class PaymentController : ControllerBase
         if (await _context.Payments
                 .AnyAsync(p =>
                     p.Number == paymentDto.Number
+                    && p.CardName == paymentDto.CardName
                     && p.ExpirationDate == paymentDto.ExpirationDate
                     && p.Cvc == paymentDto.Cvc))
             return BadRequest("Product with same genre already exists");
@@ -184,6 +186,7 @@ public class PaymentController : ControllerBase
     ///     {
     ///         "id": 11,
     ///         "number": "string",
+    ///         "cardName": "string",
     ///         "expirationDate": "2023-05-01T14:34:17.276Z",
     ///         "cvc": "string"
     ///     }
@@ -222,6 +225,7 @@ public class PaymentController : ControllerBase
         _logger.LogDebug("Update existing payment with id = {id}", payment.Id);
 
         payment.Number = paymentEditDto.Number;
+        payment.CardName = paymentEditDto.CardName;
         payment.Cvc = paymentEditDto.Cvc;
         payment.ExpirationDate = paymentEditDto.ExpirationDate;
         
