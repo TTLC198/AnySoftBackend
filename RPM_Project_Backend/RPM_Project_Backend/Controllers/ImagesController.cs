@@ -179,7 +179,7 @@ public class ImagesController : ControllerBase
         {
             0 => StatusCode(StatusCodes.Status500InternalServerError,
                 new ErrorModel("Some error has occurred")),
-            _ => Ok(image)
+            _ => Ok(ImageUriHelper.GetImagePathAsUri(image.ImagePath))
         };
     }
 

@@ -15,6 +15,8 @@ public class Payment
     public string? Number { get; set; }
     [Column("pay_expiration_date"), Required]
     public DateTime ExpirationDate { get; set; }
+    [Column("pay_name"), Required]
+    public string? CardName { get; set; }
     [Column("pay_cvc"), Required, StringLength(4)] 
     public string? Cvc { get; set; }
     [Column("pay_is_active"), Required]
@@ -35,6 +37,10 @@ public class PaymentDto
     /// Bank Card Number
     /// </summary>
     public string? Number { get; set; }
+    /// <summary>
+    /// Bank Card Name on Card 
+    /// </summary>
+    public string? CardName { get; set; }
     /// <summary>
     /// Bank Card Expiration Date
     /// </summary>
@@ -57,6 +63,10 @@ public class PaymentEditDto
     /// Bank Card Number
     /// </summary>
     public string? Number { get; set; }
+    /// <summary>
+    /// Bank Card Name on Card 
+    /// </summary>
+    public string? CardName { get; set; }
     /// <summary>
     /// Bank Card Expiration Date
     /// </summary>
