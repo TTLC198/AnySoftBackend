@@ -317,7 +317,7 @@ public class TestReviewsController
     }
 
     [Fact]
-    public async Task DeleteUser_ShouldReturnNull()
+    public async Task DeleteReview_ShouldReturnNull()
     {
         // Arrange
         var id = _random.Next(1, 3);
