@@ -1,0 +1,894 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AnySoftBackend</name>
+    </assembly>
+    <members>
+        <member name="T:AnySoftBackend.Controllers.AccountController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.AccountController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.AccountController},AnySoftBackend.Services.Database.ApplicationContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.AccountController.Login(AnySoftBackend.Library.DataTransferObjects.User.UserCreateDto)">
+            <summary>
+            Login as user and get JWT Bearer token to get access to non anonymous methods 
+            </summary>
+            <remarks>
+            Example request
+            
+            POST /api/auth/login&#xA;&#xD;
+                {
+                   "login": "ttlc198",
+                   "email": "",
+                   "password": "M$4d3ikx+L"
+                }
+            
+            </remarks>
+            <response code="200">Return Jwt Bearer token as string</response>
+            <response code="400">Input data is empty</response>
+            <response code="404">User not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.GenresController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.GenresController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.GenresController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.GenresController.Get(System.Nullable{System.Int32},AnySoftBackend.Models.QueryParameters{System.Object})">
+            <summary>
+            Get genres list by product id
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/genres
+            
+            </remarks>
+            <response code="200">Return genres list</response>
+            <response code="404">Genres not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.GenresController.Post(AnySoftBackend.Library.DataTransferObjects.GenreDto)">
+            <summary>
+            Create new genre or add genre to product
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/genres&#xA;&#xD;
+                {
+                    "name": "SomeName",
+                    "productId": 3
+                }
+            
+            </remarks>
+            <param name="genreDto"></param>
+            <response code="200">Return created genre</response>
+            <response code="400">Same genre found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.GenresController.Delete(System.Int32)">
+            <summary>
+            Delete single genre
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/genres/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete genre</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Genre not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.GenresController.Delete(System.Int32,System.Int32)">
+            <summary>
+            Delete single genre from product
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/genres/11?productId=1
+            
+            </remarks>
+            <param name="id"></param>
+            <param name="productId"></param>
+            <response code="204">Delete genre</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Unauthorized</response>
+            <response code="404">Genre not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.ImagesController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ImagesController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.ImagesController},AnySoftBackend.Services.Database.ApplicationContext,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ImagesController.Get(System.Int32)">
+             <summary>
+             Get single image by id
+             </summary>
+             <remarks>
+             Example request
+             
+             GET api/image/4
+            
+             </remarks>
+             <param name="id"></param>
+             <response code="200">Return image as file</response>
+             <response code="400">The input data is empty</response>
+             <response code="404">Image not found</response>
+             <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ImagesController.Get(System.String)">
+             <summary>
+             Get single image by path
+             </summary>
+             <remarks>
+             Example request
+             
+             GET api/image/some_path.png
+            
+             </remarks>
+             <param name="path"></param>
+             <response code="200">Return image as file</response>
+             <response code="400">The input data is empty</response>
+             <response code="404">Image not found</response>
+             <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ImagesController.Upload(AnySoftBackend.Library.DataTransferObjects.Image.ImageCreateDto)">
+             <summary>
+             Upload single image
+             </summary>
+             <remarks>
+             Example request
+            
+             POST /resources/images/upload&#xA;&#xD;
+            
+             Form data:&#xA;&#xD;
+            
+             resourceId:2
+             type:1
+             description:Some description
+             image:[image file]
+             
+             </remarks>
+             <param name="imageCreateDto"></param>
+             <response code="200">Return image as created object</response>
+             <response code="400">The input data is empty</response>
+             <response code="400">Input data is empty</response>
+             <response code="500">Oops! Server internal error</response>
+             <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ImagesController.Delete(System.String)">
+            <summary>
+            Delete single image by filename
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE /resources/images/delete/filename.png
+            
+            </remarks>
+            <param name="filename"></param>
+            <response code="204">Deleted successful</response>
+            <response code="400">Input data is empty</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.OrdersController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.OrdersController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.OrdersController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.OrdersController.Get(AnySoftBackend.Models.QueryParameters{System.Object})">
+            <summary>
+            Get orders list
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/orders
+            
+            </remarks>
+            <response code="200">Return orders list</response>
+            <response code="404">Orders not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.OrdersController.Get(System.Int32)">
+            <summary>
+            Get single order
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/orders/1
+            
+            </remarks>
+            <response code="200">Return single order</response>
+            <response code="400">The input data is empty</response>
+            <response code="404">Order not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.OrdersController.Buy(AnySoftBackend.Library.DataTransferObjects.Order.OrderPurchaseDto)">
+            <summary>
+            Purchase single order
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/orders/buy&#xA;&#xD;
+                {
+                    "orderId": 1,
+                    "paymentId": 1
+                }
+            
+            </remarks>
+            <response code="200">Return single order</response>
+            <response code="400">The input data is empty</response>
+            <response code="404">Order not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.OrdersController.Delete(System.Int32)">
+            <summary>
+            Delete order
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/orders/1
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete order</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Order not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.OrdersController.DeleteProduct(System.Int32,System.Int32)">
+            <summary>
+            Delete product from order
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/orders/1
+            
+            </remarks>
+            <param name="id"></param>
+            <param name="productId"></param>
+            <response code="204">Delete product from order</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Order not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.PaymentController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.PaymentController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.Get">
+            <summary>
+            Get payments list
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/payment
+            
+            </remarks>
+            <response code="200">Return payments list</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Payments not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.GetAdmin">
+            <summary>
+            Get ALL payments list
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/payment
+            
+            </remarks>
+            <response code="200">Return payments list</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Payments not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.Post(AnySoftBackend.Library.DataTransferObjects.Payment.PaymentCreateDto)">
+            <summary>
+            Create new payment method
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/payment&#xA;&#xD;
+                {
+                    "number": "string",
+                    "cardName": "string",
+                    "expirationDate": "2023-05-01T14:34:17.276Z",
+                    "cvc": "string"
+                }
+            
+            </remarks>
+            <param name="paymentCreateDto"></param>
+            <response code="200">Return created payment</response>
+            <response code="400">Same payment found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.Put(AnySoftBackend.Library.DataTransferObjects.Payment.PaymentEditDto)">
+            <summary>
+            Update single payment
+            </summary>
+            <remarks>
+            Example request
+            
+            PUT api/payment&#xA;&#xD;
+                {
+                    "id": 11,
+                    "number": "string",
+                    "cardName": "string",
+                    "expirationDate": "2023-05-01T14:34:17.276Z",
+                    "cvc": "string"
+                }
+            
+            </remarks>
+            <param name="paymentEditDto"></param>
+            <response code="200">Return created payment</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Payment not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.Restore(System.Int32)">
+            <summary>
+            Restore payment method
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/payment/restore/11
+            
+            </remarks>
+            <response code="200">Return payment</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Payments not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.Delete(System.Int32)">
+            <summary>
+            Delete single payment
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/payment/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete payment</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Payment not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PaymentController.DeleteAdmin(System.Int32)">
+            <summary>
+            Full delete single payment with admin rights
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/payment/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete payment</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Payment not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.ProductsController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ProductsController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.ProductsController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ProductsController.Get(AnySoftBackend.Models.QueryParameters{AnySoftBackend.Library.DataTransferObjects.Product.ProductRequestDto})">
+            <summary>
+            Get products list
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/products
+            
+            </remarks>
+            <response code="200">Return products list</response>
+            <response code="404">Products not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ProductsController.Get(System.Int32)">
+            <summary>
+            Get single product
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/products/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="200">Return product with specific id</response>
+            <response code="404">Product not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ProductsController.Post(AnySoftBackend.Library.DataTransferObjects.Product.ProductCreateDto)">
+            <summary>
+            Create new product
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/products&#xA;&#xD;
+                {
+                    "name": "SomeName",
+                    "cost": 100,
+                    "discount": 0,
+                    "catId": 3
+                }
+            
+            </remarks>
+            <param name="productCreateDto"></param>
+            <response code="200">Return created product</response>
+            <response code="400">Same product found</response>
+            <response code="401">Unauthorized</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ProductsController.Put(AnySoftBackend.Domain.Product)">
+            <summary>
+            Update single product
+            </summary>
+            <remarks>
+            Example request
+            
+            PUT api/products&#xA;&#xD;
+                {
+                    "id": 11
+                    "name": "SomeName",
+                    "cost": 100,
+                    "discount": 0,
+                    "quantity": 0,
+                    "categoryId": 3
+                }
+            
+            </remarks>
+            <param name="product"></param>
+            <response code="200">Return created product</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Product not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ProductsController.Patch(Microsoft.AspNetCore.JsonPatch.JsonPatchDocument{AnySoftBackend.Domain.Product},System.Int32)">
+            <summary>
+            Patch single product
+            </summary>
+            <remarks>
+            Example request
+            
+            PATCH api/products/11&#xA;&#xD;
+                [
+                    {
+                        "op": "replace",
+                        "path": "/name",
+                        "value": "anotherName"
+                    }
+                ]
+            
+            </remarks>
+            <param name="productPatch"></param>
+            <param name="id"></param>
+            <response code="200">Return changed product</response>
+            <response code="400">Input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Product not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ProductsController.Delete(System.Int64)">
+            <summary>
+            Delete single product
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/products/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete product</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Product not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.PropertiesController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PropertiesController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.PropertiesController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PropertiesController.Get(System.Nullable{System.Int32},AnySoftBackend.Models.QueryParameters{System.Object})">
+            <summary>
+            Get properties list
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/properties
+            
+            </remarks>
+            <response code="200">Return properties list</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Properties not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PropertiesController.Post(AnySoftBackend.Library.DataTransferObjects.Property.PropertyCreateDto)">
+            <summary>
+            Create new property or add property to product
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/properties&#xA;&#xD;
+                {
+                    "name": "SomeName",
+                    "productId": 3
+                }
+            
+            </remarks>
+            <param name="propertyCreateDto"></param>
+            <response code="200">Return created property</response>
+            <response code="400">Same property found</response>
+            <response code="401">Unauthorized</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PropertiesController.Delete(System.Int32)">
+            <summary>
+            Delete single property
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/properties/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete property</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Property not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.PropertiesController.Delete(System.Int32,System.Int32)">
+            <summary>
+            Delete single property from product
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/properties/11?productId=1
+            
+            </remarks>
+            <param name="id"></param>
+            <param name="productId"></param>
+            <response code="204">Delete property</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Property not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.ReviewsController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ReviewsController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.ReviewsController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ReviewsController.Get(System.Nullable{System.Int32},AnySoftBackend.Models.QueryParameters{System.Object})">
+            <summary>
+            Get reviews list
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/reviews
+            
+            </remarks>
+            <response code="200">Return reviews list</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Reviews not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ReviewsController.Post(AnySoftBackend.Library.DataTransferObjects.Review.ReviewCreateDto)">
+            <summary>
+            Create new review
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/reviews&#xA;&#xD;
+                {
+                    "text": "SomeText",
+                    "grade": 5,
+                    "productId": 3
+                }
+            
+            </remarks>
+            <param name="reviewCreateDto"></param>
+            <response code="200">Return created review</response>
+            <response code="400">Same review found</response>
+            <response code="401">Unauthorized</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ReviewsController.Put(AnySoftBackend.Library.DataTransferObjects.Review.ReviewEditDto)">
+            <summary>
+            Update single review
+            </summary>
+            <remarks>
+            Example request
+            
+            PUT api/reviews&#xA;&#xD;
+                {
+                    "id": 11
+                    "text": "SomeText",
+                    "grade": 100
+                }
+            
+            </remarks>
+            <param name="reviewEditDto"></param>
+            <response code="200">Return created review</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Review not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ReviewsController.Delete(System.Int32)">
+            <summary>
+            Delete single review
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/reviews/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete review</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Review not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.ShoppingCartsController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ShoppingCartsController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.ShoppingCartsController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ShoppingCartsController.Get(AnySoftBackend.Models.QueryParameters{System.Object})">
+            <summary>
+            Get products list in cart
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/cart
+            
+            </remarks>
+            <response code="200">Return products list</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Products not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ShoppingCartsController.Order">
+            <summary>
+            Create new order
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/cart/order&#xA;&#xD;
+            
+            </remarks>
+            <response code="200">Return created shopping cart</response>
+            <response code="400">There are no products with this ID</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ShoppingCartsController.Post(AnySoftBackend.Library.DataTransferObjects.ShoppingCart.ShoppingCartCreateDto)">
+            <summary>
+            Create new shopping cart
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/cart&#xA;&#xD;
+                {
+                    "productIds":
+                    [
+                        1, 2, 3
+                    ]
+                }
+            
+            </remarks>
+            <param name="shoppingCartCreateDto"></param>
+            <response code="200">Return created shopping cart</response>
+            <response code="400">There are no products with this ID</response>
+            <response code="401">Unauthorized</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.ShoppingCartsController.Delete(System.Int32)">
+            <summary>
+            Delete single product from cart
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/cart?productId=1
+            
+            </remarks>
+            <param name="productId"></param>
+            <response code="204">Delete genre</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Genre not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="T:AnySoftBackend.Controllers.UsersController">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.UsersController.#ctor(Microsoft.Extensions.Logging.ILogger{AnySoftBackend.Controllers.UsersController},AnySoftBackend.Services.Database.ApplicationContext,AutoMapper.IMapper)">
+            <inheritdoc />
+        </member>
+        <member name="M:AnySoftBackend.Controllers.UsersController.Get(AnySoftBackend.Models.QueryParameters{AnySoftBackend.Domain.User})">
+            <summary>
+            Get users list
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/users
+            
+            </remarks>
+            <response code="200">Return users list</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">Users not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.UsersController.Get(System.Int32)">
+            <summary>
+            Get single user
+            </summary>
+            <remarks>
+            Example request
+            
+            GET api/users/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="200">Return user with specific id</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">User not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.UsersController.Post(AnySoftBackend.Library.DataTransferObjects.User.UserCreateDto)">
+            <summary>
+            Create new user (registration)
+            </summary>
+            <remarks>
+            Example request
+            
+            POST api/users&#xA;&#xD;
+                {
+                    "login": "ttlc198",
+                    "password": "M$4d3ikx+L",
+                    "email": "ttlc198@gmail.com",
+                    "roleId": 3
+                }
+            
+            </remarks>
+            <param name="userCreateFields"></param>
+            <response code="201">Return created user</response>
+            <response code="400">Same user found</response>
+            <response code="401">Unauthorized</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.UsersController.Put(AnySoftBackend.Library.DataTransferObjects.User.UserEditDto)">
+            <summary>
+            Update single user
+            </summary>
+            <remarks>
+            Example request
+            
+            PUT api/users&#xA;&#xD;
+                {
+                    "id": 3,
+                    "login": "ttlc198",
+                    "password": "M$4d3ikx+L1",
+                    "email": "ttlc198@gmail.com",
+                    "roleId": 3
+                }
+            
+            </remarks>
+            <param name="userFields"></param>
+            <response code="200">Return changed user</response>
+            <response code="400">Input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">User not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.UsersController.Patch(Microsoft.AspNetCore.JsonPatch.JsonPatchDocument{AnySoftBackend.Domain.User},System.Int32)">
+            <summary>
+            Patch single user
+            </summary>
+            <remarks>
+            Example request
+            
+            PATCH api/users/11&#xA;&#xD;
+                [
+                    {
+                        "op": "replace",
+                        "path": "/login",
+                        "value": "ttlc198"
+                    }
+                ]
+            
+            </remarks>
+            <param name="userPatch"></param>
+            <param name="id"></param>
+            <response code="200">Return changed user</response>
+            <response code="400">Input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">User not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Controllers.UsersController.Delete(System.Int64)">
+            <summary>
+            Delete single user
+            </summary>
+            <remarks>
+            Example request
+            
+            DELETE api/users/11
+            
+            </remarks>
+            <param name="id"></param>
+            <response code="204">Delete user</response>
+            <response code="400">The input data is empty</response>
+            <response code="401">Unauthorized</response>
+            <response code="404">User not found</response>
+            <response code="500">Oops! Server internal error</response>
+        </member>
+        <member name="M:AnySoftBackend.Helpers.TokenGeneratorHelper.GenerateToken(System.Collections.Generic.List{System.Security.Claims.Claim},Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Get Jwt Bearer security token
+            </summary>
+            <param name="authClaims"></param>
+            <param name="configuration"></param>
+            <returns></returns>
+            <exception cref="T:System.InvalidOperationException">Check appsettings.json file</exception>
+        </member>
+    </members>
+</doc>
