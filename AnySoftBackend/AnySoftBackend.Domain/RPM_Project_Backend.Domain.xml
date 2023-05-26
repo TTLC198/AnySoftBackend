@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AnySoftBackend.Domain</name>
+    </assembly>
+    <members>
+        <member name="T:AnySoftBackend.Domain.Product">
+            <summary>
+            Product Object
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Id">
+            <summary>
+            Identifier
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Name">
+            <summary>
+            Name
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Description">
+            <summary>
+            Description
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Cost">
+            <summary>
+            Product Cost
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Discount">
+            <summary>
+            Product cost
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Rating">
+            <summary>
+            Product Rating (0 to 5)
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Ts">
+            <summary>
+            Product creation date
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.SellerId">
+            <summary>
+            Product Seller Identifier
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Seller">
+            <summary>
+            Product Seller
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.ProductsHaveProperties">
+            <summary>
+            Product attributes
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.ProductsHaveGenres">
+            <summary>
+            Product genres
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.OrdersHaveProducts">
+            <summary>
+            Product in orders
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.UsersHaveProducts">
+            <summary>
+            Product in shopping carts
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Images">
+            <summary>
+            Product images
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.Product.Reviews">
+            <summary>
+            Product reviews
+            </summary>
+        </member>
+        <member name="T:AnySoftBackend.Domain.User">
+            <summary>
+            User Object
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Id">
+            <summary>
+            Identifier
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Login">
+            <summary>
+            Login
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Password">
+            <summary>
+            Password
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Email">
+            <summary>
+            Email
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.RoleId">
+            <summary>
+            Role identifier
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Role">
+            <summary>
+            Role Object
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Images">
+            <summary>
+            Product images
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Payments">
+            <summary>
+            User payments
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Reviews">
+            <summary>
+            User reviews
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.UsersHaveProducts">
+            <summary>
+            User reviews
+            </summary>
+        </member>
+        <member name="P:AnySoftBackend.Domain.User.Orders">
+            <summary>
+            User orders
+            </summary>
+        </member>
+    </members>
+</doc>
