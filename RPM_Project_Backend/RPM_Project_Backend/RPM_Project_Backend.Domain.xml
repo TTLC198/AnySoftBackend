@@ -69,27 +69,27 @@
             Product reviews
             </summary>
         </member>
-        <member name="T:RPM_Project_Backend.Domain.ProductDto">
+        <member name="T:RPM_Project_Backend.Domain.ProductCreateDto">
             <summary>
             Product Data Transfer Object
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.ProductDto.Name">
+        <member name="P:RPM_Project_Backend.Domain.ProductCreateDto.Name">
             <summary>
             Product Name
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.ProductDto.Cost">
+        <member name="P:RPM_Project_Backend.Domain.ProductCreateDto.Cost">
             <summary>
             Product Cost
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.ProductDto.Discount">
+        <member name="P:RPM_Project_Backend.Domain.ProductCreateDto.Discount">
             <summary>
             Discount
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.ProductDto.CategoryId">
+        <member name="P:RPM_Project_Backend.Domain.ProductCreateDto.CategoryId">
             <summary>
             Category Identifier
             </summary>
@@ -134,27 +134,27 @@
             User addresses
             </summary>
         </member>
-        <member name="T:RPM_Project_Backend.Domain.UserDto">
+        <member name="T:RPM_Project_Backend.Domain.UserCreateDto">
             <summary>
             User Data Transfer Object
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.UserDto.Login">
+        <member name="P:RPM_Project_Backend.Domain.UserCreateDto.Login">
             <summary>
             Login
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.UserDto.Email">
+        <member name="P:RPM_Project_Backend.Domain.UserCreateDto.Email">
             <summary>
             Email
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.UserDto.Password">
+        <member name="P:RPM_Project_Backend.Domain.UserCreateDto.Password">
             <summary>
             Password
             </summary>
         </member>
-        <member name="P:RPM_Project_Backend.Domain.UserDto.IsValidated">
+        <member name="P:RPM_Project_Backend.Domain.UserCreateDto.IsValidated">
             <summary>
             Equals true if Email or Login exists
             </summary>
