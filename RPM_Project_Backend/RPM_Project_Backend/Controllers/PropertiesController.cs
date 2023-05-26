@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
+using AnySoftBackend.Library.DataTransferObjects.Property;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -105,7 +107,7 @@ public class PropertiesController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <param name="propertyDto"></param>
+    /// <param name="propertyCreateDto"></param>
     /// <response code="200">Return created property</response>
     /// <response code="400">Same property found</response>
     /// <response code="401">Unauthorized</response>
@@ -116,18 +118,18 @@ public class PropertiesController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Property>> Post(PropertyDto propertyDto)
+    public async Task<ActionResult<Property>> Post(PropertyCreateDto propertyCreateDto)
     {
-        if (propertyDto is null)
+        if (propertyCreateDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        _logger.LogDebug("Create new property with product id = {ProductId}", propertyDto.ProductId ?? 0);
+        _logger.LogDebug("Create new property with product id = {ProductId}", propertyCreateDto.ProductId ?? 0);
 
         var existedProperty = await _context.Properties
             .Include(g => g.ProductsHaveProperties)
-            .FirstOrDefaultAsync(p => p.Name == propertyDto.Name);
+            .FirstOrDefaultAsync(p => p.Name == propertyCreateDto.Name);
         var product = await _context.Products
-            .FirstOrDefaultAsync(p => p.Id == propertyDto.ProductId);
+            .FirstOrDefaultAsync(p => p.Id == propertyCreateDto.ProductId);
 
         switch (existedProperty)
         {
@@ -139,7 +141,7 @@ public class PropertiesController : ControllerBase
                 var productHaveProperties = new ProductsHaveProperties()
                 {
                     PropertyId = existedProperty.Id,
-                    ProductId = propertyDto.ProductId ?? throw new InvalidOperationException("Product id = null")
+                    ProductId = propertyCreateDto.ProductId ?? throw new InvalidOperationException("Product id = null")
                 };
                 await _context.ProductsHaveProperties.AddAsync(productHaveProperties);
                 return await _context.SaveChangesAsync() switch
@@ -149,7 +151,7 @@ public class PropertiesController : ControllerBase
                 };
         }
 
-        var property = _mapper.Map<Property>(propertyDto);
+        var property = _mapper.Map<Property>(propertyCreateDto);
         var createdProperty = await _context.Properties.AddAsync(property);
 
         if (await _context.SaveChangesAsync() == 0)
@@ -159,15 +161,15 @@ public class PropertiesController : ControllerBase
 
         switch (product)
         {
-            case null when propertyDto.ProductId is not null:
+            case null when propertyCreateDto.ProductId is not null:
                 return BadRequest("Product with entered id does not exist");
-            case null when propertyDto.ProductId is null:
+            case null when propertyCreateDto.ProductId is null:
                 return Ok(createdProperty.Entity);
             default:
                 var productHaveProperty = new ProductsHaveProperties()
                 {
                     PropertyId = createdProperty.Entity.Id,
-                    ProductId = propertyDto.ProductId ?? throw new InvalidOperationException("Product id = null")
+                    ProductId = propertyCreateDto.ProductId ?? throw new InvalidOperationException("Product id = null")
                 };
                 await _context.ProductsHaveProperties.AddAsync(productHaveProperty);
                 return await _context.SaveChangesAsync() switch
