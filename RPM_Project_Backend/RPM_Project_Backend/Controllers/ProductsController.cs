@@ -4,6 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Services.Database;
 using System.Text.Json;
+using AnySoftBackend.Library.DataTransferObjects;
+using AnySoftBackend.Library.DataTransferObjects.Product;
+using AnySoftBackend.Library.DataTransferObjects.Property;
+using AnySoftBackend.Library.DataTransferObjects.Review;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
@@ -163,10 +169,10 @@ public class ProductsController : ControllerBase
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                             .ToList(),
                         Properties = (p.ProductsHaveProperties ?? new List<ProductsHaveProperties>())
-                            .Select(php => php.Property)
+                            .Select(php => _mapper.Map<PropertyDto>(php.Property))
                             .ToList(),
                         Genres = (p.ProductsHaveGenres ?? new List<ProductsHaveGenres>())
-                            .Select(phg => phg.Genre)
+                            .Select(phg => _mapper.Map<GenreDto>(phg.Genre))
                             .ToList()
                     })
             )
@@ -248,10 +254,10 @@ public class ProductsController : ControllerBase
                                 }
                             }),
                         Properties = p.ProductsHaveProperties
-                            .Select(php => php.Property)
+                            .Select(php => _mapper.Map<PropertyDto>(php.Property))
                             .ToList(),
                         Genres = p.ProductsHaveGenres
-                            .Select(phg => phg.Genre)
+                            .Select(phg => _mapper.Map<GenreDto>(phg.Genre))
                             .ToList()
                     })
                     .FirstOrDefault(p => p.Id == id))
@@ -273,7 +279,7 @@ public class ProductsController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <param name="productDto"></param>
+    /// <param name="productCreateDto"></param>
     /// <response code="200">Return created product</response>
     /// <response code="400">Same product found</response>
     /// <response code="401">Unauthorized</response>
@@ -284,25 +290,25 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Product>> Post(ProductDto productDto)
+    public async Task<ActionResult<Product>> Post(ProductCreateDto productCreateDto)
     {
-        if (productDto is null)
+        if (productCreateDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
         
         if (!ModelState.IsValid)
             return BadRequest(new ErrorModel("Model state is invalid"));
 
-        _logger.LogDebug("Create new product with name = {Id}", productDto.Name);
+        _logger.LogDebug("Create new product with name = {Id}", productCreateDto.Name);
 
         var sellerId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
 
         var existedProduct = await _context.Products.FirstOrDefaultAsync(
-            p => p.Name == productDto.Name
+            p => p.Name == productCreateDto.Name
                  && p.SellerId == sellerId);
         if (existedProduct is not null)
             return BadRequest("Product with same name already exists");
 
-        var product = _mapper.Map<Product>(productDto);
+        var product = _mapper.Map<Product>(productCreateDto);
 
         product.Ts = DateTime.UtcNow;
         product.SellerId = sellerId;

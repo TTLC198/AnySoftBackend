@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RPM_Project_Backend.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RPM_Project_Backend.Domain", "RPM_Project_Backend.Domain\RPM_Project_Backend.Domain.csproj", "{EBCF1F4B-B515-490E-847F-3EEF217280D7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnySoftBackend.Library", "AnySoftBackend.Library\AnySoftBackend.Library.csproj", "{832FDA78-8845-4643-BCE6-E921DC56AB5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{EBCF1F4B-B515-490E-847F-3EEF217280D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBCF1F4B-B515-490E-847F-3EEF217280D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBCF1F4B-B515-490E-847F-3EEF217280D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{832FDA78-8845-4643-BCE6-E921DC56AB5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{832FDA78-8845-4643-BCE6-E921DC56AB5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{832FDA78-8845-4643-BCE6-E921DC56AB5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{832FDA78-8845-4643-BCE6-E921DC56AB5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -37,13 +37,3 @@ public class Image
     [ForeignKey("ProductId")]
     public virtual Product? Product { get; }
 }
-
-public class ImageDto
-{
-    public int? ProductId { get; set; }
-    
-    public int UserId { get; set; }
-    
-    [Required]
-    public IFormFile Image { get; set; }
-}

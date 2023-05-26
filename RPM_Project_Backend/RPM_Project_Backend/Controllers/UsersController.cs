@@ -1,6 +1,11 @@
 ﻿using System.Text.Json;
 using System.Linq.Dynamic.Core;
 using System.Net;
+using AnySoftBackend.Library.DataTransferObjects;
+using AnySoftBackend.Library.DataTransferObjects.Order;
+using AnySoftBackend.Library.DataTransferObjects.Property;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
@@ -208,10 +213,10 @@ public class UsersController : ControllerBase
                         .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                         .ToList(),
                     Properties = (p.ProductsHaveProperties ?? new List<ProductsHaveProperties>())
-                        .Select(php => php.Property)
+                        .Select(php => _mapper.Map<PropertyDto>(php.Property))
                         .ToList(),
                     Genres = (p.ProductsHaveGenres ?? new List<ProductsHaveGenres>())
-                        .Select(phg => phg.Genre)
+                        .Select(phg => _mapper.Map<GenreDto>(phg.Genre))
                         .ToList()
                 })
                 .OrderBy(product => product.Id)
@@ -234,7 +239,7 @@ public class UsersController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <param name="userFields"></param>
+    /// <param name="userCreateFields"></param>
     /// <response code="201">Return created user</response>
     /// <response code="400">Same user found</response>
     /// <response code="401">Unauthorized</response>
@@ -244,20 +249,20 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(UserResponseDto), (int) HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<User>> Post([FromBody] UserDto userFields)
+    public async Task<ActionResult<User>> Post([FromBody] UserCreateDto userCreateFields)
     {
-        if (userFields is null)
+        if (userCreateFields is null)
             return BadRequest(new ErrorModel("Input data is empty"));
 
-        _logger.LogDebug("Create new user with login = {Login}", userFields.Login);
+        _logger.LogDebug("Create new user with login = {Login}", userCreateFields.Login);
 
         var existedUser =
-            await _context.Users.FirstOrDefaultAsync(u => u.Email == userFields.Email || u.Login == userFields.Login);
+            await _context.Users.FirstOrDefaultAsync(u => u.Email == userCreateFields.Email || u.Login == userCreateFields.Login);
         if (existedUser is not null)
             return BadRequest(new ErrorModel("User with the same login or email already exists"));
 
         var hasher = new PasswordHasher<User>();
-        var user = _mapper.Map<User>(userFields);
+        var user = _mapper.Map<User>(userCreateFields);
 
         user.Password = hasher.HashPassword(user, user.Password ?? string.Empty);
         user.RoleId = 2; // Client by default

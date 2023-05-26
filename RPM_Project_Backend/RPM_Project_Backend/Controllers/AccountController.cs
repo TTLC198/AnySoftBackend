@@ -1,6 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AnySoftBackend.Library.Misc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -57,15 +59,15 @@ public class AccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<IActionResult> Login([FromBody] UserDto userDto)
+    public async Task<IActionResult> Login([FromBody] UserCreateDto userCreateDto)
     {
-        if (userDto is null or {Password: null})
+        if (userCreateDto is null or {Password: null})
             return BadRequest(new ErrorModel("Input data is empty"));
 
-        _logger.LogDebug("Login user with login = {Login}", userDto.Login);
+        _logger.LogDebug("Login user with login = {Login}", userCreateDto.Login);
 
         var user = await _context.Users
-            .Where(u => u.Email == userDto.Email || u.Login == userDto.Login)
+            .Where(u => u.Email == userCreateDto.Email || u.Login == userCreateDto.Login)
             .Include(u => u.Role)
             .FirstOrDefaultAsync();
 
@@ -73,7 +75,7 @@ public class AccountController : ControllerBase
             return NotFound(new ErrorModel("User with the same login or email does not exist"));
 
         var hasher = new PasswordHasher<User>();
-        var result = hasher.VerifyHashedPassword(user, user.Password!, userDto.Password);
+        var result = hasher.VerifyHashedPassword(user, user.Password!, userCreateDto.Password);
         var authClaims = new List<Claim>
         {
             new("id", Strings.Trim($"{user.Id}")),

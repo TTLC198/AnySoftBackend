@@ -1,5 +1,8 @@
 ﻿using System.Net;
 using System.Text.Json;
+using AnySoftBackend.Library.DataTransferObjects.Review;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -123,7 +126,7 @@ public class ReviewsController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <param name="reviewDto"></param>
+    /// <param name="reviewCreateDto"></param>
     /// <response code="200">Return created review</response>
     /// <response code="400">Same review found</response>
     /// <response code="401">Unauthorized</response>
@@ -134,20 +137,20 @@ public class ReviewsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ReviewResponseDto>> Post(ReviewDto reviewDto)
+    public async Task<ActionResult<ReviewResponseDto>> Post(ReviewCreateDto reviewCreateDto)
     {
-        if (reviewDto is null)
+        if (reviewCreateDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        _logger.LogDebug("Create new review with product id = {ProductId}", reviewDto.ProductId);
+        _logger.LogDebug("Create new review with product id = {ProductId}", reviewCreateDto.ProductId);
 
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
-        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == reviewDto.ProductId);
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == reviewCreateDto.ProductId);
 
         if (product is null)
             return BadRequest("Product with entered id does not exist");
 
-        var review = _mapper.Map<Review>(reviewDto);
+        var review = _mapper.Map<Review>(reviewCreateDto);
 
         review.UserId = userId;
         review.Ts = DateTime.UtcNow;

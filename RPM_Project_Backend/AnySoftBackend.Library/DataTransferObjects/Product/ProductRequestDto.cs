@@ -1,8 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using AnySoftBackend.Library.Misc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RPM_Project_Backend.Helpers;
 
-namespace RPM_Project_Backend.Domain;
+namespace AnySoftBackend.Library.DataTransferObjects.Product;
 
 public class ProductRequestDto
 {
@@ -15,13 +16,13 @@ public class ProductRequestDto
     public string? Name { get; set; }
     [ValidateNever]
     [JsonPropertyName("rating")]
-    public MinMaxFloatObject? Rating { get; set; }
+    public MinMaxObject<float>? Rating { get; set; }
     [ValidateNever]
     [JsonPropertyName("cost")]
-    public MinMaxFloatObject? Cost { get; set; }
+    public MinMaxObject<float>? Cost { get; set; }
     [ValidateNever]
     [JsonPropertyName("discount")]
-    public MinMaxFloatObject? Discount { get; set; }
+    public MinMaxObject<float>? Discount { get; set; }
     [ValidateNever]
     [JsonPropertyName("publicationDate")]
     public MinMaxDateTimeObject? PublicationDate { get; set; }
@@ -36,31 +37,5 @@ public class ProductRequestDto
     public Dictionary<int, List<string>>? Attributes { get; set; }
     [ValidateNever]
     [JsonPropertyName("order")]
-    public SortOrder? Order { get; set; }
-}
-
-public class MinMaxFloatObject
-{
-    [ValidateNever]
-    public float? Min { get; set; }
-    [ValidateNever]
-    public float? Max { get; set; }
-}
-
-public class MinMaxDateTimeObject
-{
-    [ValidateNever]
-    [JsonConverter(typeof(JsonDateTimeConverter))]
-    public DateTime? Min { get; set; }
-    [ValidateNever]
-    [JsonConverter(typeof(JsonDateTimeConverter))]
-    public DateTime? Max { get; set; }
-}
-
-public class SortOrder
-{
-    [ValidateNever]
-    public string? Type { get; set; }
-    [ValidateNever]
-    public int? Direction { get; set; } // 0 - up, 1 - down
+    public SortOrderObject? Order { get; set; }
 }

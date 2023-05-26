@@ -46,6 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AnySoftBackend.Library\AnySoftBackend.Library.csproj" />
       <ProjectReference Include="..\RPM_Project_Backend.Domain\RPM_Project_Backend.Domain.csproj" />
     </ItemGroup>
 

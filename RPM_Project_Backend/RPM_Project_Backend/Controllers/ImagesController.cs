@@ -1,10 +1,11 @@
 ﻿using System.Net;
+using AnySoftBackend.Library.DataTransferObjects.Image;
+using AnySoftBackend.Library.Misc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RPM_Project_Backend.Domain;
 using RPM_Project_Backend.Helpers;
-using RPM_Project_Backend.Models;
 using RPM_Project_Backend.Services.Database;
 
 namespace RPM_Project_Backend.Controllers;
@@ -122,7 +123,7 @@ public class ImagesController : ControllerBase
     /// image:[image file]
     /// 
     /// </remarks>
-    /// <param name="imageDto"></param>
+    /// <param name="imageCreateDto"></param>
     /// <response code="200">Return image as created object</response>
     /// <response code="400">The input data is empty</response>
     /// <response code="400">Input data is empty</response>
@@ -135,12 +136,12 @@ public class ImagesController : ControllerBase
     [ProducesResponseType(typeof(Image), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Image>> Upload([FromForm]ImageDto imageDto)
+    public async Task<ActionResult<Image>> Upload([FromForm]ImageCreateDto imageCreateDto)
     {
-        if (imageDto is null or {UserId: <= 0} or {ProductId: <= 0} or {Image: null})
+        if (imageCreateDto is null or {UserId: <= 0} or {ProductId: <= 0} or {Image: null})
             return BadRequest(new ErrorModel("Input data is empty"));
         
-        var uniqueFileName = FileNameHelper.GetUniqueFileName(imageDto.Image.FileName);
+        var uniqueFileName = FileNameHelper.GetUniqueFileName(imageCreateDto.Image.FileName);
         
         var filePath = Path.Combine(_environment.WebRootPath,
             "images",
@@ -150,9 +151,9 @@ public class ImagesController : ControllerBase
         
         var image = new Image
         {
-            UserId = imageDto.UserId,
-            ProductId = imageDto.ProductId,
-            ContentType = imageDto.Image.ContentType,
+            UserId = imageCreateDto.UserId,
+            ProductId = imageCreateDto.ProductId,
+            ContentType = imageCreateDto.Image.ContentType,
             Ts = DateTime.Now,
             ImagePath = filePath
         };
@@ -172,7 +173,7 @@ public class ImagesController : ControllerBase
         finally
         {
             await using var stream = new FileStream(filePath, FileMode.CreateNew);
-            await imageDto.Image.CopyToAsync(stream);
+            await imageCreateDto.Image.CopyToAsync(stream);
         }
 
         return await _context.SaveChangesAsync() switch

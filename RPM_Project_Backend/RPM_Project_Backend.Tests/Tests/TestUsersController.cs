@@ -1,4 +1,7 @@
 ﻿using System.Web.Http.Results;
+using AnySoftBackend.Library.DataTransferObjects.Order;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -170,7 +173,7 @@ public class TestUsersController
     public async Task PostUserTheory_ShouldReturnSameUser(string email, string login, string password)
     {
         // Arrange
-        var userDto = new UserDto()
+        var userDto = new UserCreateDto()
         {
             Email = email,
             Login = login,
@@ -248,7 +251,7 @@ public class TestUsersController
         
         _controller.ControllerContext.HttpContext = new DefaultHttpContext();
         
-        var userFields = _mapper.Map<UserDto>(user);
+        var userFields = _mapper.Map<UserCreateDto>(user);
         
         // Act
         var result = await _controller.Post(userFields);

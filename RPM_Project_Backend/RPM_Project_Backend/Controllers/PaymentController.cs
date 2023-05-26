@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
+using AnySoftBackend.Library.DataTransferObjects.Payment;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -135,7 +137,7 @@ public class PaymentController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <param name="paymentDto"></param>
+    /// <param name="paymentCreateDto"></param>
     /// <response code="200">Return created payment</response>
     /// <response code="400">Same payment found</response>
     /// <response code="500">Oops! Server internal error</response>
@@ -145,9 +147,9 @@ public class PaymentController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<Payment>> Post(PaymentDto paymentDto)
+    public async Task<ActionResult<Payment>> Post(PaymentCreateDto paymentCreateDto)
     {
-        if (paymentDto is null)
+        if (paymentCreateDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
 
         _logger.LogDebug("Create new payment bank card");
@@ -156,13 +158,13 @@ public class PaymentController : ControllerBase
 
         if (await _context.Payments
                 .AnyAsync(p =>
-                    p.Number == paymentDto.Number
-                    && p.CardName == paymentDto.CardName
-                    && p.ExpirationDate == paymentDto.ExpirationDate
-                    && p.Cvc == paymentDto.Cvc))
+                    p.Number == paymentCreateDto.Number
+                    && p.CardName == paymentCreateDto.CardName
+                    && p.ExpirationDate == paymentCreateDto.ExpirationDate
+                    && p.Cvc == paymentCreateDto.Cvc))
             return BadRequest("Product with same genre already exists");
 
-        var payment = _mapper.Map<Payment>(paymentDto);
+        var payment = _mapper.Map<Payment>(paymentCreateDto);
 
         payment.UserId = userId;
         payment.IsActive = true;

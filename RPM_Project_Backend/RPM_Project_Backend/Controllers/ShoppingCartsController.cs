@@ -1,6 +1,12 @@
 ﻿using System.Linq.Dynamic.Core;
 using System.Net;
 using System.Text.Json;
+using AnySoftBackend.Library.DataTransferObjects;
+using AnySoftBackend.Library.DataTransferObjects.Order;
+using AnySoftBackend.Library.DataTransferObjects.Property;
+using AnySoftBackend.Library.DataTransferObjects.ShoppingCart;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -116,10 +122,10 @@ public class ShoppingCartsController : ControllerBase
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                             .ToList(),
                         Properties = (p.ProductsHaveProperties ?? new List<ProductsHaveProperties>())
-                            .Select(php => php.Property)
+                            .Select(php => _mapper.Map<PropertyDto>(php.Property))
                             .ToList(),
                         Genres = (p.ProductsHaveGenres ?? new List<ProductsHaveGenres>())
-                            .Select(phg => phg.Genre)
+                            .Select(phg => _mapper.Map<GenreDto>(phg.Genre))
                             .ToList()
                     })
             )
@@ -209,7 +215,7 @@ public class ShoppingCartsController : ControllerBase
     ///     }
     /// 
     /// </remarks>
-    /// <param name="shoppingCartDto"></param>
+    /// <param name="shoppingCartCreateDto"></param>
     /// <response code="200">Return created shopping cart</response>
     /// <response code="400">There are no products with this ID</response>
     /// <response code="401">Unauthorized</response>
@@ -220,25 +226,25 @@ public class ShoppingCartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(void), (int) HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
-    public async Task<ActionResult<ShoppingCartResponseDto>> Post(ShoppingCartDto shoppingCartDto)
+    public async Task<ActionResult<ShoppingCartResponseDto>> Post(ShoppingCartCreateDto shoppingCartCreateDto)
     {
-        if (shoppingCartDto is null)
+        if (shoppingCartCreateDto is null)
             return BadRequest(new ErrorModel("The input data is empty"));
         
         var userId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
         
-        if (!await _context.Products.AnyAsync(p => shoppingCartDto.ProductIds.Any(c => c == p.Id)))
+        if (!await _context.Products.AnyAsync(p => shoppingCartCreateDto.ProductIds.Any(c => c == p.Id)))
             return NotFound(new ErrorModel("There are no products with this ID"));
         
         if (await _context.OrdersHaveProducts
                 .Include(ohp => ohp.Order)
-                .AnyAsync(ohp => shoppingCartDto.ProductIds.Any(c => c == ohp.ProductId) && ohp.Order.UserId == userId))
+                .AnyAsync(ohp => shoppingCartCreateDto.ProductIds.Any(c => c == ohp.ProductId) && ohp.Order.UserId == userId))
             return BadRequest(new ErrorModel("The user has already purchased this product"));
 
         _logger.LogDebug("Create new shopping cart with user id = {UserId}", userId);
 
         var usersHaveProducts = new List<UsersHaveProducts>();
-        foreach (var productId in shoppingCartDto.ProductIds)
+        foreach (var productId in shoppingCartCreateDto.ProductIds)
         {
             var existedItem = await _context.UsersHaveProducts.FirstOrDefaultAsync(c => c.ProductId == productId && c.UserId == userId);
             if (existedItem is not null)
@@ -264,7 +270,7 @@ public class ShoppingCartsController : ControllerBase
                     .Include(p => p.Images)
                     .Include(p => p.ProductsHaveProperties)
                     .ThenInclude(php => php.Property)
-                    .Where(p => shoppingCartDto.ProductIds.Any(c => p.Id == c))
+                    .Where(p => shoppingCartCreateDto.ProductIds.Any(c => p.Id == c))
                     .ToList()
                     .Select(p => new ProductResponseDto
                     {
@@ -288,10 +294,10 @@ public class ShoppingCartsController : ControllerBase
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                             .ToList(),
                         Properties = (p.ProductsHaveProperties ?? new List<ProductsHaveProperties>())
-                            .Select(php => php.Property)
+                            .Select(php => _mapper.Map<PropertyDto>(php.Property))
                             .ToList(),
                         Genres = (p.ProductsHaveGenres ?? new List<ProductsHaveGenres>())
-                            .Select(phg => phg.Genre)
+                            .Select(phg => _mapper.Map<GenreDto>(phg.Genre))
                             .ToList()
                     })
             })

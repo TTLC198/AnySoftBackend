@@ -1,4 +1,4 @@
-﻿namespace RPM_Project_Backend.Models;
+﻿namespace AnySoftBackend.Library.Misc;
 
 public class ErrorModel
 {

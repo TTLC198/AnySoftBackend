@@ -1,4 +1,11 @@
-﻿namespace RPM_Project_Backend.Domain;
+﻿using System;
+using System.Collections.Generic;
+using AnySoftBackend.Library.DataTransferObjects;
+using AnySoftBackend.Library.DataTransferObjects.Property;
+using AnySoftBackend.Library.DataTransferObjects.Review;
+using AnySoftBackend.Library.DataTransferObjects.User;
+
+namespace RPM_Project_Backend.Domain;
 
 /// <summary>
 /// Product object that is returned when requested
@@ -52,10 +59,10 @@ public class ProductResponseDto
     /// <summary>
     /// Product Properties
     /// </summary>
-    public virtual IEnumerable<Property>? Properties { get; set; }
+    public virtual IEnumerable<PropertyDto>? Properties { get; set; }
     
     /// <summary>
     /// Product Genres
     /// </summary>
-    public virtual IEnumerable<Genre>? Genres { get; set; }
+    public virtual IEnumerable<GenreDto>? Genres { get; set; }
 }

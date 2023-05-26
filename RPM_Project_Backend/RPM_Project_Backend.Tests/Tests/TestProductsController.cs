@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using AnySoftBackend.Library.DataTransferObjects;
+using AnySoftBackend.Library.DataTransferObjects.Product;
+using AnySoftBackend.Library.DataTransferObjects.Property;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -73,8 +77,8 @@ public class TestProductsController
                 },
                 Images = new List<string>(),
                 Reviews = null,
-                Properties = new List<Property>(),
-                Genres = new List<Genre>(),
+                Properties = new List<PropertyDto>(),
+                Genres = new List<GenreDto>(),
                 Ts = p.Ts
             });
 
@@ -136,8 +140,8 @@ public class TestProductsController
                 },
                 Images = new List<string>(),
                 Reviews = null,
-                Properties = new List<Property>(),
-                Genres = new List<Genre>(),
+                Properties = new List<PropertyDto>(),
+                Genres = new List<GenreDto>(),
                 Ts = p.Ts
             });
         
@@ -235,7 +239,7 @@ public class TestProductsController
         _controller.ControllerContext.HttpContext.User = JwtClaimsHelper.GetClaims(user.Id, user.Role.Name);
         Assert.NotNull(_controller.User);
         
-        var productDto = _mapper.Map<ProductDto>(product);
+        var productDto = _mapper.Map<ProductCreateDto>(product);
         
         // Act
         var result = await _controller.Post(productDto);
