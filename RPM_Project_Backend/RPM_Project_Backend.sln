@@ -1,10 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RPM_Project_Backend", "RPM_Project_Backend\RPM_Project_Backend.csproj", "{4F188395-4906-4711-B756-D4A4543A2747}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnySoftBackend", "AnySoftBackend\AnySoftBackend.csproj", "{4F188395-4906-4711-B756-D4A4543A2747}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RPM_Project_Backend.Tests", "RPM_Project_Backend.Tests\RPM_Project_Backend.Tests.csproj", "{1D44EE9B-0677-444D-9668-A526D976690B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnySoftBackend.Tests", "AnySoftBackend.Tests\AnySoftBackend.Tests.csproj", "{1D44EE9B-0677-444D-9668-A526D976690B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RPM_Project_Backend.Domain", "RPM_Project_Backend.Domain\RPM_Project_Backend.Domain.csproj", "{EBCF1F4B-B515-490E-847F-3EEF217280D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnySoftBackend.Domain", "AnySoftBackend.Domain\AnySoftBackend.Domain.csproj", "{EBCF1F4B-B515-490E-847F-3EEF217280D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnySoftBackend.Library", "AnySoftBackend.Library\AnySoftBackend.Library.csproj", "{832FDA78-8845-4643-BCE6-E921DC56AB5F}"
 EndProject

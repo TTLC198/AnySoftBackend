@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using RPM_Project_Backend.Domain;
+using AnySoftBackend.Library.DataTransferObjects.Product;
 
 namespace AnySoftBackend.Library.DataTransferObjects.ShoppingCart;
 

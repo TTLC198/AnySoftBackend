@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using AnySoftBackend.Library.DataTransferObjects;
+using AnySoftBackend.Library.DataTransferObjects.Genre;
 using AnySoftBackend.Library.DataTransferObjects.Property;
 using AnySoftBackend.Library.DataTransferObjects.Review;
 using AnySoftBackend.Library.DataTransferObjects.User;
 
-namespace RPM_Project_Backend.Domain;
+namespace AnySoftBackend.Library.DataTransferObjects.Product;
 
 /// <summary>
 /// Product object that is returned when requested

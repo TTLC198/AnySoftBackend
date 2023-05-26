@@ -1,4 +1,4 @@
-﻿namespace AnySoftBackend.Library.DataTransferObjects;
+﻿namespace AnySoftBackend.Library.DataTransferObjects.Genre;
 
 /// <summary>
 /// Genre Data Transfer Object
