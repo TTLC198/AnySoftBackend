@@ -1,5 +1,8 @@
 ﻿using System.Text.Json;
 using System.Web.Http.Results;
+using AnySoftBackend.Library.DataTransferObjects.Review;
+using AnySoftBackend.Library.DataTransferObjects.User;
+using AnySoftBackend.Library.Misc;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -157,7 +160,7 @@ public class TestReviewsController
         // Arrange
         var id = _random.Next(1, 3);
         var user = TestValues.Users.First(u => u.Id == id);
-        var reviewDto = new ReviewDto()
+        var reviewDto = new ReviewCreateDto()
         {
             Text = text,
             Grade = grade,
@@ -217,7 +220,7 @@ public class TestReviewsController
         var id = _random.Next(1, 3);
         var user = TestValues.Users.First(u => u.Id == id);
         var review = TestValues.SingleReview;
-        var reviewDto = new ReviewDto()
+        var reviewDto = new ReviewCreateDto()
         {
             Text = review.Text,
             Grade = review.Grade,
