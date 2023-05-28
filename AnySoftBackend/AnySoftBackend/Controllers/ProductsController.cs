@@ -385,6 +385,7 @@ public class ProductsController : ControllerBase
                             .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
                             .ToList(),
                         Reviews = p.Reviews
+                            .OrderByDescending(r => r.Ts)
                             .Select(r => new ReviewResponseDto()
                             {
                                 Id = r.Id,
