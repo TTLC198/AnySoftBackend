@@ -179,6 +179,151 @@ public class ProductsController : ControllerBase
             )
         };
     }
+    
+    /// <summary>
+    /// Get list of seller`s products
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// GET api/products
+    /// 
+    /// </remarks>
+    /// <response code="200">Return products list</response>
+    /// <response code="404">Products not found</response>
+    /// <response code="500">Oops! Server internal error</response>
+    [HttpGet("seller")]
+    [Authorize(Roles = "seller")]
+    [ProducesResponseType(typeof(IEnumerable<ProductResponseDto>), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ErrorModel), (int) HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetSellersProducts(
+        [FromQuery] QueryParameters<ProductRequestDto> queryParameters)
+    {
+        _logger.LogDebug("Get list of seller`s products");
+        
+        var sellerId = int.Parse(User.Claims.First(cl => cl.Type == "id").Value);
+
+        var products = _context.Products
+            .Include(p => p.ProductsHaveGenres)
+            .ThenInclude(phg => phg.Genre)
+            .Include(p => p.Seller)
+            .ThenInclude(s => s.Images)
+            .Include(p => p.Images)
+            .Include(p => p.ProductsHaveProperties)
+            .ThenInclude(php => php.Property)
+            .OrderBy(queryParameters.OrderBy, queryParameters.IsDescending())
+            .Where(p => p.SellerId == sellerId)
+            .ToList();
+
+        if (queryParameters.HasQuery())
+        {
+            try
+            {
+                var productQuery = (ProductRequestDto) queryParameters.Object;
+                if (productQuery.Ids is {Count: > 0})
+                    products = products
+                        .Where(product => productQuery.Ids
+                            .Contains(product.Id))
+                        .ToList();
+                if (productQuery.Name is not null)
+                    products = products
+                        .Where(product => product.Name!.ToLower().Contains(productQuery.Name.ToLower()))
+                        .ToList();
+                if (productQuery.Rating is {Min: not null} and {Max: not null})
+                    products = products
+                        .Where(product =>
+                            productQuery.Rating.Min <= product.Rating && product.Rating <= productQuery.Rating.Max)
+                        .ToList();
+                if (productQuery.Cost is {Min: not null} and {Max: not null})
+                    products = products
+                        .Where(product =>
+                            productQuery.Cost.Min <= product.Cost && product.Cost <= productQuery.Cost.Max)
+                        .ToList();
+                if (productQuery.Discount is {Min: not null} and {Max: not null})
+                    products = products
+                        .Where(product =>
+                            productQuery.Discount.Min <= product.Discount &&
+                            product.Discount <= productQuery.Discount.Max)
+                        .ToList();
+                if (productQuery.PublicationDate is {Min: not null} and {Max: not null})
+                    products = products
+                        .Where(product =>
+                            productQuery.PublicationDate.Min <= product.Ts &&
+                            product.Ts <= productQuery.PublicationDate.Max)
+                        .ToList();
+                if (productQuery.Genres is {Count: > 0})
+                    products = products
+                        .Where(product => productQuery.Genres
+                            .All(g => product.ProductsHaveGenres!.Any(phg => phg.GenreId == g)))
+                        .ToList();
+                if (productQuery.Properties is {Count: > 0})
+                    products = products
+                        .Where(product => productQuery.Properties!
+                            .All(p => product.ProductsHaveProperties!.Any(php => php.PropertyId == p)))
+                        .ToList();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+            }
+        }
+
+        var paginationMetadata = new
+        {
+            totalCount = products.Count,
+            pageSize = products.Count < queryParameters.PageCount
+                ? products.Count
+                : queryParameters.PageCount,
+            currentPage = queryParameters.GetTotalPages(products.Count) < queryParameters.Page
+                ? (int)queryParameters.GetTotalPages(products.Count)
+                : queryParameters.Page,
+            totalPages = queryParameters.GetTotalPages(products.Count)
+        };
+
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
+        if (queryParameters is {Page: <= 0} or {PageCount: <= 0})
+            return NotFound(new ErrorModel("Products not found"));
+
+        return products.Count() switch
+        {
+            0 => NotFound(new ErrorModel("Products not found")),
+            _ => Ok(
+                products
+                    .Skip(paginationMetadata.pageSize * (paginationMetadata.currentPage - 1))
+                    .Take(paginationMetadata.pageSize)
+                    .Select(p => new ProductResponseDto
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Description = p.Description,
+                        Cost = p.Cost,
+                        Discount = p.Discount,
+                        Rating = p.Rating,
+                        Ts = p.Ts,
+                        Seller = new UserResponseDto()
+                        {
+                            Id = p.Seller!.Id,
+                            Login = p.Seller.Login,
+                            Image = p.Seller.Images is null
+                                ? ""
+                                : ImageUriHelper.GetImagePathAsUri(
+                                    (p.Seller.Images.FirstOrDefault() ?? new Image()).ImagePath)
+                        },
+                        Images = (p.Images ?? new List<Image>())
+                            .Select(i => ImageUriHelper.GetImagePathAsUri(i.ImagePath))
+                            .ToList(),
+                        Properties = (p.ProductsHaveProperties ?? new List<ProductsHaveProperties>())
+                            .Select(php => _mapper.Map<PropertyDto>(php.Property))
+                            .ToList(),
+                        Genres = (p.ProductsHaveGenres ?? new List<ProductsHaveGenres>())
+                            .Select(phg => _mapper.Map<GenreDto>(phg.Genre))
+                            .ToList()
+                    })
+            )
+        };
+    }
 
     /// <summary>
     /// Get single product
