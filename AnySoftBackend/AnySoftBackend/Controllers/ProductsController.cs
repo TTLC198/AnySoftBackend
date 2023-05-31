@@ -608,7 +608,9 @@ public class ProductsController : ControllerBase
         if (id <= 0)
             return BadRequest(new ErrorModel("The input data is empty"));
 
-        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _context.Products
+            .Include(p => p.Images)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product is null)
             return NotFound(new ErrorModel("Product not found"));
