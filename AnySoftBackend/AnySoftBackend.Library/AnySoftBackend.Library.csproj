@@ -11,7 +11,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
         <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
         <PackageReference Include="System.Text.Json" Version="8.0.0-preview.4.23259.5" />
-        <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     </ItemGroup>
 
     <ItemGroup>
