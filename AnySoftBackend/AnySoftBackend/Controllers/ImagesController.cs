@@ -138,7 +138,7 @@ public class ImagesController : ControllerBase
     [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
     public async Task<ActionResult<Image>> Upload([FromForm]ImageCreateDto imageCreateDto)
     {
-        if (imageCreateDto is null or {UserId: <= 0} or {ProductId: <= 0} or {Image: null})
+        if (imageCreateDto is null or ({UserId: <= 0} and {ProductId: <= 0}) or {Image: null})
             return BadRequest(new ErrorModel("Input data is empty"));
         
         var uniqueFileName = FileNameHelper.GetUniqueFileName(imageCreateDto.Image.FileName);
@@ -151,8 +151,8 @@ public class ImagesController : ControllerBase
         
         var image = new Image
         {
-            UserId = imageCreateDto.UserId,
-            ProductId = imageCreateDto.ProductId,
+            UserId = imageCreateDto.UserId == 0 ? null : imageCreateDto.UserId,
+            ProductId = imageCreateDto.ProductId == 0 ? null : imageCreateDto.ProductId,
             ContentType = imageCreateDto.Image.ContentType,
             Ts = DateTime.Now,
             ImagePath = filePath
