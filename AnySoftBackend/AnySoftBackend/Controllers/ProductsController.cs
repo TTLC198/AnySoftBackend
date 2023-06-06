@@ -463,11 +463,27 @@ public class ProductsController : ControllerBase
 
         var createdProduct = await _context.Products.AddAsync(product);
 
-        return await _context.SaveChangesAsync() switch
+        switch (await _context.SaveChangesAsync())
         {
-            0 => StatusCode(500, new ErrorModel("Some error has occurred")),
-            _ => Ok(createdProduct.Entity)
-        };
+            case 0:
+                return StatusCode(500, new ErrorModel("Some error has occurred"));
+            default:
+                var order = new Order()
+                {   
+                    UserId = sellerId,
+                    Status = "Paid",
+                    FinalCost = product.Cost,
+                    Ts = DateTime.UtcNow
+                };
+
+                var createdOrder = await _context.Orders.AddAsync(order);
+                
+                return await _context.SaveChangesAsync() switch
+                {
+                    0 => StatusCode(500, new ErrorModel("Some error has occurred")),
+                    _ => Ok(createdProduct.Entity)
+                };
+        }
     }
 
     /// <summary>
