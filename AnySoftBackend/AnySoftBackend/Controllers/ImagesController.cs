@@ -246,4 +246,73 @@ public class ImagesController : ControllerBase
             _ => NoContent()
         };
     }
+
+    /// <summary>
+    /// Delete single image by productId
+    /// </summary>
+    /// <remarks>
+    /// Example request
+    /// 
+    /// DELETE /resources/images?productId=1
+    /// 
+    /// </remarks>
+    /// <param name="productId"></param>
+    /// <response code="204">Deleted successful</response>
+    /// <response code="400">Input data is empty</response>
+    /// <response code="500">Oops! Server internal error</response>
+    [HttpDelete("delete")]
+    [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
+    public async Task<ActionResult> Delete(
+        [FromQuery]int? productId)
+    {
+        if (productId is null || productId <= 0)
+            return BadRequest(new ErrorModel("Input data is empty"));
+        
+        _logger.LogDebug("Delete image with productId = {ProductId}", productId);
+
+        var product = await _context.Products
+            .FirstOrDefaultAsync(i => i.Id == productId);
+        
+        if (product is null)
+            return BadRequest(new ErrorModel("Products with entered id does not exists"));
+        
+        var images = await _context.Images
+            .Where(i => i.ProductId == productId)
+            .ToListAsync();
+        
+        if (images is null or {Count: 0})
+            return NotFound(new ErrorModel("Image not found"));
+        
+        var userIdClaim = User.Claims.SingleOrDefault(cl => cl.Type == "id") ??
+                          throw new InvalidOperationException("Invalid auth. Null id claims");
+        var userRoleClaim = User.Claims.SingleOrDefault(cl => cl.Type.Contains("role")) ??
+                            throw new InvalidOperationException("Invalid auth. Null role claims");
+        
+        if (userIdClaim.Value != $"{product.SellerId}" && userRoleClaim.Value != "admin")
+            return Unauthorized(new ErrorModel("Access is denied"));
+
+        foreach (var image in images)
+        {
+            if (System.IO.File.Exists(image.ImagePath))
+            {
+                System.IO.File.Delete(image.ImagePath);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new ErrorModel("Some error has occurred"));
+            }
+        }
+        
+        _context.Images.RemoveRange(images);
+
+        return await _context.SaveChangesAsync() switch
+        {
+            0 => StatusCode(StatusCodes.Status500InternalServerError,
+                new ErrorModel("Some error has occurred")),
+            _ => NoContent()
+        };
+    }
 }
