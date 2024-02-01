@@ -1,8 +1,1 @@
-# RPM Project
-
-## Deployment
-
-Swagger UI link:
-```
-https://localhost:5001/swagger/ui/index.html
-```
+# Проект Rest API для курсовой работы на 4 курсе по ВПКС
