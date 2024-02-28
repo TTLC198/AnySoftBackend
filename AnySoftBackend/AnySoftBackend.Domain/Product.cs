@@ -30,7 +30,7 @@ public class Product
     [Column("pro_cost"), Required]
     public int Cost { get; set; }
     /// <summary>
-    /// Product cost
+    /// Product Discount
     /// </summary>
     [Column("pro_discount"), Required]
     public int? Discount { get; set; }
